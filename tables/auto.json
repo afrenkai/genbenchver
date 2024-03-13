@@ -1,0 +1,12 @@
+{
+    "description": "real automobile data that a purchaser would wat to know",
+    "lineage": [],
+    "semantic_key": [
+        "Model",
+        "Make",
+        "Year"
+    ],
+    "preamble": null,
+    "postamble": null,
+    "command": null
+}

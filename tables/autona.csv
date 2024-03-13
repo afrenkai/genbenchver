@@ -1,0 +1,25 @@
+Model;Make;Year;Type;Doors;Transmission;DriveTrain;MSRP;Horsepower;Torque;MPGCity;MPGHighway;Miles;QuarterMileTime;ZeroToSixtyTime;TopSpeed
+Camry;Toyota;2020;Sedan;4.0;Automatic;Front-Wheel Drive;25050;203;184;28;39.0;39000;13.8;9.2;130
+Corolla;Toyota;2020;Compact;4.0;CVT Automatic;Front-Wheel Drive;20430;139;128;30;38.0;12500;12.5;7.8;110
+Rav4;Toyota;2020;SUV;4.0;Automatic;All-Wheel Drive;27285;203;184;27;34.0;5000;16.3;7.8;124
+Highlander;Toyota;2020;SUV;4.0;Automatic;Front-Wheel Drive;35205;295;263;20;27.0;6000;15.9;6.7;115
+Accord;Honda;2020;Sedan;4.0;CVT;Front-Wheel Drive;24970;192;192;30;38.0;30000;14.9;6.7;125
+Civic;Honda;2020;Compact;4.0;Manual;;20675;158;138;30;32.0;20000;11.2;6.8;120
+CR-V;Honda;2020;SUV;4.0;Automatic;All-Wheel Drive;26145;190;179;27;33.0;35000;16.8;7.5;120
+Pilot;Honda;2020;SUV;4.0;Automatic;All-Wheel Drive;32550;280;270;19;27.0;50000;15.5;6.2;112
+Fusion;Ford;2020;Sedan;4.0;Automatic;Front-Wheel Drive;23970;175;171;21;31.0;30000;15.9;7.6;119
+Escape;Ford;2020;SUV;4.0;Automatic;Front-Wheel Drive;25200;165;175;23;28.0;35000;16.8;8.6;115
+Explorer;Ford;2020;SUV;4.0;Automatic;Rear-Wheel Drive;33470;280;310;18;25.0;50000;15.6;6.2;123
+Mustang;Ford;2020;Coupe;2.0; Manual;Rear-Wheel Drive;27865;310;265;15;21.0;15000;13.5;4.8;155
+Impreza;Subaru;2020;Compact;4.0;Continuously Variable Transmission (CVT);All-Wheel Drive;19595;152;145;24;31.0;15000;16.5;8.8;128
+Outback;Subaru;2020;Wagon;4.0;Continuously Variable Transmission (CVT);All-Wheel Drive;27655;182;176;23;30.0;15000;16.2;7.1;126
+Legacy;Subaru;2020;Sedan;4.0;Lineartronic® Continuously Variable Transmission (CVT);All-Wheel Drive;23820;175;174;24;;15000;16.5;7.3;125
+Forester;Subaru;2020;SUV;4.0;Continuously Variable Transmission (CVT);All-Wheel Drive;25505;152;145;26;33.0;15000;16.8;8.5;126
+WRX;Subaru;2020;Sport Sedan;4.0;6-speed manual transmission;All-Wheel Drive;28420;268;258;19;24.0;15000;14.7;5.1;146
+Odyssey;Honda;2020;Minivan;4.0;10-speed automatic transmission;Front-wheel drive;32910;280;262;19;28.0;15000;16.0;6.2;119
+Passport;Honda;2020;SUV;4.0;9-speed automatic transmission;All-wheel drive;33785;280;262;19;26.0;15000;15.5;6.2;119
+RDX;Acura;2020;Luxury Compact SUV;4.0;10-speed automatic transmission;Super Handling All-Wheel Drive™ (SH-AWD®);38600;272;280;21;27.0;15000;15.0;5.7;137
+TLX;Acura;2020;Luxury Sport Sedan;4.0;10-speed automatic transmission;Front-wheel drive or Super Handling All-Wheel Drive™ (SH-AWD®);38500;272;252;21;30.0;15000;15.0;5.7;130
+ILX;Acura;2020;Luxury Compact Car;4.0;8-speed dual clutch transmission;Front-wheel drive;26100;201;180;24;34.0;15000;15.5;6.4;126
+Q5;Audi;2020;Luxury Compact SUV;4.0;7-speed S tronic® dual-clutch automatic transmission;quattro® all-wheel drive;44200;261;273;22;28.0;15000;15.0;5.9;130
+Q7;Audi;2020;Luxury Midsize SUV;;8-speed Tiptronic® automatic transmission;quattro® all-wheel drive;55700;248;369;18;23.0;15000;15.5;6.3;130
