@@ -42,12 +42,12 @@ FORMAT_TYPE = (FORMAT_CSV, FORMAT_CSV_DELIMITER, FORMAT_CSV_DELIMITER_NAME)
 if ENVIRONMENT == "turing.wpi.edu":
     MODEL_TYPE = 'nnsight'
     DEVICE_MAP = "cuda"
-    TABLES_FOLDER = "tables3"
+    TABLES_FOLDER = "../../tables"
 else: # ENVIRONMENT == "local_macos"
     os.environ["PYTORCH_MPS_HIGH_WATERMARK_RATIO"] = "0.0"
     MODEL_TYPE = 'transformers'
     DEVICE_MAP = "mps"
-    TABLES_FOLDER = "tables3"
+    TABLES_FOLDER = "../../tables"
 
 COMMANDS = [
     {'type': 'add_row',
@@ -565,8 +565,6 @@ class VerTable:
 
         """
         if self.table is not None:
-            # print_time("returning csv")
-            # time.sleep(10)
             return self.table.to_csv(sep=self.format_type[1], index=False)
         return "None"
     
@@ -884,6 +882,7 @@ def add_table(orig_table, data, location, axis):
         print_time(new_df, "col")
         
         cols_new = []
+
         if location == 0:
             
             for col in df:
@@ -892,16 +891,6 @@ def add_table(orig_table, data, location, axis):
             for col in old_table:
                 cols_new.append(col)
 
-            # print("")
-            # print("df")
-            # print_time(df)
-            # print("")
-            # print("old_table")
-            # print_time(old_table)
-            # new_df = pd.concat([df, old_table], axis=axis)
-            # print("")
-            # print("new_df")
-            # print_time(new_df)
         elif location == (n_entries-1):
             
             for i, col in enumerate(old_table):
@@ -914,16 +903,6 @@ def add_table(orig_table, data, location, axis):
                 if i >= location:
                     cols_new.append(col)
                     
-            # print("")
-            # print("df")
-            # print_time(df)
-            # print("")
-            # print("old_table")
-            # print_time(old_table)
-            # new_df = pd.concat([old_table, df], axis=axis)
-            # print("")
-            # print("new_df")
-            # print_time(new_df)
         else:
             
             for col in old_table:
@@ -932,22 +911,6 @@ def add_table(orig_table, data, location, axis):
                 if col not in orig_table.semantic_key:
                     cols_new.append(col)
                 
-            # print("")
-            # print("location, n_entries, n_rows")
-            # print_time(str(location) + " " + str(n_entries) + " " 
-            #            + str(n_rows))
-            # before = old_table.iloc[:, :location].copy()
-            # print("")
-            # print("before")
-            # print_time(before)
-            # after = old_table.iloc[:, location:].copy()
-            # print("")
-            # print("after")
-            # print_time(after)
-            # new_df = pd.concat([before, df, after], axis=axis)
-            # print("")
-            # print("new_df")
-            # print_time(new_df)
         new_df = new_df[cols_new]
         
     new_df.reset_index(drop=True, inplace=True)            
@@ -1118,8 +1081,6 @@ def create_rows_prompts(cache, table, nrows):
             + "Then explain the source of the new data."
     print_time(prompt, None)
     prompts = [prompt]
-    # max_new_tokens = ((table.get_num_entries() + nrows + 1) * 16 
-    #                   * (table.get_num_attributes() + 1) + 1000)
     max_new_tokens = 50000
     print_time(max_new_tokens, None)
     return prompts, max_new_tokens
@@ -1200,11 +1161,6 @@ def create_rows_from_prompts(v_cache, table, nrows, model_type,
     else:
         responses = execute_prompts(model_type, tokenizer, model, 
                                     max_new_tokens, prompts)
-    # first_col = list(table.table)[0]
-    # print("")
-    # print("first_col")
-    # print_time(first_col)
-        
 
     return parse_table_responses(table, responses, nrows)
     
@@ -1234,15 +1190,6 @@ def create_rows(v_cache, table_orig, nrows, model_type,
         DESCRIPTION.
 
     """
-    # table_orig.read()
-    # if FAKE_MODEL:
-    #     new_dict = {}
-    #     new_dict['preamble'] = "preamble\n\n"
-    #     new_dict['partial_table'] = \
-    #         table_orig.table.head(nrows).to_csv(index=False)
-    #     new_dict['postamble'] = "\n\npostamble\npostamble...postamble\n"
-    #     return [new_dict]
-    #     # return [table_orig.table.head(nrows).to_csv(index=False)]
     prompts, max_tokens = create_rows_prompts(v_cache, table_orig, nrows)
     return (prompts,
             create_rows_from_prompts(v_cache, table_orig, nrows, model_type,
@@ -1265,20 +1212,6 @@ def create_cols_prompts(cache, table, ncols):
         DESCRIPTION.
     max_new_tokens : TYPE
         DESCRIPTION.
-Generate 3 new attributes for a table of real automobile data that a purchaser 
-would want to know. The semi-colon-separated header of attributes to not 
-generate is
-Model;Make;Year;Type;Doors;Transmission;DriveTrain;MSRP;Horsepower;Torque;MPGCity;MPGHighway;Miles;QuarterMileTime;ZeroToSixtyTime;TopSpeed
-Generate real attributes. Do not generate a fictional one. Here are the 
-semi-colon-separated rows of the table by semantic key only:
-Model;Make;Year;Type
-Camry;Toyota;2020
-Corolla;Toyota;2020
-Rav4;Toyota;2020
-Generate values of real data for the new attributes for all existing rows of 
-the table. Generate and output a new table (include the table header) with only 
-the attributes Model, Make, Year, and the new attributes, in the format of a 
-semi-colon-separated .csv file. Then explain the source of the new data.
     """
 
     description = table.get_description()
@@ -1314,23 +1247,6 @@ semi-colon-separated .csv file. Then explain the source of the new data.
         prompt = prompt + "and the new attribute in the format of a "\
             + f"{delimiter}-separated .csv file. "\
             + "Then explain the source of the new data."
-        # prompt = f"Generate one new attribute for a table of {description}. "\
-        #     + f"The {delimiter}-separated header of attributes to not "\
-        #     + f"generate is:\n{header}\n"\
-        #     + "Generate a real attribute. Do not generate a fictional one. "\
-        #     + f"Here is the {delimiter}-separated table "\
-        #     + f"by semantic key only:\n{table_key_only}\n"\
-        #     + "Generate values of real data for all existing rows of the "\
-        #     + "table. "\
-        #     + "Generate values of data for all existing rows of the table. "\
-        #     + "Generate and output a new table (include the table header) "\
-        #     + "with only the semantic key and the new attributes "\
-        #     + f"in the format of a {delimiter}-separated .csv file. "\
-        #     + "Then explain the source of the new data."
-            # + "Do not output the entire table. "\
-            # + "Instead, generate a new table with only the semantic key "\
-            # + "and the new attribute. "\
-            # + "Then explain the source of the new data."
     else:
         prompt = f"Generate {ncols} new attributes for a table of "\
             + f"{description}. "\
@@ -1353,28 +1269,8 @@ semi-colon-separated .csv file. Then explain the source of the new data.
             + f"{delimiter}-separated .csv file. "\
             + "Then explain the source of the new data."
 
-        # prompt = "Generate {ncols} new attributes for a table of "\
-        #     + f"{description}. "\
-        #     + f"The header of attributes to not generate is:\n{header}\n"\
-        #     + "Generate the attributes from real known data. "\
-        #     + "Here are the rows of the table by semantic key only:\n"\
-        #     + f"{table_key_only}\n"\
-        #     + "Generate values of real data for all existing rows of the "\
-        #     + "table. "\
-        #     + "Do not generate any fictional data. "\
-        #     + "Generate a new table with only the semantic key "\
-        #     + "and the new attributes in the format of a .csv file. "\
-        #     + "Then explain the source of the new data."
-            # + "Output the new attributes and their values "\
-            # + "in the format of a .csv file."\
-            # + "Do not output the entire table. "\
-            # + "Instead, generate a new table with only the semantic key "\
-            # + "and the new attributes. "\
-            # + "Then explain the source of the new data."
     print_time(prompt, None)
     prompts = [prompt]
-    # max_new_tokens = ((table.get_num_entries() + 1) * 16 
-    #                   * (table.get_num_attributes() + 1) + 1000)
     max_new_tokens = 50000
     print_time(max_new_tokens, None)
     return prompts, max_new_tokens
@@ -1407,15 +1303,6 @@ def create_cols_from_prompts(v_cache, table, model_type, tokenizer,
         DESCRIPTION.
 
     """
-    # table_orig.read()
-    # if FAKE_MODEL:
-    #     new_dict = {}
-    #     new_dict['preamble'] = "preamble\n\n"
-    #     new_dict['partial_table'] = \
-    #         table_orig.table.head(nrows).to_csv(index=False)
-    #     new_dict['postamble'] = "\n\npostamble\npostamble...postamble\n"
-    #     return [new_dict]
-    #     # return [table_orig.table.head(nrows).to_csv(index=False)]
     if FAKE_MODEL:
         was_none = False
         if table_orig.table is None:
@@ -1423,22 +1310,7 @@ def create_cols_from_prompts(v_cache, table, model_type, tokenizer,
             table_orig.read()
         old_table = table_orig.table.copy()
         resp_table = old_table[table_orig.semantic_key].copy()
-        # resp_table.drop(table_orig.semantic_key, inplace=True, axis=1)
         responses = []
-        # responses.append(
-        #     " Here are 2 new attributes generated for the table:"\
-        #     + "1. FuelType: This attribute indicates the type of fuel used "\
-        #     + "by the vehicle. The possible values are Gas, Diesel, Hybrid, "\
-        #     + "and Electric. The data for this attribute is obtained from "\
-        #     + "the official websites of the manufacturers or third-party "\
-        #     + "automotive data providers.\n"\
-        #     + "2. CityMPG: This attribute indicates the fuel efficiency "\
-        #     + "of the vehicle in city driving conditions, "\
-        #     + "measured in miles per gallon (MPG)."\
-        #     + "The data for this attribute is obtained from the official "\
-        #     + "fule economy ratings provided by the "\
-        #     + "Environmental Protection Agency (EPA) of the United States."
-        #     )
         if old_table.shape[1] == 0:
             # our table is empty, use the original table for a source of fake 
             # rows, note that the original table was required to have at least
@@ -1485,23 +1357,6 @@ def create_cols_from_prompts(v_cache, table, model_type, tokenizer,
                     break
                 
                     
-            # for i, col in enumerate(old_table):
-            #     print("")
-            #     print("old_table")
-            #     print_time(old_table)
-            #     print("")
-            #     print("col")
-            #     print_time(col)
-            #     resp_table[col + "_NEW"] = old_table[col]
-            #     print("")
-            #     print("resp_table")
-            #     print_time(resp_table)
-            #     print("")
-            #     print("tot_i")
-            #     print_time(tot_i)
-            #     tot_i += 1
-            #     if tot_i == ncols:
-            #         break
         table_str = resp_table.to_csv(sep=table.format_type[1], index=False)
         responses.append(
             f"Preamble\n\n{table_str}\n\nPostamble\n"
@@ -1518,77 +1373,8 @@ def create_cols_from_prompts(v_cache, table, model_type, tokenizer,
             
         responses = execute_prompts(model_type, tokenizer, model,
                                     max_new_tokens, prompts)
-    # first_col = list(table.table)[0]
-    # for thiscol in table.table:
-    #     if thiscol in table.semantic_key:
-    #         first_col = thiscol
-    #         break
     return parse_table_responses(table, responses, table.table.shape[0])
 
-# def find_valid_csv_tables(text, rows_expected, sep):
-#     valid_tables = []
-    
-#     # start at the first line
-#     text_loc = 0
-#     while text_loc < len(text):
-#         remain_text = text[text_loc:]
-#         lines = remain_text.split("\n")
-#         if len(lines) < rows_expected:
-#             break
-#         df = None
-#         long_df = None
-#         try:
-#             # the table must be exactly the length that we expect
-#             table_text = "\n".join(lines[:rows_expected])
-#             df = pd.read_csv(io.StringIO(table_text), sep=sep)
-#             print("")
-#             print("df")
-#             print_time(df)
-#             # table exists but may be too long
-#             if not df.empty:
-#                 long_table_text = "\n".join(lines[:rows_expected+1])
-#                 long_df = pd.read_csv(io.StringIO(long_table_text), sep=sep)
-#                 # it is too long, advance text_loc to after the long table and 
-#                 # continue to parse
-#                 print("")
-#                 print("long_df")
-#                 print_time(long_df)
-#                 text_loc += (len(long_table_text) + 1) # + 1 for "\n"
-#                 continue
-#             else:
-#                 # df empty, advance to next line
-#                 text_loc += (len(lines[0]) + 1) # + 1 for "\n"
-#                 continue
-                
-#         except pd.errors.EmptyDataError:
-#             if df is None:
-#                 # df is None means df read failed
-#                 # no valid table at this line, advaince text_loc to next line
-#                 text_loc += (len(lines[0]) + 1) # + 1 for "\n"
-#                 continue
-#             # df read succeeded but long_df read failed, we have our table
-#             begin_loc = text_loc
-#             ret_table = (df, text_loc)
-#             # advance text_loc to after the table
-#             text_loc += (len(table_text) + 1) # + 1 for "\n"
-#             ret_table = (df, begin_loc, text_loc)
-#             valid_tables.append(ret_table)
-#         except:
-#             print_time("Exception unknown")
-#             if df is None:
-#                 # df is None means df read failed
-#                 # no valid table at this line, advaince text_loc to next line
-#                 text_loc += (len(lines[0]) + 1) # + 1 for "\n"
-#                 continue
-#             # df read succeeded but long_df read failed, we have our table
-#             print_time(df)
-#             begin_loc = text_loc
-#             # advance text_loc to after the table
-#             text_loc += (len(table_text) + 1) # + 1 for "\n"
-#             ret_table = (df, begin_loc, text_loc)
-#             valid_tables.append(ret_table)
-            
-#     return valid_tables 
 def find_valid_csv_tables(text, nrows_expected, cols_expected, sep):
     valid_tables = []
     
@@ -1667,9 +1453,6 @@ def parse_table_responses(table, responses, nrows_expected):
         #      being within the prologue are far higher than the chances
         #      of the table being within the epilogue
 
-        # Case 1: The AI has output the table with the semantic key as 
-        #         instructed. So find the final table with one of the columns
-        #         in the semantic key.
         valid_csv_tables = find_valid_csv_tables(response, nrows_expected,
                                                  table.semantic_key,
                                                  table.format_type[1])
@@ -1678,60 +1461,8 @@ def parse_table_responses(table, responses, nrows_expected):
         # loop through valid tables
         col_valid_csv_table = None
         for csv_table in valid_csv_tables:
-        #     if cols_expected is not None:
-        #         for col in cols_expected:
-        #             if col not in csv_table[0]:
-        #                 continue
-        #     # following is a tuple (dataframe, begin_loc, next_loc)
             col_valid_csv_table = csv_table # look for the final table
             
-
-        # if col_valid_csv_table is None:
-        #     continue
-        # if col_valid_csv_table[1] > 0:
-        #     preamble = response[0:col_valid_csv_table[1]]
-        # if col_valid_csv_table[2] < len(response):
-        #     postamble = response[col_valid_csv_table[2]:]
-        # print("")
-        # print("preamble")
-        # print_time(col_valid_csv_table[0])
-        # print("")
-        # print("postamble")
-        # print_time(col_valid_csv_table[2])
-        # for 
-        # response_idx = None
-        # while True:
-        #     first_idx = None
-        #     first_col = None
-        #     for col in table.semantic_key:
-        #         idx = response.find(col)
-        #         if idx is None or idx < first_idx:
-        #             first_col = col
-        #             first_idx = idx
-        
-        # # -1 because the output could have printed out the old table before the
-        # # new table
-        # message = response.split(first_col)
-        # if len(message) == 0:
-        #     print("")
-        #     print_time("empty response")
-        #     continue
-        # if len(message) > 1:
-        #     after_preamble = message[1].split('\n')
-        #     num_lines_response = len(after_preamble)
-        #     if num_lines_response < num_rows:
-        #         num_rows_response = num_lines_response
-        #     else:
-        #         num_rows_response = num_rows
-        #     partial_table = (first_col
-        #                      + '\n'.join(after_preamble[:num_rows_response+1]))
-        #     print("")
-        #     print("partial_table")
-        #     print_time(partial_table)
-        #     if num_lines_response > num_rows:
-        #         postamble = '\n'.join(after_preamble[num_rows_response+1:])
-        #     else:
-        #         postamble = ""
         if col_valid_csv_table is not None:
             table_response = {
                 'preamble': col_valid_csv_table[0],
@@ -1768,24 +1499,6 @@ def create_cols(v_cache, table_orig, ncols, model_type, model, tokenizer):
         DESCRIPTION.
 
     """
-    # table_orig.read()
-    # if FAKE_MODEL:
-    #     new_cols = []
-    #     for i, col in enumerate(table_orig.table):
-    #         if i == ncols:
-    #             break
-    #         new_cols.append(col + "_NEW")
-    #     new_table = table_orig.table.copy()
-    #     for col in new_cols:
-    #         new_table[col] = new_table[col[:-4]]
-    #     new_table = new_table[new_cols]
-    #     # return ["Crap\nCrap\nCrap\nNEW_TABLE_START\n" + new_table.to_csv(index=False)\
-    #     #     + "\nNEW_TABLE_END\nCrap\nCrap\nCrap\nCrap"]
-    #     new_dict = {}
-    #     new_dict['preamble'] = "preamble\n\n"
-    #     new_dict['partial_table'] = new_table.to_csv(index=False)
-    #     new_dict['postamble'] = "\n\npostamble\npostamble...postamble\n"
-    #     return [new_dict]
     prompts, max_tokens = create_cols_prompts(cache, table_orig, ncols)
     return (prompts,
             create_cols_from_prompts(v_cache, table_orig, model_type,
@@ -1810,18 +1523,6 @@ def fill_na_prompts(cache, table, na_loc):
     max_new_tokens : TYPE
         DESCRIPTION.
 
-For a table of real automobile data that a purchaser would want to know, 
-generate some real data. Do not generate fictional data. Given the following 
-table, fill in the missing 'Horsepower' value corresponding to the row the 
-semantic key (Model='Camry', Make='Toyota', Year='2020') and then output the 
-new table with the new value of dtype int64.
-
-Model,Make,Year,Type,Doors,Transmission,DriveTrain,MSRP,Horsepower,Torque,MPGCity,MPGHighway,Miles,QuarterMileTime,ZeroToSixtyTime,TopSpeed
-Camry,Toyota,2020,Sedan,4,Automatic,Front-Wheel Drive,"$25,050",,184,28,39,39000,13.8,9.2,130
-Corolla,Toyota,2020,Compact,4,CVT Automatic,Front-Wheel Drive,"$20,430",139,128,30,38,12500,12.5,7.8,110
-Rav4,Toyota,2020,SUV,4,Automatic,All-Wheel Drive,"$27,285",203,184,27,34,5000,16.3,7.8,124
-
-Then output where the data was obtained from.
     """
 
     description = table.get_description()
@@ -1847,9 +1548,7 @@ Then output where the data was obtained from.
         rows = [na_loc[0]]
     attribute = na_loc[2]
     col_dtype = str(table.table[attribute].dtype)
-    print("")
-    print("rows")
-    print(rows)
+    print_time(rows, None)
     small_table = table.table.iloc[rows,:].to_csv(sep=table.format_type[1], 
                                                   index=False)
     # table_key_only = table.get_table_key_only().to_csv(
@@ -1878,56 +1577,6 @@ Then output where the data was obtained from.
         + f"{table.format_type[2]}-delimited .csv format. "\
         + "Then output from where the data was retrieved."
 
-    # prompt = f"For a table of {description}, generate some real data. "\
-    #     + "Do not generate fictional data.\n"
-    # for na in na_list:
-    #     attribute = na[1]
-    #     col_dtype = str(table.table[attribute].dtype)
-    #     prompt += "\nGiven the following table, fill in the missing "\
-    #     + f"{attribute} value corresponding to the row with the semantic key:"\
-    #     + f"\n{semantic_key} = {semantic_values_str}\n"\
-    #     + "and then output the new table with the new value of dtype "\
-    #     + f"{col_dtype}.\n\n{table_onerow}\n\n"
-    # prompt += "Then output where all the data was obtained from."
-    # if len(na_list) == 1:
-    #     prompt = "Given a table of {description}, "\
-    #         + "and given rows with the following values:"\
-    #         + "retrieve the value for the attribute {na_list[0][1]}"
-    #         + "with the following semantic key:\n{header_key_only}\n"\
-    #         + "retrieve the value for the following attribute"\
-    #         + f"The header of attributes to not generate is:\n{header}\n"\
-    #         + "Generate the attribute from real known data. "\
-    #         + "Here are the rows of the table by semantic key only:\n"\
-    #         + f"{table_key_only}\n"\
-    #         + "Generate values of real data for all existing rows of the "\
-    #         + "table. "\
-    #         + "Do not generate any fictional data. "\
-    #         + "Generate and output a new table with only the semantic key "\
-    #         + "and the new attribute in the format of a .csv file. "\
-    #         + "Then explain the source of the new data."
-    #         # + "Do not output the entire table. "\
-    #         # + "Instead, generate a new table with only the semantic key "\
-    #         # + "and the new attribute. "\
-    #         # + "Then explain the source of the new data."
-    # else:
-    #     prompt = "Generate {ncols} new attributes for a table of "\
-    #         + f"{description}. "\
-    #         + f"The header of attributes to not generate is:\n{header}\n"\
-    #         + "Generate the attributes from real known data. "\
-    #         + "Here are the rows of the table by semantic key only:\n"\
-    #         + f"{table_key_only}\n"\
-    #         + "Generate values of real data for all existing rows of the "\
-    #         + "table. "\
-    #         + "Do not generate any fictional data. "\
-    #         + "Generate a new table with only the semantic key "\
-    #         + "and the new attributes in the format of a .csv file. "\
-    #         + "Then explain the source of the new data."
-    #         # + "Output the new attributes and their values "\
-    #         # + "in the format of a .csv file."\
-    #         # + "Do not output the entire table. "\
-    #         # + "Instead, generate a new table with only the semantic key "\
-    #         # + "and the new attributes. "\
-    #         # + "Then explain the source of the new data."
     print_time(prompt, None)
     prompts = [prompt]
     # max_new_tokens = 4 * (table.table.shape[1] + 1)
@@ -2003,23 +1652,6 @@ def fill_na_from_prompts(v_cache, table_orig, na_loc, model_type, tokenizer,
         attribute = na_loc[2]
         col_dtype = str(table_orig.table[attribute].dtype)
 
-
-
-
-
-
-
-        # sem_val = resp_table.loc[na_loc[1], sem_key]
-        # if na_loc[0] == 0:
-        #     rows = [na_loc[0], 1, 2]
-        # elif na_loc[0] == 1:
-        #     rows = [na_loc[0], 0, 2]
-        # else:
-        #     rows = [na_loc[0], 0, 1]
-        # if table_orig.table.shape[0] < 3:
-        #     rows = rows[:resp_table.shape[0]]
-        # attribute = na_loc[2]
-        # col_dtype = str(resp_table[attribute].dtype)
         if na_loc[0] == 0:
             if resp_table.shape[0] > 1:
                 dummy_val = resp_table.iloc[resp_table.index[1], na_loc[2]]
@@ -2045,40 +1677,7 @@ def fill_na_from_prompts(v_cache, table_orig, na_loc, model_type, tokenizer,
             + "And here's the resulting table in "\
             + f"semi-colon-delimited .csv format:\n\n{small_table}\n\n"\
             + f"The missing {na_loc[2]} value of {dummy_val} was retrieved "\
-            + "from the official website."\
-            # " Here are 2 new attributes generated for the table:"\
-            # + "1. FuelType: This attribute indicates the type of fuel used "\
-            # + "by the vehicle. The possible values are Gas, Diesel, Hybrid, "\
-            # + "and Electric. The data for this attribute is obtained from "\
-            # + "the official websites of the manufacturers or third-party "\
-            # + "automotive data providers.\n"\
-            # + "2. CityMPG: This attribute indicates the fuel efficiency "\
-            # + "of the vehicle in city driving conditions, "\
-            # + "measured in miles per gallon (MPG)."\
-            # + "The data for this attribute is obtained from the official "\
-            # + "fule economy ratings provided by the "\
-            # + "Environmental Protection Agency (EPA) of the United States."
-            )
-        # if resp_table.shape[1] == 0:
-        #     # our table is empty, use the original table for a source of fake 
-        #     # rows, note that the original table was required to have at least
-        #     # one row
-        #     prev_table = get_table_from_cache(v_cache, table.name, 0)
-        #     was_none_prev = False
-        #     if prev_table.table is None:
-        #         prev_table.read()
-        #         was_none_prev = True
-        #     resp_table = prev_table.table.copy()
-        #     if was_none_prev:
-        #         prev_table.purge()
-        # tot_i = 0
-        # while tot_i < ncols:
-        #     for i, col in enumerate(resp_table):
-        #         resp_table[col + "_NEW"] = resp_table[col]
-        #         tot_i += 1
-        #         if tot_i == ncols:
-        #             break
-        # table_str = resp_table.to_csv(sep=table_orig.format_type[1], index=False)
+            + "from the official website.")
         responses.append(
             f"Preamble\n\n{small_table}\n\nPostamble\n"
             )
@@ -2095,11 +1694,6 @@ def fill_na_from_prompts(v_cache, table_orig, na_loc, model_type, tokenizer,
             
         responses = execute_prompts(model_type, tokenizer, model,
                                     max_new_tokens, prompts)
-    # first_col = list(table.table)[0]
-    # for thiscol in table.table:
-    #     if thiscol in table.semantic_key:
-    #         first_col = thiscol
-    #         break
     return parse_table_responses(table_orig, responses, 
                                  min(table_orig.table.shape[0], 3)) 
 
@@ -2261,11 +1855,6 @@ model, tokenizer, cache = build_model_and_cache(MODEL_TYPE, MODEL_SPEC,
                                                 TABLES_VERSION_DELIMITER)
 
 used_gen = False
-# ops = 0
-# if FAKE_MODEL:
-#     max_ops = 1
-# else:
-#     max_ops = 1
 for idx, command_idx in enumerate(CMD_PLAN):
     # for command_idx in range(len(COMMANDS)):
     # command_idx = 4
@@ -2288,8 +1877,6 @@ for idx, command_idx in enumerate(CMD_PLAN):
     else:
         was_none = False
     prompts_output = None
-    # command = COMMANDS[random.randrange(len(COMMANDS))]
-    # command = COMMANDS[2]
     command = COMMANDS[command_idx]
     print_time(table_orig.semantic_key, None)
     print_time_force(command, "Starting operation...")
@@ -2392,7 +1979,6 @@ for idx, command_idx in enumerate(CMD_PLAN):
         elif params['location'] == 'right':
             location = ncols - 1
         else: # params['location'] == 'random'
-            # s_len = len(table_orig.semantic_key)
             print_time(indices_elig, None)
             print_time(num_entries, None)
             location = random.sample(indices_elig, num_entries)
@@ -2445,19 +2031,12 @@ for idx, command_idx in enumerate(CMD_PLAN):
             time.sleep(10)
             continue # we did not find a table in the response, do nothing
         postamble = prompts_output[0]['postamble']
-        # if command_type == "add_col":
-        #     table_df.drop(table_orig.semantic_key, axis=1, inplace=True)
-        #     for col in table_df:
-        #         if col in table_orig.table:
-        #             table_df.drop(col, axis=1, inplace=True)
         new_df = add_table(table_orig, table_df, location, axis)
         if new_df is None:
             print_time_force(None, "Bad csv format of output")
             time.sleep(10)
             continue
         new_df = new_df.drop_duplicates()
-        # changed_df = pd.read_csv(io.StringIO(tablestr), 
-        #                          sep=table_orig.format_type[1]) 
         
         if (command_type == "add_row" 
               and table_df.shape[0] > table_orig.table.shape[0]):
@@ -2465,7 +2044,6 @@ for idx, command_idx in enumerate(CMD_PLAN):
             changed_df = changed_df.drop_duplicates()
         else:
             changed_df = table_df.copy()
-            # changed_df = changed_df.drop(table_orig.semantic_key, axis=1)
     if (command_type == "add_row" or command_type == "add_col" 
         or command_type == "fill_na"):
         begin_time = round(start_time, 0)
@@ -2497,10 +2075,6 @@ for idx, command_idx in enumerate(CMD_PLAN):
     if was_none:
         table_orig.purge()
     print_time_force(command, "Finished successfully")
-    # time.sleep(10)
-    # ops += 1
-    # if ops >= max_ops:
-    #     break
 """
 End script
 """
