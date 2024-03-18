@@ -20,13 +20,13 @@ import inspect
 
 DEBUG = True
 
-FAKE_MODEL = True
+FAKE_MODEL = False
 
 LINEAGE = "sequence"
 # LINEAGE = "random"
 
-# ENVIRONMENT = "turing.wpi.edu"
-ENVIRONMENT = "local_macos"
+ENVIRONMENT = "turing.wpi.edu"
+# ENVIRONMENT = "local_macos"
 
 TABLES_VERSION_DELIMITER = "_"
 
