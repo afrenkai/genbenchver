@@ -20,13 +20,13 @@ import inspect
 
 DEBUG = True
 
-FAKE_MODEL = False
+FAKE_MODEL = True
 
 LINEAGE = "sequence"
 # LINEAGE = "random"
 
-ENVIRONMENT = "turing.wpi.edu"
-# ENVIRONMENT = "local_macos"
+# ENVIRONMENT = "turing.wpi.edu"
+ENVIRONMENT = "local_macos"
 
 TABLES_VERSION_DELIMITER = "_"
 
@@ -1381,7 +1381,8 @@ def find_valid_csv_tables(text, nrows_expected, cols_expected, sep):
     lines = text.split("\n")
     if len(lines) < nrows_expected:
         return valid_tables
-    tableidx = []
+    hdridx = []
+    rowidx = []
     for i in range(len(lines)):
         remain = len(lines) - i
         if remain >= nrows_expected:
@@ -1391,16 +1392,34 @@ def find_valid_csv_tables(text, nrows_expected, cols_expected, sep):
                     found_cols = False
                     break
             if found_cols:
-                tableidx.append(i)
+                hdridx.append(i)
+            else:
+                row = lines[i].split(sep)
+                if len(row) >= len(cols_expected):
+                    rowidx.append(i)
         else:
             break
         
-    for i in tableidx:
+    for i in rowidx:
+        valid = True
+        for j in range(i, i+nrows_expected):
+            if j not in rowidx:
+                valid = False
+        if valid:        
+            table_text = "\n".join(lines[i:i+nrows_expected])
+            df = pd.read_csv(io.StringIO(table_text), sep=sep, header=None)
+            preamble_text = "\n".join(lines[0:i])
+            postamble_text = "\n".join(lines[i+nrows_expected:])
+            valid_table = (preamble_text, df.copy(), postamble_text)
+            valid_tables.append(valid_table)
+        
+    for i in hdridx:
         valid = True
         for line_idx in range(i, i+nrows_expected+1):
             if len(lines[line_idx].split(sep)) < len(cols_expected):
                 valid = False
                 break
+        
         if valid:
             for j in range(len(lines)):
                 print_time(lines[j], None)
@@ -1410,7 +1429,7 @@ def find_valid_csv_tables(text, nrows_expected, cols_expected, sep):
             df = pd.read_csv(io.StringIO(table_text), sep=sep)
             preamble_text = "\n".join(lines[0:i])
             postamble_text = "\n".join(lines[i+nrows_expected+1:])
-            valid_table = (preamble_text, df, postamble_text)
+            valid_table = (preamble_text, df.copy(), postamble_text)
             valid_tables.append(valid_table)
 
     return valid_tables
@@ -1684,6 +1703,17 @@ def fill_na_from_prompts(v_cache, table_orig, na_loc, model_type, tokenizer,
         responses.append(
             f"{small_table}\nPreamble\n\n{small_table}\n\nPostamble\n"
             
+            )
+        no_head_small_table = resp_table.iloc[rows,:].to_csv(
+            sep=table_orig.format_type[1], index=False, header=None)
+        responses.append(
+            f"Preamble\n\n{no_head_small_table}\n\nPostamble\n"
+            )
+        responses.append(
+            f"{no_head_small_table}\nPreamble\n\n{no_head_small_table}\n\nPostamble\n"
+            )
+        responses.append(
+            f"{small_table}\nPreamble\n\n{no_head_small_table}\n\nPostamble\n"
             )
         if was_none:
             table_orig.purge()
