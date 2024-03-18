@@ -86,7 +86,7 @@ random.seed(TIME_START)
 
 if MODEL_TYPE == 'transformers':
     # from transformers import AutoModelForCausalLM, AutoTokenizer
-    from transformers import AutoModel, AutoModelForCausalLM, AutoTokenizer
+    from transformers import AutoModelForCausalLM, AutoTokenizer
     import torch
 elif MODEL_TYPE == 'nnsight':
     from nnsight import LanguageModel
@@ -808,52 +808,11 @@ def add_table(orig_table, data, location, axis):
     else: # dataframe
         df = data.copy()
         df.reset_index(drop=True, inplace=True)
-    # if axis == 0:
-        
-        # nrows = orig_table.table.shape[axis]
-        # if location == 'top':
-        #     new_df = pd.concat([df, orig_table.table], axis=axis)
-        #     split_loc = 0
-        # elif location == 'bottom':
-        #     new_df = pd.concat([orig_table.table, df], axis=axis)
-        #     split_loc = (nrows-1)
-        # else: # location == 'random'
-        #     # randomly split the table
-            # split_loc = random.randrange(nrows)
-    #         if split_loc == 0:
-    #             new_df = pd.concat([df, orig_table.table], axis=axis)
-    #         elif split_loc == (nrows-1):
-    #             new_df = pd.concat([orig_table.table, df], axis=axis)
-    #         else:
-    #             top = orig_table.table.head(split_loc)
-    #             bottom = orig_table.table.tail(nrows - split_loc)
-    #             new_df = pd.concat([top, df, bottom], axis=axis)
-    # else:
-    #     ncols = orig_table.table.shape[axis]
-    #     if location == 'left':
-    #         new_df = pd.concat([df, orig_table.table], axis=axis)
-    #         split_loc = 0
-    #     elif location == 'right':
-    #         new_df = pd.concat([orig_table.table, df], axis=axis)
-    #         split_loc = (ncols-1)
-    #     else: # location == 'random'
-    #         # randomly split the table
-    #         split_loc = random.randrange(ncols)
-    #         if split_loc == 0:
-    #             new_df = pd.concat([df, orig_table.table], axis=axis)
-    #         elif split_loc == (ncols-1):
-    #             new_df = pd.concat([orig_table.table, df], axis=axis)
-    #         else:
-    #             left = orig_table.table.iloc[:, 0:split_loc]
-    #             right = orig_table.table.iloc[:, split_loc:ncols]
-    #             new_df = pd.concat([left, df, right])
     was_none = False
     if orig_table.table is None:
         orig_table.read()
         was_none = True
     n_entries = orig_table.table.shape[axis]
-    n_rows = orig_table.table.shape[0]
-    n_cols = orig_table.table.shape[1]
     old_table = orig_table.table.copy()
     if axis == 0:
         for col in df:
@@ -953,7 +912,6 @@ def build_model(model_type, model_id):
         else: # ENVIRONMENT == "local_macos"
             model = AutoModelForCausalLM.from_pretrained(
                 model_id, device_map='auto', torch_dtype=torch.float16)
-        # model = torch.nn.DataParallel(model, device_ids=[0,1])
         
         tokenizer = AutoTokenizer.from_pretrained(model_id, unk_token="<unk>")
     return model, tokenizer
@@ -1158,6 +1116,8 @@ def create_rows_from_prompts(v_cache, table, nrows, model_type,
             )
         idx = random.randrange(len(responses))
         responses = responses[idx:idx+1]
+        if was_none:
+            table.purge()
     else:
         responses = execute_prompts(model_type, tokenizer, model, 
                                     max_new_tokens, prompts)
@@ -1227,7 +1187,7 @@ def create_cols_prompts(cache, table, ncols):
     semantic_key = table.semantic_key
 
     if ncols == 1:
-        prompt = f"Generate one new attributes for a table of "\
+        prompt = "Generate one new attributes for a table of "\
             + f"{description}. "\
             + f"The {delimiter}-separated header of attributes to not "\
             + f"generate is:\n{header}\n"\
@@ -1570,16 +1530,6 @@ def fill_na_prompts(cache, table, na_loc):
     print_time(rows, None)
     small_table = table.table.iloc[rows,:].to_csv(sep=table.format_type[1], 
                                                   index=False)
-    # table_key_only = table.get_table_key_only().to_csv(
-    #     sep=table.format_type[1], index=False)
-
-
-    # header = table.get_ineligible_columns_header_only().to_csv(index=False)
-    
-    
-    
-    
-    # header_key_only = table.get_table_key_only().head(0).to_csv(index=False)
 
     prompt = f"For {description}, retrieve a missing value of real data "\
         + "(not fictional) from extrnally available resources, "\
@@ -1598,7 +1548,6 @@ def fill_na_prompts(cache, table, na_loc):
 
     print_time(prompt, None)
     prompts = [prompt]
-    # max_new_tokens = 4 * (table.table.shape[1] + 1)
     max_new_tokens = 50000
     return prompts, max_new_tokens
 
@@ -1630,15 +1579,6 @@ def fill_na_from_prompts(v_cache, table_orig, na_loc, model_type, tokenizer,
         DESCRIPTION.
 
     """
-    # table_orig.read()
-    # if FAKE_MODEL:
-    #     new_dict = {}
-    #     new_dict['preamble'] = "preamble\n\n"
-    #     new_dict['partial_table'] = \
-    #         table_orig.table.head(nrows).to_csv(index=False)
-    #     new_dict['postamble'] = "\n\npostamble\npostamble...postamble\n"
-    #     return [new_dict]
-    #     # return [table_orig.table.head(nrows).to_csv(index=False)]
     
     if FAKE_MODEL:
         was_none = False
@@ -1758,18 +1698,9 @@ def delete_rows(table_orig, num_entries, location):
     """
     table_orig.read()
     df = table_orig.table
-    # num_rows = df.shape[0]
-    # if location == 'random':
-    #     indicies = random.sample(list(range(num_rows)), num_entries)
-    # elif location == 'top':
-    #     indicies = list(range(num_entries))
-    # elif location == 'bottom':
-    #     indicies = list(range(num_rows - num_entries, num_rows))
     print_time(location, None)
     row_del_df = df.iloc[location,:]
-    # row_del_df = row_del_df.set_index(table_orig.semantic_key, append=True)
     print_time(row_del_df, None)
-    # time.sleep(10)
     idx = np.ones(len(df.index), dtype=bool)
     idx[location] = False
     return df.iloc[idx], row_del_df
@@ -1817,14 +1748,7 @@ def delete_cols(table_orig, location):
     table_orig.read()
     df = table_orig.table.copy()
     
-    # if location == 'random':
-    #     indicies = random.sample(list(range(num_cols)), num_entries)
-    # elif location == 'top':
-    #     indicies = list(range(num_entries))
-    # elif location == 'bottom':
-    #     indicies = list(range(num_cols - num_entries, num_cols))
     print_time(location, None)
-    # col_del_df = pd.DataFrame()
     col_del_list = []
     for i, col in enumerate(df):
         if i in location:
@@ -1832,10 +1756,8 @@ def delete_cols(table_orig, location):
             print_time(None, f"deleting col {col} for location {i}")
             print_time(col_del_list, None)
             
-            # col_del_df[col] = df[col]
     print_time(location, None)
     print_time(df, None)
-    # time.sleep(10)
     col_del_df = pd.DataFrame(columns=col_del_list)
     for i, col in enumerate(df):
         if i in location:
@@ -1948,7 +1870,6 @@ for idx, command_idx in enumerate(CMD_PLAN):
             location = nrows - 1
         else:
             location = random.sample(list(range(nrows)), num_entries)
-        # params['location'] = location
         new_df, changed_df = delete_rows(table_orig, num_entries, location)
         preamble = ""
         postamble = ""
@@ -1965,7 +1886,6 @@ for idx, command_idx in enumerate(CMD_PLAN):
             location = ncols - 1
         else:
             location = random.randrange(ncols)
-        # params['location'] = location
         prompts_input, prompts_output = create_cols(cache, table_orig, 
                                                     num_entries, 
                                                     MODEL_TYPE, 
