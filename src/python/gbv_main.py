@@ -735,8 +735,8 @@ class VerTable:
         # dfsk = dfsk.drop_duplicates()
         return dfsk
     
-def new_table(cache, orig_table, version_delimiter, preamble, new_df, postamble, 
-              command_dict, new_version):
+def new_table(cache, orig_table, version_delimiter, preamble, new_df, 
+              postamble, command_dict, new_version):
     """
     
 
@@ -1424,24 +1424,37 @@ def find_valid_csv_tables(text, nrows_expected, cols_expected, sep):
             break
         
     for i in rowidx:
+        if i > 0:
+            j = i-1
+            if j in hdridx:
+                continue
         valid = True
         for j in range(i, i+nrows_expected):
             if j not in rowidx:
                 valid = False
         if valid:        
             table_text = "\n".join(lines[i:i+nrows_expected])
-            df = pd.read_csv(io.StringIO(table_text), sep=sep, header=None)
-            preamble_text = "\n".join(lines[0:i])
-            postamble_text = "\n".join(lines[i+nrows_expected:])
-            valid_table = (preamble_text, df.copy(), postamble_text)
-            valid_tables.append(valid_table)
+            print_time(table_text, None)
+            try:
+                df = pd.read_csv(io.StringIO(table_text), sep=sep, header=None)
+                preamble_text = "\n".join(lines[0:i])
+                postamble_text = "\n".join(lines[i+nrows_expected:])
+                valid_table = (preamble_text, df.copy(), postamble_text)
+                valid_tables.append(valid_table)
+            except:
+                continue
         
     for i in hdridx:
         valid = True
+        hdrlen = len(lines[i].split(sep))
         for line_idx in range(i, i+nrows_expected+1):
-            if len(lines[line_idx].split(sep)) < len(cols_expected):
+            fieldslen = len(lines[line_idx].split(sep))
+            if fieldslen < len(cols_expected):
                 valid = False
                 break
+            elif fieldslen > hdrlen:
+                fields = lines[line_idx].split(sep)
+                lines[line_idx] = ';'.join(fields[:hdrlen])
         
         if valid:
             for j in range(len(lines)):
@@ -1449,11 +1462,15 @@ def find_valid_csv_tables(text, nrows_expected, cols_expected, sep):
                 lines[j] = lines[j].strip()
                 print_time(lines[j], None)
             table_text = "\n".join(lines[i:i+nrows_expected+1])
-            df = pd.read_csv(io.StringIO(table_text), sep=sep)
-            preamble_text = "\n".join(lines[0:i])
-            postamble_text = "\n".join(lines[i+nrows_expected+1:])
-            valid_table = (preamble_text, df.copy(), postamble_text)
-            valid_tables.append(valid_table)
+            print_time(table_text, None)
+            try:
+                df = pd.read_csv(io.StringIO(table_text), sep=sep)
+                preamble_text = "\n".join(lines[0:i])
+                postamble_text = "\n".join(lines[i+nrows_expected+1:])
+                valid_table = (preamble_text, df.copy(), postamble_text)
+                valid_tables.append(valid_table)
+            except:
+                continue
 
     return valid_tables
 
@@ -1901,8 +1918,17 @@ def fill_na(v_cache, table_orig, na_loc, model_type, model, tokenizer):
         responses.append(
             f"{small_table}\nPreamble\n\n{no_head_small_table}\n\nPostamble\n"
             )
+        small_lines = small_table.split('\n')
+        if len(small_lines) > 3:
+            small_lines[2] += ";;;;;;;;;;;;"
+            small_lines[3] += ";;;;;;;;;;;;"
+        x_table = '\n'.join(small_lines)
+        responses.append(
+            f"{x_table}\nPreamble\n\n{x_table}\n\nPostamble\n"
+            
+            )
         idx = random.randrange(len(responses))
-        # idx = len(responses)-2
+        # idx = len(responses)-1
         responses = responses[idx:idx+1]
         
     else:
