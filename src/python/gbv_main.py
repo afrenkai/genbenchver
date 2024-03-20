@@ -16,6 +16,8 @@ import json
 import itertools
 import inspect
 
+from gbv_prompts import GenAITablePrompts
+
 # Note only semi-colon-delimited csv files are supported at this time
 
 DEBUG = True
@@ -50,16 +52,16 @@ else: # ENVIRONMENT == "local_macos"
     TABLES_FOLDER = "../../tables"
 
 COMMANDS = [
-    {'type': 'add_row',
+    {'type': 'add_rows',
      'params': {'num_entries' : [1, 2, 3, 4, 5],
                 'location' : ['top', 'bottom', 'random']}},
-    {'type': 'del_row',
+    {'type': 'del_rows',
      'params': {'num_entries' : [1, 2, 3, 4, 5],
                 'location' : ['random']}},
-    {'type': 'add_col',
+    {'type': 'add_cols',
      'params': {'num_entries' : [1, 2, 3], # [1, 2, 3, 4, 5],
                 'location' : ['left', 'right', 'random']}},
-    {'type': 'del_col',
+    {'type': 'del_cols',
      'params': {'num_entries' : [1, 2, 3, 4, 5],
                 'location' : ['random']}},
     {'type': 'fill_na',
@@ -916,7 +918,7 @@ def build_model(model_type, model_id):
         tokenizer = AutoTokenizer.from_pretrained(model_id, unk_token="<unk>")
     return model, tokenizer
 
-def execute_prompts(model_type, tokenizer, model, max_new_tokens, prompts):
+def execute_prompts(model_type, tokenizer, model, genai_prompts):
     """
     
 
@@ -945,10 +947,10 @@ def execute_prompts(model_type, tokenizer, model, max_new_tokens, prompts):
     prompts_output = []
     
     if model_type == 'nnsight':
-        with model.generate(max_new_tokens=max_new_tokens, remote=False)\
-            as generator:
+        with model.generate(max_new_tokens=genai_prompts.max_new_tokens, 
+                            remote=False) as generator:
             print_time("--- %s seconds ---" % (time.time() - start_time), None)
-            for prompt in prompts:
+            for prompt in genai_prompts.prompts:
                 with generator.invoke("[INST] " + prompt + " /[INST]"):
                     pass
                 print_time("finished with prompt", None)
@@ -957,17 +959,18 @@ def execute_prompts(model_type, tokenizer, model, max_new_tokens, prompts):
         print_time("--- %s seconds ---" % (time.time() - start_time), None)
         model_response = tokenizer.batch_decode(generator.output)
         
-        for i in range(len(prompts)):
+        for i in range(len(genai_prompts.prompts)):
             prompts_output.append(model_response[i].split("</s")[0]\
                                   .split("/[INST]")[-1])
             
             
     
     elif model_type == 'transformers':
-        inputs = tokenizer("[INST] " + prompts[0] + " /[INST]",
+        inputs = tokenizer("[INST] " + genai_prompts.prompts[0] + " /[INST]",
                            return_tensors="pt").to(DEVICE_MAP)
         
-        outputs = model.generate(**inputs, max_new_tokens=max_new_tokens)
+        outputs = model.generate(**inputs, 
+                                 max_new_tokens=genai_prompts.max_new_tokens)
         for output in outputs:
             print_time("--- %s seconds ---" % (time.time() - start_time), None)
             model_response = tokenizer.decode(output,
@@ -978,154 +981,153 @@ def execute_prompts(model_type, tokenizer, model, max_new_tokens, prompts):
     print_time("--- %s seconds ---" % (time.time() - start_time), None)
     return(prompts_output)
     
-def create_rows_prompts(cache, table, nrows):
-    """
+# def create_rows_prompts(cache, table, nrows):
+#     """
     
 
-    Parameters
-    ----------
-    table : TYPE
-        DESCRIPTION.
-    nrows : TYPE
-        DESCRIPTION.
+#     Parameters
+#     ----------
+#     table : TYPE
+#         DESCRIPTION.
+#     nrows : TYPE
+#         DESCRIPTION.
 
-    Returns
-    -------
-    prompts : TYPE
-        DESCRIPTION.
-    max_new_tokens : TYPE
-        DESCRIPTION.
+#     Returns
+#     -------
+#     prompts : TYPE
+#         DESCRIPTION.
+#     max_new_tokens : TYPE
+#         DESCRIPTION.
 
-    """
+#     """
     
-    # TODO: Place generation of header further up in the prompt OR
-    # try to say up front to generate a table in .csv file format
-    # Right now this prompt fails sometimes because it does not output
-    # the header. Although, if the header is still not generated every so
-    # often, we can simply parse it without the header once the parsing
-    # fails because we expect a header. Of course, we'd have to assume
-    # the order of the output is the same as we provided in the table
-    # header.
+#     # TODO: Place generation of header further up in the prompt OR
+#     # try to say up front to generate a table in .csv file format
+#     # Right now this prompt fails sometimes because it does not output
+#     # the header. Although, if the header is still not generated every so
+#     # often, we can simply parse it without the header once the parsing
+#     # fails because we expect a header. Of course, we'd have to assume
+#     # the order of the output is the same as we provided in the table
+#     # header.
 
-    description = table.get_description()
-    header = table.get_table_header_only().to_csv(sep=table.format_type[1], 
-                                                  index=False)
+#     description = table.get_description()
+#     header = table.get_table_header_only().to_csv(sep=table.format_type[1], 
+#                                                   index=False)
 
-    table_ineligible_only = table.get_ineligible_rows_key_only(cache).to_csv(
-        sep=table.format_type[1], index=False)
+#     table_ineligible_only = table.get_ineligible_rows_key_only(cache).to_csv(
+#         sep=table.format_type[1], index=False)
 
-    delimiter = table.format_type[2]
-    if nrows == 1:
-        prompt = f"Generate one row for a table of {description}. "\
-            + f"The {delimiter}-separated header of attributes "\
-            + f"for the table is:\n{header}\n"\
-            + "Do not generate fictional rows. "\
-            + "Generate the rows from real known data. "\
-            + f"Here is a list of {delimiter}-separated rows not to generate "\
-            + f"by semantic key only:\n{table_ineligible_only}\n"\
-            + "Output the row in the format of a "\
-            + f"{delimiter}-separated .csv file with a column header. "\
-            + "Then explain the source of the new data."
-    else:
-        prompt = f"Generate {nrows} rows for a table of {description}. "\
-            + f"The {delimiter}-separated header of attributes "\
-            + f"for the table is:\n{header}\n"\
-            + "Do not generate fictional rows. "\
-            + "Generate the rows from real known data. "\
-            + f"Here is a list of {delimiter}-separated rows not to generate "\
-            + f"by semantic key only:\n{table_ineligible_only}\n"\
-            + "Output the rows in the format of a "\
-            + f"{delimiter}-separated .csv file with a column header. "\
-            + "Then explain the source of the new data."
-    print_time(prompt, None)
-    prompts = [prompt]
-    max_new_tokens = 50000
-    print_time(max_new_tokens, None)
-    return prompts, max_new_tokens
+#     delimiter = table.format_type[2]
+#     if nrows == 1:
+#         prompt = f"Generate one row for a table of {description}. "\
+#             + f"The {delimiter}-separated header of attributes "\
+#             + f"for the table is:\n{header}\n"\
+#             + "Do not generate fictional rows. "\
+#             + "Generate the rows from real known data. "\
+#             + f"Here is a list of {delimiter}-separated rows not to generate "\
+#             + f"by semantic key only:\n{table_ineligible_only}\n"\
+#             + "Output the row in the format of a "\
+#             + f"{delimiter}-separated .csv file with a column header. "\
+#             + "Then explain the source of the new data."
+#     else:
+#         prompt = f"Generate {nrows} rows for a table of {description}. "\
+#             + f"The {delimiter}-separated header of attributes "\
+#             + f"for the table is:\n{header}\n"\
+#             + "Do not generate fictional rows. "\
+#             + "Generate the rows from real known data. "\
+#             + f"Here is a list of {delimiter}-separated rows not to generate "\
+#             + f"by semantic key only:\n{table_ineligible_only}\n"\
+#             + "Output the rows in the format of a "\
+#             + f"{delimiter}-separated .csv file with a column header. "\
+#             + "Then explain the source of the new data."
+#     print_time(prompt, None)
+#     prompts = [prompt]
+#     max_new_tokens = 50000
+#     print_time(max_new_tokens, None)
+#     return prompts, max_new_tokens
 
-def create_rows_from_prompts(v_cache, table, nrows, model_type, 
-                             tokenizer, model, max_new_tokens, prompts):
-    """
+# def create_rows_from_prompts(v_cache, table, nrows, model_type, 
+#                              tokenizer, model, max_new_tokens, prompts):
+#     """
     
 
-    Parameters
-    ----------
-    v_cache : TYPE
-        DESCRIPTION.
-    table : TYPE
-        DESCRIPTION.
-    model_type : TYPE
-        DESCRIPTION.
-    tokenizer : TYPE
-        DESCRIPTION.
-    model : TYPE
-        DESCRIPTION.
-    max_new_tokens : TYPE
-        DESCRIPTION.
-    prompts : TYPE
-        DESCRIPTION.
+#     Parameters
+#     ----------
+#     v_cache : TYPE
+#         DESCRIPTION.
+#     table : TYPE
+#         DESCRIPTION.
+#     model_type : TYPE
+#         DESCRIPTION.
+#     tokenizer : TYPE
+#         DESCRIPTION.
+#     model : TYPE
+#         DESCRIPTION.
+#     max_new_tokens : TYPE
+#         DESCRIPTION.
+#     prompts : TYPE
+#         DESCRIPTION.
 
-    Returns
-    -------
-    TYPE
-        DESCRIPTION.
+#     Returns
+#     -------
+#     TYPE
+#         DESCRIPTION.
 
-    """
-    if FAKE_MODEL:
-        responses = []
-        was_none = False
-        if table.table is None:
-            was_none = True
-            table.read()
-        responses.append(
-            " Here are 2 new attributes generated for the table:"\
-            + "1. FuelType: This attribute indicates the type of fuel used "\
-            + "by the vehicle. The possible values are Gas, Diesel, Hybrid, "\
-            + "and Electric. The data for this attribute is obtained from "\
-            + "the official websites of the manufacturers or third-party "\
-            + "automotive data providers.\n"\
-            + "2. CityMPG: This attribute indicates the fuel efficiency "\
-            + "of the vehicle in city driving conditions, "\
-            + "measured in miles per gallon (MPG)."\
-            + "The data for this attribute is obtained from the official "\
-            + "fule economy ratings provided by the "\
-            + "Environmental Protection Agency (EPA) of the United States."
-            )
-        resp_table = table.table.copy()
-        if resp_table.shape[0] == 0:
-            # our table is empty, use the original table for a source of fake 
-            # rows, note that the original table was required to have at least
-            # one row
-            prev_table = get_table_from_cache(v_cache, table.name, 0)
-            was_none_prev = False
-            if prev_table.table is None:
-                prev_table.read()
-                was_none_prev = True
-            resp_table = prev_table.table.copy()
-            if was_none_prev:
-                prev_table.purge()
-        while resp_table.shape[0] < nrows:
-            resp_table = pd.concat([resp_table, resp_table], axis=0)
-        head_nrows = resp_table.head(nrows).to_csv(sep=table.format_type[1],
-                                                   index=False)
-        responses.append(
-            f"Preamble\n\n{head_nrows}\n\nPostamble\n"
-            )
-        responses.append(
-            f"{head_nrows}\nPreamble\n\n{head_nrows}\n\nPostamble\n"
-            )
-        idx = random.randrange(len(responses))
-        responses = responses[idx:idx+1]
-        if was_none:
-            table.purge()
-    else:
-        responses = execute_prompts(model_type, tokenizer, model, 
-                                    max_new_tokens, prompts)
+#     """
+#     if FAKE_MODEL:
+#         responses = []
+#         was_none = False
+#         if table.table is None:
+#             was_none = True
+#             table.read()
+#         responses.append(
+#             " Here are 2 new attributes generated for the table:"\
+#             + "1. FuelType: This attribute indicates the type of fuel used "\
+#             + "by the vehicle. The possible values are Gas, Diesel, Hybrid, "\
+#             + "and Electric. The data for this attribute is obtained from "\
+#             + "the official websites of the manufacturers or third-party "\
+#             + "automotive data providers.\n"\
+#             + "2. CityMPG: This attribute indicates the fuel efficiency "\
+#             + "of the vehicle in city driving conditions, "\
+#             + "measured in miles per gallon (MPG)."\
+#             + "The data for this attribute is obtained from the official "\
+#             + "fule economy ratings provided by the "\
+#             + "Environmental Protection Agency (EPA) of the United States."
+#             )
+#         resp_table = table.table.copy()
+#         if resp_table.shape[0] == 0:
+#             # our table is empty, use the original table for a source of fake 
+#             # rows, note that the original table was required to have at least
+#             # one row
+#             prev_table = get_table_from_cache(v_cache, table.name, 0)
+#             was_none_prev = False
+#             if prev_table.table is None:
+#                 prev_table.read()
+#                 was_none_prev = True
+#             resp_table = prev_table.table.copy()
+#             if was_none_prev:
+#                 prev_table.purge()
+#         while resp_table.shape[0] < nrows:
+#             resp_table = pd.concat([resp_table, resp_table], axis=0)
+#         head_nrows = resp_table.head(nrows).to_csv(sep=table.format_type[1],
+#                                                    index=False)
+#         responses.append(
+#             f"Preamble\n\n{head_nrows}\n\nPostamble\n"
+#             )
+#         responses.append(
+#             f"{head_nrows}\nPreamble\n\n{head_nrows}\n\nPostamble\n"
+#             )
+#         idx = random.randrange(len(responses))
+#         responses = responses[idx:idx+1]
+#         if was_none:
+#             table.purge()
+#     else:
+#         responses = execute_prompts(model_type, tokenizer, model, 
+#                                     max_new_tokens, prompts)
 
-    return parse_table_responses(table, responses, nrows)
+#     return parse_table_responses(table, responses, nrows)
     
-def create_rows(v_cache, table_orig, nrows, model_type, 
-                model, tokenizer):
+def add_rows(v_cache, table_orig, nrows, model_type, model, tokenizer):
     """
     
 
@@ -1150,190 +1152,251 @@ def create_rows(v_cache, table_orig, nrows, model_type,
         DESCRIPTION.
 
     """
-    prompts, max_tokens = create_rows_prompts(v_cache, table_orig, nrows)
-    return (prompts,
-            create_rows_from_prompts(v_cache, table_orig, nrows, model_type,
-                                    tokenizer, model, max_tokens, prompts))
+    was_none = False
+    if table_orig.table is None:
+        was_none = True
+        table_orig.read()
+            
+    genai_prompts = GenAITablePrompts(v_cache, table_orig, 50000)
+    genai_prompts.add_prompt('add_rows', nrows=nrows)
     
-def create_cols_prompts(cache, table, ncols):
-    """
-    
-
-    Parameters
-    ----------
-    table : TYPE
-        DESCRIPTION.
-    ncols : TYPE
-        DESCRIPTION.
-
-    Returns
-    -------
-    prompts : TYPE
-        DESCRIPTION.
-    max_new_tokens : TYPE
-        DESCRIPTION.
-    """
-
-    description = table.get_description()
-
-    header = table.get_ineligible_columns_header_only().to_csv(
-        sep=table.format_type[1], index=False)
-    
-    table_key_only = table.get_table_key_only().to_csv(
-        sep=table.format_type[1], index=False)
-
-    delimiter = table.format_type[2]
-    
-    semantic_key = table.semantic_key
-
-    if ncols == 1:
-        prompt = "Generate one new attributes for a table of "\
-            + f"{description}. "\
-            + f"The {delimiter}-separated header of attributes to not "\
-            + f"generate is:\n{header}\n"\
-            + "Generate a real attribute. Do not generate a fictional one. "\
-            + f"Here is the {delimiter}-separated table "\
-            + f"by semantic key only:\n{table_key_only}\n"\
-            + "Generate values of real data for all existing rows of the "\
-            + "table. "\
-            + "Generate and output a new table (include the table header) "\
-            + "with only the attributes "
-        if len(semantic_key) > 0:
-            for i in range(len(semantic_key)):
-                prompt = prompt + f"{semantic_key[i]}, "
-        else:
-            for i in range(len(header)):
-                prompt = prompt + f"{header[i]}, "
-        prompt = prompt + "and the new attribute in the format of a "\
-            + f"{delimiter}-separated .csv file. "\
-            + "Then explain the source of the new data."
-    else:
-        prompt = f"Generate {ncols} new attributes for a table of "\
-            + f"{description}. "\
-            + f"The {delimiter}-separated header of attributes to not "\
-            + f"generate is:\n{header}\n"\
-            + "Generate real attributes. Do not generate fictional ones. "\
-            + f"Here are the {delimiter}-separated rows of the table "\
-            + f"by semantic key only:\n{table_key_only}\n"\
-            + "Generate values of real data for all existing rows of the "\
-            + "table. "\
-            + "Generate and output a new table (include the table header) "\
-            + "with only the attributes "
-        if len(semantic_key) > 0:
-            for i in range(len(semantic_key)):
-                prompt = prompt + f"{semantic_key[i]}, "
-        else:
-            for i in range(len(header)):
-                prompt = prompt + f"{header[i]}, "
-        prompt = prompt + "and the new attributes in the format of a "\
-            + f"{delimiter}-separated .csv file. "\
-            + "Then explain the source of the new data."
-
-    print_time(prompt, None)
-    prompts = [prompt]
-    max_new_tokens = 50000
-    print_time(max_new_tokens, None)
-    return prompts, max_new_tokens
-
-def create_cols_from_prompts(v_cache, table, model_type, tokenizer,
-                             model, max_new_tokens, prompts, ncols):
-    """
-    
-
-    Parameters
-    ----------
-    v_cache : TYPE
-        DESCRIPTION.
-    table : TYPE
-        DESCRIPTION.
-    model_type : TYPE
-        DESCRIPTION.
-    tokenizer : TYPE
-        DESCRIPTION.
-    model : TYPE
-        DESCRIPTION.
-    max_new_tokens : TYPE
-        DESCRIPTION.
-    prompts : TYPE
-        DESCRIPTION.
-
-    Returns
-    -------
-    TYPE
-        DESCRIPTION.
-
-    """
     if FAKE_MODEL:
-        was_none = False
-        if table_orig.table is None:
-            was_none = True
-            table_orig.read()
-        old_table = table_orig.table.copy()
-        resp_table = old_table[table_orig.semantic_key].copy()
         responses = []
-        if old_table.shape[1] == 0:
+        responses.append(
+            " Here are 2 new attributes generated for the table:"\
+            + "1. FuelType: This attribute indicates the type of fuel used "\
+            + "by the vehicle. The possible values are Gas, Diesel, Hybrid, "\
+            + "and Electric. The data for this attribute is obtained from "\
+            + "the official websites of the manufacturers or third-party "\
+            + "automotive data providers.\n"\
+            + "2. CityMPG: This attribute indicates the fuel efficiency "\
+            + "of the vehicle in city driving conditions, "\
+            + "measured in miles per gallon (MPG)."\
+            + "The data for this attribute is obtained from the official "\
+            + "fule economy ratings provided by the "\
+            + "Environmental Protection Agency (EPA) of the United States."
+            )
+        resp_table = table_orig.table.copy()
+        if resp_table.shape[0] == 0:
             # our table is empty, use the original table for a source of fake 
             # rows, note that the original table was required to have at least
             # one row
-            prev_table = get_table_from_cache(v_cache, table.name, 0)
+            prev_table = get_table_from_cache(v_cache, table_orig.name, 0)
             was_none_prev = False
             if prev_table.table is None:
                 prev_table.read()
                 was_none_prev = True
-            old_table = prev_table.table.copy()
+            resp_table = prev_table.table.copy()
             if was_none_prev:
                 prev_table.purge()
-        old_columns = list(old_table.columns)
-        random.shuffle(old_columns)
-        col_count = 0
-        while col_count < ncols:
-            for col in old_columns:
-                colnew = col + "_NEW"
-                if not col.endswith("_NEW") and not colnew in old_columns:
-                    print_time(old_table, None)
-                    print_time(col, None)
-                    resp_table[colnew] = old_table[col]
-                    print_time(resp_table, None)
-                    col_count += 1
-                    if col_count >= ncols:
-                        break
-            if col_count >= ncols:
-                continue
-            for col in old_columns:
-                colnew = col + "_NEW"
-                if not colnew in old_columns:
-                    resp_table[colnew] = old_table[col]
-                    print_time(resp_table, None)
-                    col_count += 1
-                    if col_count >= ncols:
-                        break
-            if col_count >= ncols:
-                continue
-            for col in old_columns:
-                resp_table[col + "_NEW"] = old_table[col]
-                print_time(resp_table, None)
-                col_count += 1
-                if col_count >= ncols:
-                    break
-                
-                    
-        table_str = resp_table.to_csv(sep=table.format_type[1], index=False)
+        while resp_table.shape[0] < nrows:
+            resp_table = pd.concat([resp_table, resp_table], axis=0)
+        head_nrows = resp_table.head(nrows).to_csv(sep=table_orig.format_type[1],
+                                                   index=False)
         responses.append(
-            f"Preamble\n\n{table_str}\n\nPostamble\n"
+            f"Preamble\n\n{head_nrows}\n\nPostamble\n"
             )
         responses.append(
-            f"{table_str}\nPreamble\n\n{table_str}\n\nPostamble\n"
-            
+            f"{head_nrows}\nPreamble\n\n{head_nrows}\n\nPostamble\n"
             )
-        if was_none:
-            table_orig.purge()
         idx = random.randrange(len(responses))
         responses = responses[idx:idx+1]
     else:
+        responses = execute_prompts(model_type, tokenizer, model, 
+                                    genai_prompts) 
+
+    rsp =  parse_table_responses(
+        table_orig, responses, nrows) 
+
+    if was_none:
+        table_orig.purge()
+        
+    return genai_prompts.prompts, rsp
+
+    # prompts, max_tokens = create_rows_prompts(v_cache, table_orig, nrows)
+    # return (prompts,
+    #         create_rows_from_prompts(v_cache, table_orig, nrows, model_type,
+    #                                 tokenizer, model, max_tokens, prompts))
+    
+# def create_cols_prompts(cache, table, ncols):
+#     """
+    
+
+#     Parameters
+#     ----------
+#     table : TYPE
+#         DESCRIPTION.
+#     ncols : TYPE
+#         DESCRIPTION.
+
+#     Returns
+#     -------
+#     prompts : TYPE
+#         DESCRIPTION.
+#     max_new_tokens : TYPE
+#         DESCRIPTION.
+#     """
+
+#     description = table.get_description()
+
+#     header = table.get_ineligible_columns_header_only().to_csv(
+#         sep=table.format_type[1], index=False)
+    
+#     table_key_only = table.get_table_key_only().to_csv(
+#         sep=table.format_type[1], index=False)
+
+#     delimiter = table.format_type[2]
+    
+#     semantic_key = table.semantic_key
+
+#     if ncols == 1:
+#         prompt = "Generate one new attributes for a table of "\
+#             + f"{description}. "\
+#             + f"The {delimiter}-separated header of attributes to not "\
+#             + f"generate is:\n{header}\n"\
+#             + "Generate a real attribute. Do not generate a fictional one. "\
+#             + f"Here is the {delimiter}-separated table "\
+#             + f"by semantic key only:\n{table_key_only}\n"\
+#             + "Generate values of real data for all existing rows of the "\
+#             + "table. "\
+#             + "Generate and output a new table (include the table header) "\
+#             + "with only the attributes "
+#         if len(semantic_key) > 0:
+#             for i in range(len(semantic_key)):
+#                 prompt = prompt + f"{semantic_key[i]}, "
+#         else:
+#             for i in range(len(header)):
+#                 prompt = prompt + f"{header[i]}, "
+#         prompt = prompt + "and the new attribute in the format of a "\
+#             + f"{delimiter}-separated .csv file. "\
+#             + "Then explain the source of the new data."
+#     else:
+#         prompt = f"Generate {ncols} new attributes for a table of "\
+#             + f"{description}. "\
+#             + f"The {delimiter}-separated header of attributes to not "\
+#             + f"generate is:\n{header}\n"\
+#             + "Generate real attributes. Do not generate fictional ones. "\
+#             + f"Here are the {delimiter}-separated rows of the table "\
+#             + f"by semantic key only:\n{table_key_only}\n"\
+#             + "Generate values of real data for all existing rows of the "\
+#             + "table. "\
+#             + "Generate and output a new table (include the table header) "\
+#             + "with only the attributes "
+#         if len(semantic_key) > 0:
+#             for i in range(len(semantic_key)):
+#                 prompt = prompt + f"{semantic_key[i]}, "
+#         else:
+#             for i in range(len(header)):
+#                 prompt = prompt + f"{header[i]}, "
+#         prompt = prompt + "and the new attributes in the format of a "\
+#             + f"{delimiter}-separated .csv file. "\
+#             + "Then explain the source of the new data."
+
+#     print_time(prompt, None)
+#     prompts = [prompt]
+#     max_new_tokens = 50000
+#     print_time(max_new_tokens, None)
+#     return prompts, max_new_tokens
+
+# def create_cols_from_prompts(v_cache, table, model_type, tokenizer,
+#                              model, max_new_tokens, prompts, ncols):
+#     """
+    
+
+#     Parameters
+#     ----------
+#     v_cache : TYPE
+#         DESCRIPTION.
+#     table : TYPE
+#         DESCRIPTION.
+#     model_type : TYPE
+#         DESCRIPTION.
+#     tokenizer : TYPE
+#         DESCRIPTION.
+#     model : TYPE
+#         DESCRIPTION.
+#     max_new_tokens : TYPE
+#         DESCRIPTION.
+#     prompts : TYPE
+#         DESCRIPTION.
+
+#     Returns
+#     -------
+#     TYPE
+#         DESCRIPTION.
+
+#     """
+#     if FAKE_MODEL:
+#         was_none = False
+#         if table_orig.table is None:
+#             was_none = True
+#             table_orig.read()
+#         old_table = table_orig.table.copy()
+#         resp_table = old_table[table_orig.semantic_key].copy()
+#         responses = []
+#         if old_table.shape[1] == 0:
+#             # our table is empty, use the original table for a source of fake 
+#             # rows, note that the original table was required to have at least
+#             # one row
+#             prev_table = get_table_from_cache(v_cache, table.name, 0)
+#             was_none_prev = False
+#             if prev_table.table is None:
+#                 prev_table.read()
+#                 was_none_prev = True
+#             old_table = prev_table.table.copy()
+#             if was_none_prev:
+#                 prev_table.purge()
+#         old_columns = list(old_table.columns)
+#         random.shuffle(old_columns)
+#         col_count = 0
+#         while col_count < ncols:
+#             for col in old_columns:
+#                 colnew = col + "_NEW"
+#                 if not col.endswith("_NEW") and not colnew in old_columns:
+#                     print_time(old_table, None)
+#                     print_time(col, None)
+#                     resp_table[colnew] = old_table[col]
+#                     print_time(resp_table, None)
+#                     col_count += 1
+#                     if col_count >= ncols:
+#                         break
+#             if col_count >= ncols:
+#                 continue
+#             for col in old_columns:
+#                 colnew = col + "_NEW"
+#                 if not colnew in old_columns:
+#                     resp_table[colnew] = old_table[col]
+#                     print_time(resp_table, None)
+#                     col_count += 1
+#                     if col_count >= ncols:
+#                         break
+#             if col_count >= ncols:
+#                 continue
+#             for col in old_columns:
+#                 resp_table[col + "_NEW"] = old_table[col]
+#                 print_time(resp_table, None)
+#                 col_count += 1
+#                 if col_count >= ncols:
+#                     break
+                
+                    
+#         table_str = resp_table.to_csv(sep=table.format_type[1], index=False)
+#         responses.append(
+#             f"Preamble\n\n{table_str}\n\nPostamble\n"
+#             )
+#         responses.append(
+#             f"{table_str}\nPreamble\n\n{table_str}\n\nPostamble\n"
             
-        responses = execute_prompts(model_type, tokenizer, model,
-                                    max_new_tokens, prompts)
-    return parse_table_responses(table, responses, table.table.shape[0])
+#             )
+#         if was_none:
+#             table_orig.purge()
+#         idx = random.randrange(len(responses))
+#         responses = responses[idx:idx+1]
+#     else:
+            
+#         responses = execute_prompts(model_type, tokenizer, model,
+#                                     max_new_tokens, prompts)
+#     return parse_table_responses(table, responses, table.table.shape[0])
 
 def find_valid_csv_tables(text, nrows_expected, cols_expected, sep):
     valid_tables = []
@@ -1453,7 +1516,7 @@ def parse_table_responses(table, responses, nrows_expected):
             
     return(table_responses)
     
-def create_cols(v_cache, table_orig, ncols, model_type, model, tokenizer):
+def add_cols(v_cache, table_orig, ncols, model_type, model, tokenizer):
     """
     
 
@@ -1478,107 +1541,290 @@ def create_cols(v_cache, table_orig, ncols, model_type, model, tokenizer):
         DESCRIPTION.
 
     """
-    prompts, max_tokens = create_cols_prompts(cache, table_orig, ncols)
-    return (prompts,
-            create_cols_from_prompts(v_cache, table_orig, model_type,
-                                    tokenizer, model, max_tokens, prompts,
-                                    ncols))
+    was_none = False
+    if table_orig.table is None:
+        was_none = True
+        table_orig.read()
+
+    genai_prompts = GenAITablePrompts(v_cache, table_orig, 50000)
+    genai_prompts.add_prompt('add_cols', ncols=ncols)
     
-def fill_na_prompts(cache, table, na_loc):
-    """
+    if FAKE_MODEL:
+        old_table = table_orig.table.copy()
+        resp_table = old_table[table_orig.semantic_key].copy()
+        responses = []
+        if old_table.shape[1] == 0:
+            # our table is empty, use the original table for a source of fake 
+            # rows, note that the original table was required to have at least
+            # one row
+            prev_table = get_table_from_cache(v_cache, table_orig.name, 0)
+            was_none_prev = False
+            if prev_table.table is None:
+                prev_table.read()
+                was_none_prev = True
+            old_table = prev_table.table.copy()
+            if was_none_prev:
+                prev_table.purge()
+        old_columns = list(old_table.columns)
+        random.shuffle(old_columns)
+        col_count = 0
+        while col_count < ncols:
+            for col in old_columns:
+                colnew = col + "_NEW"
+                if not col.endswith("_NEW") and not colnew in old_columns:
+                    print_time(old_table, None)
+                    print_time(col, None)
+                    resp_table[colnew] = old_table[col]
+                    print_time(resp_table, None)
+                    col_count += 1
+                    if col_count >= ncols:
+                        break
+            if col_count >= ncols:
+                continue
+            for col in old_columns:
+                colnew = col + "_NEW"
+                if not colnew in old_columns:
+                    resp_table[colnew] = old_table[col]
+                    print_time(resp_table, None)
+                    col_count += 1
+                    if col_count >= ncols:
+                        break
+            if col_count >= ncols:
+                continue
+            for col in old_columns:
+                resp_table[col + "_NEW"] = old_table[col]
+                print_time(resp_table, None)
+                col_count += 1
+                if col_count >= ncols:
+                    break
+                
+                    
+        table_str = resp_table.to_csv(sep=table_orig.format_type[1], index=False)
+        responses.append(
+            f"Preamble\n\n{table_str}\n\nPostamble\n"
+            )
+        responses.append(
+            f"{table_str}\nPreamble\n\n{table_str}\n\nPostamble\n"
+            
+            )
+        if was_none:
+            table_orig.purge()
+        idx = random.randrange(len(responses))
+        responses = responses[idx:idx+1]
+    else:
+            
+        responses = execute_prompts(model_type, tokenizer, model, 
+                                    genai_prompts)
+    rsp =  parse_table_responses(
+        table_orig, responses, table_orig.table.shape[0]) 
+
+    if was_none:
+        table_orig.purge()
+        
+    return genai_prompts.prompts, rsp
+
+    # genai_prompts = VerPrompt(cache, table_orig, 'add_cols')
+    
+    # prompts, max_tokens = \
+    #     VerPrompt(cache, table_orig, 'add_cols').get_prompt(ncols=ncols)
+    # create_cols_prompts(cache, table_orig, ncols)
+    # return (prompts,
+    #         create_cols_from_prompts(v_cache, table_orig, model_type,
+    #                                 tokenizer, model, max_tokens, prompts,
+    #                                 ncols))
+    
+# def fill_na_prompts(cache, table, na_loc):
+#     """
     
 
-    Parameters
-    ----------
-    table : TYPE
-        DESCRIPTION.
-    ncols : TYPE
-        DESCRIPTION.
+#     Parameters
+#     ----------
+#     table : TYPE
+#         DESCRIPTION.
+#     ncols : TYPE
+#         DESCRIPTION.
 
-    Returns
-    -------
-    prompts : TYPE
-        DESCRIPTION.
-    max_new_tokens : TYPE
-        DESCRIPTION.
+#     Returns
+#     -------
+#     prompts : TYPE
+#         DESCRIPTION.
+#     max_new_tokens : TYPE
+#         DESCRIPTION.
 
-    """
+#     """
 
-    description = table.get_description()
-    semantic_key = table.semantic_key
-    semantic_values = []
-    for col in semantic_key:
-        semantic_values.append(table.table.at[na_loc[1], col])
-    # semantic_values_str = table.format_type[1].join(semantic_values)
-    num_rows = min(table.table.shape[0], 3)
-    if num_rows == 3:
-        if na_loc[0] == 0:
-            rows = [na_loc[0], 1, 2]
-        elif na_loc[0] == 1:
-            rows = [na_loc[0], 0, 2]
-        else:
-            rows = [na_loc[0], 0, 1]
-    elif num_rows == 2:
-        if na_loc[0] == 0:
-            rows = [na_loc[0], 1]
-        else:
-            rows = [na_loc[0], 0]
-    elif num_rows == 1:
-        rows = [na_loc[0]]
-    attribute = na_loc[2]
-    col_dtype = str(table.table[attribute].dtype)
-    print_time(rows, None)
-    small_table = table.table.iloc[rows,:].to_csv(sep=table.format_type[1], 
-                                                  index=False)
+#     description = table.get_description()
+#     semantic_key = table.semantic_key
+#     semantic_values = []
+#     for col in semantic_key:
+#         semantic_values.append(table.table.at[na_loc[1], col])
+#     # semantic_values_str = table.format_type[1].join(semantic_values)
+#     num_rows = min(table.table.shape[0], 3)
+#     if num_rows == 3:
+#         if na_loc[0] == 0:
+#             rows = [na_loc[0], 1, 2]
+#         elif na_loc[0] == 1:
+#             rows = [na_loc[0], 0, 2]
+#         else:
+#             rows = [na_loc[0], 0, 1]
+#     elif num_rows == 2:
+#         if na_loc[0] == 0:
+#             rows = [na_loc[0], 1]
+#         else:
+#             rows = [na_loc[0], 0]
+#     elif num_rows == 1:
+#         rows = [na_loc[0]]
+#     attribute = na_loc[2]
+#     col_dtype = str(table.table[attribute].dtype)
+#     print_time(rows, None)
+#     small_table = table.table.iloc[rows,:].to_csv(sep=table.format_type[1], 
+#                                                   index=False)
 
-    prompt = f"For {description}, retrieve a missing value of real data "\
-        + "(not fictional) from extrnally available resources, "\
-        + "corresponding to the first row and attribute "\
-        + f"named {attribute}, with a dtype of {col_dtype}, "\
-        + f"within the following table:\n\n{small_table}\n\n"\
-        + "Retrieve the attribute value according to the "\
-        + "values of the semantic key:\n\n"
-    for i, key in enumerate(semantic_key):
-        if na_loc[2] != key: # if the missing value is in the semantic key
-            prompt = prompt + f"{key}={semantic_values[i]}\n\n"
-    prompt = prompt + "Fill in the missing data, "\
-        + "and output the resulting table in "\
-        + f"{table.format_type[2]}-delimited .csv format. "\
-        + "Then output from where the data was retrieved."
+#     prompt = f"For {description}, retrieve a missing value of real data "\
+#         + "(not fictional) from extrnally available resources, "\
+#         + "corresponding to the first row and attribute "\
+#         + f"named {attribute}, with a dtype of {col_dtype}, "\
+#         + f"within the following table:\n\n{small_table}\n\n"\
+#         + "Retrieve the attribute value according to the "\
+#         + "values of the semantic key:\n\n"
+#     for i, key in enumerate(semantic_key):
+#         if na_loc[2] != key: # if the missing value is in the semantic key
+#             prompt = prompt + f"{key}={semantic_values[i]}\n\n"
+#     prompt = prompt + "Fill in the missing data, "\
+#         + "and output the resulting table in "\
+#         + f"{table.format_type[2]}-delimited .csv format. "\
+#         + "Then output from where the data was retrieved."
 
-    print_time(prompt, None)
-    prompts = [prompt]
-    max_new_tokens = 50000
-    return prompts, max_new_tokens
+#     print_time(prompt, None)
+#     prompts = [prompt]
+#     max_new_tokens = 50000
+#     return prompts, max_new_tokens
 
-def fill_na_from_prompts(v_cache, table_orig, na_loc, model_type, tokenizer,
-                         model, max_new_tokens, prompts):
-    """
+# def fill_na_from_prompts(v_cache, table_orig, na_loc, model_type, tokenizer,
+#                          model, max_new_tokens, prompts):
+#     """
     
 
-    Parameters
-    ----------
-    v_cache : TYPE
-        DESCRIPTION.
-    table : TYPE
-        DESCRIPTION.
-    model_type : TYPE
-        DESCRIPTION.
-    tokenizer : TYPE
-        DESCRIPTION.
-    model : TYPE
-        DESCRIPTION.
-    max_new_tokens : TYPE
-        DESCRIPTION.
-    prompts : TYPE
-        DESCRIPTION.
+#     Parameters
+#     ----------
+#     v_cache : TYPE
+#         DESCRIPTION.
+#     table : TYPE
+#         DESCRIPTION.
+#     model_type : TYPE
+#         DESCRIPTION.
+#     tokenizer : TYPE
+#         DESCRIPTION.
+#     model : TYPE
+#         DESCRIPTION.
+#     max_new_tokens : TYPE
+#         DESCRIPTION.
+#     prompts : TYPE
+#         DESCRIPTION.
 
-    Returns
-    -------
-    TYPE
-        DESCRIPTION.
+#     Returns
+#     -------
+#     TYPE
+#         DESCRIPTION.
 
-    """
+#     """
+    
+#     if FAKE_MODEL:
+#         was_none = False
+#         was_none = False
+#         if table_orig.table is None:
+#             was_none = True
+#             table_orig.read()
+#         resp_table = table_orig.table.copy()
+#         sem_key = table_orig.semantic_key
+#         sem_val = []
+
+#         for col in sem_key:
+#             sem_val.append(table_orig.table.at[na_loc[1], col])
+#         # semantic_values_str = table.format_type[1].join(semantic_values)
+#         num_rows = min(table_orig.table.shape[0], 3)
+#         if num_rows == 3:
+#             if na_loc[0] == 0:
+#                 rows = [na_loc[0], 1, 2]
+#             elif na_loc[0] == 1:
+#                 rows = [na_loc[0], 0, 2]
+#             else:
+#                 rows = [na_loc[0], 0, 1]
+#         elif num_rows == 2:
+#             if na_loc[0] == 0:
+#                 rows = [na_loc[0], 1]
+#             else:
+#                 rows = [na_loc[0], 0]
+#         elif num_rows == 1:
+#             rows = [na_loc[0]]
+#         attribute = na_loc[2]
+#         col_dtype = str(table_orig.table[attribute].dtype)
+
+#         if na_loc[0] == 0:
+#             if resp_table.shape[0] > 1:
+#                 dummy_val = resp_table.iloc[resp_table.index[1], na_loc[2]]
+#             else:
+#                 dummy_val = 0
+#         else:
+#             dummy_val = resp_table.at[resp_table.index[0], na_loc[2]]
+#         resp_table.at[na_loc[1], na_loc[2]] = dummy_val
+#         small_table = resp_table.iloc[rows,:].to_csv(
+#             sep=table_orig.format_type[1], index=False)
+#         attribute = na_loc[2]
+#         col_dtype = str(resp_table[attribute].dtype)
+#         responses = []
+#         responses.append(
+#             f"The missing {na_loc[2]} value for {sem_key} = {sem_val}"\
+#             + "in the table can be found on the official website. "\
+#             + f"According to the website, {na_loc[2]} is {dummy_val}. "\
+#             + f"To fill in the missing data with a dtype of {col_dtype}, "\
+#             + f"we can convert the value to {col_dtype} using the numpy "\
+#             + "library. "\
+#             + f"Here's the completed table with the missing {na_loc[2]} "\
+#             + f"value filled in as {col_dtype}:\n\n{small_table}\n\n"\
+#             + "And here's the resulting table in "\
+#             + f"semi-colon-delimited .csv format:\n\n{small_table}\n\n"\
+#             + f"The missing {na_loc[2]} value of {dummy_val} was retrieved "\
+#             + "from the official website.")
+#         responses.append(
+#             f"Preamble\n\n{small_table}\n\nPostamble\n"
+#             )
+#         responses.append(
+#             f"{small_table}\nPreamble\n\n{small_table}\n\nPostamble\n"
+            
+#             )
+#         no_head_small_table = resp_table.iloc[rows,:].to_csv(
+#             sep=table_orig.format_type[1], index=False, header=None)
+#         responses.append(
+#             f"Preamble\n\n{no_head_small_table}\n\nPostamble\n"
+#             )
+#         responses.append(
+#             f"{no_head_small_table}\nPreamble\n\n{no_head_small_table}\n\nPostamble\n"
+#             )
+#         responses.append(
+#             f"{small_table}\nPreamble\n\n{no_head_small_table}\n\nPostamble\n"
+#             )
+#         if was_none:
+#             table_orig.purge()
+#         idx = random.randrange(len(responses))
+#         # idx = 0
+#         responses = responses[idx:idx+1]
+#     else:
+            
+#         responses = execute_prompts(model_type, tokenizer, model,
+#                                     max_new_tokens, prompts)
+#     return parse_table_responses(table_orig, responses, 
+#                                  min(table_orig.table.shape[0], 3)) 
+
+def fill_na(v_cache, table_orig, na_loc, model_type, model, tokenizer):
+
+    was_none = False
+    if table_orig.table is None:
+        was_none = True
+        table_orig.read()
+            
+    genai_prompts = GenAITablePrompts(v_cache, table_orig, 50000)
+    genai_prompts.add_prompt('fill_na', na_loc=na_loc)
     
     if FAKE_MODEL:
         was_none = False
@@ -1655,24 +1901,25 @@ def fill_na_from_prompts(v_cache, table_orig, na_loc, model_type, tokenizer,
         responses.append(
             f"{small_table}\nPreamble\n\n{no_head_small_table}\n\nPostamble\n"
             )
-        if was_none:
-            table_orig.purge()
         idx = random.randrange(len(responses))
-        # idx = 0
+        # idx = len(responses)-2
         responses = responses[idx:idx+1]
+        
     else:
             
-        responses = execute_prompts(model_type, tokenizer, model,
-                                    max_new_tokens, prompts)
-    return parse_table_responses(table_orig, responses, 
-                                 min(table_orig.table.shape[0], 3)) 
+        responses = execute_prompts(model_type, tokenizer, model, 
+                                    genai_prompts)
+    rsp =  parse_table_responses(
+        table_orig, responses, min(table_orig.table.shape[0], 3)) 
 
-def fill_na(v_cache, table_orig, na_loc, model_type, model, 
-            tokenizer):
-    prompts, max_tokens = fill_na_prompts(cache, table_orig, na_loc)
-    return (prompts, fill_na_from_prompts(v_cache, table_orig, na_loc,
-                                          model_type, tokenizer, model,
-                                          max_tokens, prompts))
+    if was_none:
+        table_orig.purge()
+        
+    return genai_prompts.prompts, rsp
+
+    # return (prompts, fill_na_from_prompts(v_cache, table_orig, na_loc,
+    #                                       model_type, tokenizer, model,
+    #                                       max_tokens, prompts))
     
 # None of the following deletes should be done with inplace=True
 def delete_rows(table_orig, num_entries, location):
@@ -1837,7 +2084,7 @@ for idx, command_idx in enumerate(CMD_PLAN):
     params_list = get_params_list(params)
     random.shuffle(params_list)
     params = params_list[0]
-    if command_type == "add_row":
+    if command_type == "add_rows":
         num_entries = params['num_entries']
         location = params['location']
         axis = 0
@@ -1849,17 +2096,17 @@ for idx, command_idx in enumerate(CMD_PLAN):
         else:
             location = random.randrange(nrows)
         params['location'] = location
-        prompts_input, prompts_output = create_rows(cache, table_orig, 
-                                                    num_entries, 
-                                                    MODEL_TYPE, 
-                                                    model, tokenizer)
+        prompts_input, prompts_output = add_rows(cache, table_orig, 
+                                                 num_entries, 
+                                                 MODEL_TYPE, 
+                                                 model, tokenizer)
         if len(prompts_output) > 0:
             used_gen = True
         else:
             print_time(None, "add_row: Table not found!")
             time.sleep(10)
             continue
-    elif command_type == "del_row":
+    elif command_type == "del_rows":
         num_entries = params['num_entries']
         location = params['location']
         axis = 0
@@ -1875,7 +2122,7 @@ for idx, command_idx in enumerate(CMD_PLAN):
         postamble = ""
         if num_entries > 1:
             deleted_row_mult_entires = True
-    elif command_type == "add_col":
+    elif command_type == "add_cols":
         num_entries = params['num_entries']
         location = params['location']
         axis = 1
@@ -1886,17 +2133,17 @@ for idx, command_idx in enumerate(CMD_PLAN):
             location = ncols - 1
         else:
             location = random.randrange(ncols)
-        prompts_input, prompts_output = create_cols(cache, table_orig, 
-                                                    num_entries, 
-                                                    MODEL_TYPE, 
-                                                    model, tokenizer)
+        prompts_input, prompts_output = add_cols(cache, table_orig, 
+                                                 num_entries, 
+                                                 MODEL_TYPE, 
+                                                 model, tokenizer)
         if len(prompts_output) > 0:
             used_gen = True
         else:
             print_time(None, "add_col: Table not found!")
             time.sleep(10)
             continue
-    elif command_type == "del_col":
+    elif command_type == "del_cols":
         num_entries = params['num_entries']
         location = params['location']
         axis = 1
@@ -1967,11 +2214,16 @@ for idx, command_idx in enumerate(CMD_PLAN):
             continue # we did not find a table in the response, do nothing
         postamble = prompts_output[0]['postamble']
         new_df = table_orig.table.copy()
-        new_df.at[na_loc[1], na_loc[2]] = table_df.at[table_df.index[0], 
-                                                      na_loc[2]]
+        if na_loc[2] not in table_df:
+            new_df.at[na_loc[1], na_loc[2]] = \
+                table_df.at[table_df.index[0], 
+                            new_df.columns.get_loc(na_loc[2])]
+        else:
+            new_df.at[na_loc[1], na_loc[2]] = table_df.at[table_df.index[0], 
+                                                          na_loc[2]]
         changed_df = pd.DataFrame(columns=[na_loc[2]])
         changed_df.at[na_loc[1], na_loc[2]] = new_df.at[na_loc[1], na_loc[2]]
-    if command_type == "add_row" or command_type == "add_col":
+    if command_type == "add_rows" or command_type == "add_cols":
         preamble = prompts_output[0]['preamble']
         table_df = prompts_output[0]['output_table']
         output_table = table_df.to_csv(sep=table_orig.format_type[1])
@@ -1988,13 +2240,17 @@ for idx, command_idx in enumerate(CMD_PLAN):
             continue
         new_df = new_df.drop_duplicates()
         
-        if (command_type == "add_row" 
+        if (command_type == "add_rows" 
               and table_df.shape[0] > table_orig.table.shape[0]):
             changed_df = pd.concat([table_df, new_df])
             changed_df = changed_df.drop_duplicates()
         else:
             changed_df = table_df.copy()
-    if (command_type == "add_row" or command_type == "add_col" 
+        if command_type == "add_cols":
+            for col in table_orig.semantic_key:
+                if col in changed_df:
+                    changed_df = changed_df.drop(col, axis=1)
+    if (command_type == "add_rows" or command_type == "add_cols" 
         or command_type == "fill_na"):
         begin_time = round(start_time, 0)
         end_time = round(time.time(), 0)
