@@ -163,8 +163,8 @@ class GenAITablePrompts:
     
         description = self.table.get_description()
     
-        header = self.table.get_ineligible_columns_header_only().to_csv(
-            sep=self.table.format_type[1], index=False)
+        header = self.table.get_ineligible_columns_header_only(
+            self.cache).to_csv(sep=self.table.format_type[1], index=False)
         
         table_key_only = self.table.get_table_key_only().to_csv(
             sep=self.table.format_type[1], index=False)

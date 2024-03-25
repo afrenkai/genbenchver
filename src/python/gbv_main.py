@@ -14,21 +14,34 @@ import datetime as dt
 import io
 import json
 import itertools
-import inspect
+# import inspect
+import argparse
+from transformers import AutoModelForCausalLM, AutoTokenizer
+import torch
+from nnsight import LanguageModel
+import shutil
+import math
 
 from gbv_prompts import GenAITablePrompts
+from gbv_ver_table import VerTable
+from gbv_utils import print_time
 
 # Note only semi-colon-delimited csv files are supported at this time
 
+FAKE_MODEL = False
+
 DEBUG = True
 
-FAKE_MODEL = True
+BASE_TABLE_NAME = "autona"
+
+NUM_VER = 10
+MAX_ITER = 20
 
 LINEAGE = "sequence"
 # LINEAGE = "random"
 
-# ENVIRONMENT = "turing.wpi.edu"
-ENVIRONMENT = "local_macos"
+ENVIRONMENT = "turing.wpi.edu"
+# ENVIRONMENT = "local_macos"
 
 TABLES_VERSION_DELIMITER = "_"
 
@@ -79,6 +92,7 @@ CMD_PLAN = [
     2, # add_col
     1, # del_row
     0, # add_row
+    'random'
     ]
 
 TIME_START = time.time()
@@ -86,47 +100,615 @@ DATETIME_START = dt.datetime.now()
 
 random.seed(TIME_START)
 
-if MODEL_TYPE == 'transformers':
-    # from transformers import AutoModelForCausalLM, AutoTokenizer
-    from transformers import AutoModelForCausalLM, AutoTokenizer
-    import torch
-elif MODEL_TYPE == 'nnsight':
-    from nnsight import LanguageModel
-    from transformers import AutoTokenizer
+class GenAITableExec:
+    # Singleton
+ 
+    def __init__(self):
+        self.args = None
+        self.tables_version_delimiter = "_"
+        # model_type = 'nnsight'
+        self.model = None
+        self.tokenizer = None
+        self.cache = None
+        self.model_spec = MODEL_SPEC
+    
+    def print_debug(self, var, text):
+        if not self.args.debug:
+            return
+        print_time(var, text)
 
-def get_variable_name(var):
-    current_frame = inspect.currentframe()
-    outer_frames = inspect.getouterframes(current_frame)
-    for i in range(len(outer_frames)-1, 0, -1):
-        caller_frame = outer_frames[i]
-        local_vars = caller_frame.frame.f_locals
-     
-        for name, value in local_vars.items():
-            if value is var:
-                return name
-        for name, val in globals().items():
-            if val is var:
-                return name
-    return None
+    def convert(self):
+        fn = os.path.join(self.args.tablesdir, self.args.name + FORMAT_TYPE[0])
+        df = pd.read_csv(fn, sep=self.args.orig_delim)
+        fn = os.path.join(self.args.tablesdir, (self.args.name + "_0" 
+                                                + FORMAT_TYPE[0]))
+        df.to_csv(fn, sep=FORMAT_CSV_DELIMITER)
+        
+        sfn = os.path.join(self.args.tablesdir, self.args.name + ".json")
+        dfn = os.path.join(self.args.tablesdir, self.args.name + "_0.json")
+        shutil.copy(sfn, dfn)
+        
+    
+    def update_ver_table_cache(self, table, version):
+        """
+        
+    
+        Parameters
+        ----------
+        vtindex : TYPE
+            DESCRIPTION.
+        name : TYPE
+            DESCRIPTION.
+        table : TYPE
+            DESCRIPTION.
+        version : TYPE
+            DESCRIPTION.
+    
+        Returns
+        -------
+        None.
+    
+        """
+        if self.args.name not in self.cache:
+            self.cache[self.args.name] = {}
+        name_dict = self.cache[self.args.name]
+        name_dict[version] = {'table': table}
+        
+    
+    def get_high_ver_for_table(cache, name):
+        """
+        
+    
+        Parameters
+        ----------
+        cache : TYPE
+            DESCRIPTION.
+        name : TYPE
+            DESCRIPTION.
+    
+        Returns
+        -------
+        new_version : TYPE
+            DESCRIPTION.
+    
+        """
+        return max(list(cache[name].keys())) 
+    
+    def get_next_ver_for_table(cache, name):
+        """
+        
+    
+        Parameters
+        ----------
+        cache : TYPE
+            DESCRIPTION.
+        name : TYPE
+            DESCRIPTION.
+    
+        Returns
+        -------
+        new_version : TYPE
+            DESCRIPTION.
+    
+        """
+        return GenAITableExec.get_high_ver_for_table(cache, name) + 1
+    
+    def get_table_random_from_cache(cache, name):
+        """
+        
+    
+        Parameters
+        ----------
+        cache : TYPE
+            DESCRIPTION.
+        name : TYPE
+            DESCRIPTION.
+    
+        Returns
+        -------
+        table : TYPE
+            DESCRIPTION.
+    
+        """
+        if name in cache:
+            r = random.randrange(len(cache[name]))
+            for i, version in enumerate(cache[name]):
+                if i == r:
+                    table = cache[name][version]['table']
+                    if table is not None:
+                        return table
+        return None
+                                
+    
+    def read_table_from_cache(cache, name, version):
+        """
+        
+    
+        Parameters
+        ----------
+        cache : TYPE
+            DESCRIPTION.
+        name : TYPE
+            DESCRIPTION.
+        version : TYPE
+            DESCRIPTION.
+    
+        Returns
+        -------
+        table : TYPE
+            DESCRIPTION.
+    
+        """
+        table = VerTable.get_table_from_cache(cache, name, version)
+        if table is not None:
+            table.read()
+        return table
+    
+    def add_table_to_cache(vtindex, table):
+        """
+        
+    
+        Parameters
+        ----------
+        vtindex : TYPE
+            DESCRIPTION.
+        table : TYPE
+            DESCRIPTION.
+    
+        Returns
+        -------
+        None.
+    
+        """
+        if table.name not in vtindex:
+            vtindex[table.name] = {}
+        cur_ver_dict = vtindex[table.name]
+        if table.version not in cur_ver_dict:
+            cur_ver_dict[table.version] = {}
+        
+        if 'table' in cur_ver_dict[table.version]:
+            print_time(None, "table already set in cache! Overwriting...")
+        cur_ver_dict[table.version]['table'] = table
 
-def print_time_force(var, text):
-    fmt_text = f"\n{dt.datetime.now()}, {time.time() - TIME_START} seconds\n"
-    if var is not None:
-        varstr = get_variable_name(var)
-        if varstr is not None and varstr != "var":
-            fmt_text += f"{get_variable_name(var)} =\n{var}\n"
+    def build_ver_table_cache(self):
+        """
+        
+    
+        Parameters
+        ----------
+        folder : TYPE
+            DESCRIPTION.
+        version_delimiter : TYPE
+            DESCRIPTION.
+    
+        Returns
+        -------
+        cache : TYPE
+            DESCRIPTION.
+    
+        """
+        self.cache = {}
+        tables_folder = self.args.tablesdir
+        version_delimiter = self.tables_version_delimiter
+        
+        # get base files first
+        for filename in os.listdir(tables_folder):
+            # for now, only csv supported
+            if filename.endswith(".csv") and filename.startswith(self.args.name):
+                fullname = filename.split(".")[0]
+                s = fullname.split(version_delimiter)
+                description = None
+                lineage = []
+                semantic_key = ""
+                preamble = None
+                postamble = None
+                command_dict = None
+                if len(s) == 1:
+                    name = s[0]
+                    version = None
+                    json_fn = name + ".json"
+                elif len(s) >= 2:
+                    if s[-1].isdecimal():
+                        name = version_delimiter.join(s[0:-1])
+                        version = int(s[-1])
+                        json_fn = (name + version_delimiter + str(version) 
+                                   + ".json")
+                    else:
+                        name = version_delimiter.join(s)
+                        version = None
+                        json_fn = name + ".json"
+                json_ffn = os.path.join(tables_folder, json_fn)
+                if os.path.exists(json_ffn):
+                    with open(json_ffn) as fp:
+                        json_dict = json.load(fp)
+                    if json_dict is not None:
+                        description = json_dict['description']
+                        if 'lineage' in json_dict:
+                            lineage = json_dict['lineage']
+                        if 'semantic_key' not in json_dict:
+                            if FAKE_MODEL:
+                                semantic_key = ["Model", "Make", "Year"]
+                        else:
+                            semantic_key = json_dict['semantic_key']
+                        if 'preamble' in json_dict:
+                            preamble = json_dict['preamble']
+                        if 'postamble' in json_dict:
+                            postamble = json_dict['postamble']
+                        if 'command' in json_dict:
+                            command_dict = json_dict['command']
+                    if version is None and name == self.args.name:
+                        # convert file 
+                        self.convert()
+                        version = 0
+                print_time(semantic_key, None)
+                print_time(lineage, None)
+                table = VerTable(None, tables_folder, name, description, 
+                                 preamble, postamble, semantic_key, 
+                                 version_delimiter, 
+                                 FORMAT_TYPE, version, lineage, command_dict,
+                                 self.args.debug)
+                if table is not None:
+                    self.update_ver_table_cache(table, version)
+
+    def build_model(self):
+        """
+        
+    
+        Parameters
+        ----------
+        model_type : TYPE
+            DESCRIPTION.
+        model_id : TYPE
+            DESCRIPTION.
+    
+        Returns
+        -------
+        TYPE
+            DESCRIPTION.
+        TYPE
+            DESCRIPTION.
+    
+        """
+        if FAKE_MODEL:
+            self.model = None
+            self.tokenizer = None
+        model_type = self.args.model_type
+        model_id = MODEL_SPEC
+        
+        if model_type == 'nnsight':
+            self.tokenizer = AutoTokenizer.from_pretrained(model_id, 
+                                                           unk_token="<unk>",
+                                                           pad_token='[PAD]')
+            self.model = LanguageModel(model_id, device_map='auto', 
+                                       tokenizer=self.tokenizer)
+            
+        elif model_type == 'transformers':
+            # os.environ['PYTORCH_MPS_HIGH_WATERMARK_RATIO'] = '0.0'
+            if ENVIRONMENT == "turing.wpi.edu":
+                self.model = AutoModelForCausalLM.from_pretrained(
+                    model_id, device_map='auto') #, torch_dtype=torch.float16)
+            else: # ENVIRONMENT == "local_macos"
+                self.model = AutoModelForCausalLM.from_pretrained(
+                    model_id, device_map='auto', torch_dtype=torch.float16)
+            
+            self.tokenizer = AutoTokenizer.from_pretrained(model_id, unk_token="<unk>")
+
+    def build_model_and_cache(self):
+        """
+        
+    
+        Parameters
+        ----------
+        model_type : TYPE
+            DESCRIPTION.
+        model_spec : TYPE
+            DESCRIPTION.
+        tables_folder : TYPE
+            DESCRIPTION.
+        tables_version_delimiter : TYPE
+            DESCRIPTION.
+    
+        Returns
+        -------
+        model : TYPE
+            DESCRIPTION.
+        tokenizer : TYPE
+            DESCRIPTION.
+        ver_table_cache : TYPE
+            DESCRIPTION.
+    
+        """
+        self.build_model()
+        self.build_ver_table_cache()
+        
+    def command_exec(self, cmd_id):
+        start_time = time.time()
+        
+        cache = self.cache
+        table_name = self.args.name
+        model_type = self.args.model_type
+        model = self.model
+        tokenizer = self.tokenizer
+        
+        new_version = GenAITableExec.get_next_ver_for_table(cache, table_name)
+        self.print_debug(new_version, None)
+        if LINEAGE == "random":
+            table_orig = GenAITableExec.get_table_random_from_cache(cache, table_name)
+        else: # LINEAGE == "sequence"
+            table_orig = VerTable.get_table_from_cache(
+                cache, table_name, GenAITableExec.get_high_ver_for_table(cache, table_name))
+        self.print_debug(table_orig.version, None)
+        self.print_debug(table_orig.semantic_key, None)
+        assert(len(table_orig.semantic_key) > 0)
+        if table_orig.table is None:
+            was_none = True
+            table_orig.read()
         else:
-            fmt_text += f"\n{var}\n"
-    if text is not None:
-        fmt_text += f"{text}\n"
-    print(fmt_text, flush=True)
+            was_none = False
+        prompts_output = None
+        command = COMMANDS[cmd_id]
+        self.print_debug(table_orig.semantic_key, None)
+        print_time(command, "Starting operation...")
+        command_type = command['type']
+        params = command['params']
+        params_list = get_params_list(params)
+        random.shuffle(params_list)
+        params = params_list[0]
+        
+        
+        if command_type == "add_rows":
+            # prompts_input, prompts_output = \ 
+            #     self.add_rows(table_orig, params)
+            num_entries = params['num_entries']
+            location = params['location']
+            axis = 0
+            nrows = table_orig.table.shape[0]
+            if params['location'] == 'top':
+                location = 0
+            elif params['location'] == 'bottom':
+                location = nrows - 1
+            else: # 'random'
+                location = random.randrange(nrows)
+            params['location'] = location
+            prompts_input, prompts_output = add_rows(cache, table_orig, 
+                                                      num_entries, 
+                                                      model_type, 
+                                                      model, 
+                                                      tokenizer)
+            if len(prompts_output) == 0:
+                print_time(None, "add_row: Table not found!")
+                time.sleep(10)
+                return False
+        elif command_type == "del_rows":
+            num_entries = params['num_entries']
+            location = params['location']
+            axis = 0
+            nrows = table_orig.table.shape[0]
+            num_entries = min(num_entries, nrows-3)
+            if num_entries <= 0:
+                return False
+            if params['location'] == 'top':
+                location = 0
+            elif params['location'] == 'bottom':
+                location = nrows - 1
+            else:
+                location = random.sample(list(range(nrows)), num_entries)
+            new_df, changed_df = delete_rows(table_orig, num_entries, location)
+            preamble = ""
+            postamble = ""
+        elif command_type == "add_cols":
+            num_entries = params['num_entries']
+            location = params['location']
+            axis = 1
+            ncols = table_orig.table.shape[1]
+            if params['location'] == 'left':
+                location = 0
+            elif params['location'] == 'right':
+                location = ncols - 1
+            else:
+                location = random.randrange(ncols)
+            prompts_input, prompts_output = add_cols(cache, table_orig, 
+                                                     num_entries, 
+                                                     model_type, 
+                                                     model, tokenizer)
+            if len(prompts_output) == 0:
+                print_time(None, "add_col: Table not found!")
+                time.sleep(10)
+                return False
+        elif command_type == "del_cols":
+            num_entries = params['num_entries']
+            location = params['location']
+            axis = 1
+            indices_elig = []
+            print("")
+            print("table_orig.table")
+            self.print_debug(table_orig.table, None)
+            for i, col in enumerate(table_orig.table):
+                if col not in table_orig.semantic_key:
+                    indices_elig.append(i)
+            ncols = table_orig.table.shape[1]
+            max_indices_elig = math.floor(len(indices_elig) / 2)
+            if num_entries > max_indices_elig:
+                num_entries = max_indices_elig
+                if num_entries > 0:
+                    print_time("del_col: reduced number of columns to delete "
+                               + f"outside of semantic key to {num_entries} "
+                               + "because will not allow to delete more than "
+                               + "half (rounded down) of the columns outside of "
+                               + "the semantic key", None)
+                else:
+                    print_time("del_col: delete columns cancelled because will "
+                               + "not allow to delete more than half "
+                               + "(rounded down) of the columns outside of the "
+                               + "semantic key", None)
+                    time.sleep(10)
+                    return False
+            if params['location'] == 'left':
+                location = 0
+            elif params['location'] == 'right':
+                location = ncols - 1
+            else: # params['location'] == 'random'
+                self.print_debug(indices_elig, None)
+                self.print_debug(num_entries, None)
+                location = random.sample(indices_elig, num_entries)
+                self.print_debug(location, None)
+            params['location'] = location
+            new_df, changed_df = delete_cols(table_orig, location)
+            self.print_debug(new_df, None)
+            preamble = ""
+            postamble = ""
+        elif command_type == "fill_na":
+            location = params['location']
+            na_loc = None
+            na_list = find_all_na(table_orig.table)
+            if len(na_list) == 0:
+                print_time(None, "fill_na: no N/A values to retrieve!")
+                time.sleep(10)
+                return False
+            if params['location'] == 'random':
+                random.shuffle(na_list)
+            na_loc = na_list[0]
+            prompts_input, prompts_output = fill_na(cache, table_orig, na_loc,
+                                                    model_type, self.model, 
+                                                    self.tokenizer)
+        
+            if len(prompts_output) <= 0:
+                print_time(None, "fill_na: Table not found!")
+                time.sleep(10)
+                return False
+            preamble = prompts_output[0]['preamble']
+            table_df = prompts_output[0]['output_table']
+            self.print_debug(table_df, None)
+            if table_df is None:
+                print_time(None, "fill_na: Table not found!")
+                time.sleep(10)
+                return False # we did not find a table in the response, do nothing
+            postamble = prompts_output[0]['postamble']
+            new_df = table_orig.table.copy()
+            if na_loc[2] not in table_df:
+                new_df.at[na_loc[1], na_loc[2]] = \
+                    table_df.at[table_df.index[0], 
+                                new_df.columns.get_loc(na_loc[2])]
+            else:
+                new_df.at[na_loc[1], na_loc[2]] = table_df.at[table_df.index[0], 
+                                                              na_loc[2]]
+            changed_df = pd.DataFrame(columns=[na_loc[2]])
+            changed_df.at[na_loc[1], na_loc[2]] = new_df.at[na_loc[1], na_loc[2]]
+        if command_type == "add_rows" or command_type == "add_cols":
+            preamble = prompts_output[0]['preamble']
+            table_df = prompts_output[0]['output_table']
+            output_table = table_df.to_csv(sep=table_orig.format_type[1])
+            self.print_debug(table_df, None)
+            if table_df is None:
+                print_time(None, "add_row or add_col: Table not found!")
+                time.sleep(10)
+                return False # we did not find a table in the response, do nothing
+            postamble = prompts_output[0]['postamble']
+            new_df = add_table(table_orig, table_df, location, axis)
+            if new_df is None:
+                print_time(None, "Bad csv format of output")
+                time.sleep(10)
+                return False
+            new_df = new_df.drop_duplicates()
+            
+            if (command_type == "add_rows" 
+                  and table_df.shape[0] > table_orig.table.shape[0]):
+                changed_df = pd.concat([table_df, new_df])
+                changed_df = changed_df.drop_duplicates()
+            else:
+                changed_df = table_df.copy()
+            if command_type == "add_cols":
+                for col in table_orig.semantic_key:
+                    if col in changed_df:
+                        changed_df = changed_df.drop(col, axis=1)
+        if (command_type == "add_rows" or command_type == "add_cols" 
+            or command_type == "fill_na"):
+            begin_time = round(start_time, 0)
+            end_time = round(time.time(), 0)
+            duration = end_time - begin_time
+            if prompts_output is not None and len(prompts_output) > 0:
+                output_table = prompts_output[0]['output_table']\
+                    .to_csv(sep=table_orig.format_type[1])
+            else:
+                output_table = None
+            command_dict = {'type': command_type,
+                            'prompt': prompts_input[0],
+                            'start time' : str(dt.datetime.fromtimestamp(
+                                begin_time)),
+                            'complete time': str(dt.datetime.fromtimestamp(
+                                end_time)),
+                            'duration (seconds)': int(duration),
+                            'params': params,
+                            'output_table': output_table,
+                            'changed': changed_df.to_dict()}
+        else:
+            command_dict = {'type': command_type,
+                            'params': params,
+                            'changed': changed_df.to_dict()}
+    
+        new_table(cache, table_orig, TABLES_VERSION_DELIMITER, 
+                  preamble, new_df, postamble, command_dict,
+                  new_version)
+        if was_none:
+            table_orig.purge()
+        print_time(command, "Finished successfully")
+        return True
+        
+    def main(self):
+        print_time(None, "Starting globally...")
+        
+        parser = argparse.ArgumentParser(
+            description=('Auto-generates versions of base file using '
+                         + 'generative AI'))
+        parser.add_argument(
+            '-d', '--debug', dest='debug', action='store_true',default=False,
+            help='Turns on debug logging to stdout. Default is off.')
+        parser.add_argument(
+            '-f', '--fake', dest='fake_model', action='store_true', 
+            default=False,
+            help=('Tests code with fake responses without using the '
+                  + 'generative AI. Default uses real interaction.'))
+        parser.add_argument(
+            '-s', '--sep', dest='orig_delim', type=str, default=',',
+            help=('Column separator of the original file. Only used before '
+                  + 'versions have been generated. Default is comma'))
+        parser.add_argument(
+            '-l', '--lineage', dest='lineage', type=str, default="sequence",
+            help=('Type of lineage for versions created: '
+                  + '"sequence" (default) | "random"'))
+        parser.add_argument(
+            '-g', '--gpu', dest='device_map', type=str, default='cuda',
+            help='Type of GPU: "cuda" (default) | "mps"')
+        parser.add_argument(
+            '-n', '--numver', dest='num_ver', type=int, default=10,
+            help=('Number of versions to create. Default is 10. '
+                  + 'Unsuccessful attempts do not count'))
+        parser.add_argument(
+            '-i', '--maxiter', dest='max_iter', type=int, default=20,
+            help='Maximum number of table create attempts. Default is 20.')
+        parser.add_argument(
+            '-m', '--model', dest='model_type', type=str, default='nnsight',
+            help=('Model framework type: nnsight | transformers. Default is '
+                  + 'nnsight'))
+        parser.add_argument('name', type=str,
+            help=('Filename of the table without extension '
+                  + '(only .csv extension is supported)'))
+        parser.add_argument(
+            'tablesdir', type=str, default=".",
+            help=('Directory locaton of the tables. ' 
+                  + 'Default is the current working directory.'))
+        
+        self.args = parser.parse_args()
 
-def print_time(var, text):
-    if not DEBUG:
-        return
-    print_time_force(var, text)
+        self.build_model_and_cache()
 
-print_time(None, "Starting globally...")
+        numver = 0
+        for _ in range(self.args.max_iter):
+            command_idx = random.randrange(len(COMMANDS))
+            if self.command_exec(command_idx):
+                numver += 1
+            if numver >= self.args.num_ver:
+                break
 
 def find_all_na(df):
     na_df = df.isna().copy()
@@ -160,571 +742,6 @@ def get_params_list(params_dict):
     combinations = list(itertools.product(*vals))
     return [dict(zip(keys, combination)) for combination in combinations]
 
-def update_ver_table_cache(vtindex, name, table, version):
-    """
-    
-
-    Parameters
-    ----------
-    vtindex : TYPE
-        DESCRIPTION.
-    name : TYPE
-        DESCRIPTION.
-    table : TYPE
-        DESCRIPTION.
-    version : TYPE
-        DESCRIPTION.
-
-    Returns
-    -------
-    None.
-
-    """
-    if name not in vtindex:
-        vtindex[name] = {}
-    name_dict = vtindex[name]
-    name_dict[version] = {'table': table}
-    
-def build_ver_table_cache(folder, version_delimiter):
-    """
-    
-
-    Parameters
-    ----------
-    folder : TYPE
-        DESCRIPTION.
-    version_delimiter : TYPE
-        DESCRIPTION.
-
-    Returns
-    -------
-    cache : TYPE
-        DESCRIPTION.
-
-    """
-    cache = {}
-    # get base files first
-    for filename in os.listdir(folder):
-        # for now, only csv supported
-        if filename.endswith(".csv"):
-            fullname = filename.split(".")[0]
-            s = fullname.split(version_delimiter)
-            description = None
-            lineage = []
-            semantic_key = ""
-            preamble = None
-            postamble = None
-            command_dict = None
-            if len(s) == 1:
-                name = s[0]
-                version = 0
-                json_fn = name + ".json"
-            elif len(s) >= 2 and s[-1].isdecimal():
-                name = version_delimiter.join(s[0:-1])
-                version = int(s[-1])
-                json_fn = name + version_delimiter + str(version) + ".json"
-            else:
-                name = version_delimiter.join(s)
-                version = 0
-                json_fn = name + ".json"
-            json_ffn = os.path.join(folder, json_fn)
-            if os.path.exists(json_ffn):
-                with open(json_ffn) as fp:
-                    json_dict = json.load(fp)
-                if json_dict is not None:
-                    description = json_dict['description']
-                    if 'lineage' in json_dict:
-                        lineage = json_dict['lineage']
-                    if 'semantic_key' not in json_dict:
-                        if FAKE_MODEL:
-                            semantic_key = ["Model", "Make", "Year"]
-                    else:
-                        semantic_key = json_dict['semantic_key']
-                    if 'preamble' in json_dict:
-                        preamble = json_dict['preamble']
-                    if 'postamble' in json_dict:
-                        postamble = json_dict['postamble']
-                    if 'command' in json_dict:
-                        command_dict = json_dict['command']
-            print_time(semantic_key, None)
-            print_time(lineage, None)
-            table = VerTable(None, folder, name, description, preamble, 
-                             postamble, semantic_key, version_delimiter, 
-                             FORMAT_TYPE, version, lineage, command_dict)
-            if table is not None:
-                update_ver_table_cache(cache, name, table, version)
-    return cache
-
-def set_node_ver_table_cache(vtindex, table):
-    """
-    
-
-    Parameters
-    ----------
-    vtindex : TYPE
-        DESCRIPTION.
-    table : TYPE
-        DESCRIPTION.
-
-    Returns
-    -------
-    None.
-
-    """
-    update_ver_table_cache(vtindex, table.name, table, table.version)
-                
-def unset_node_ver_table_cache(vtindex, table):
-    """
-    
-
-    Parameters
-    ----------
-    vtindex : TYPE
-        DESCRIPTION.
-    table : TYPE
-        DESCRIPTION.
-
-    Returns
-    -------
-    None.
-
-    """
-    update_ver_table_cache(vtindex, table.name, None, table.version)
-
-def get_high_ver_for_table(cache, name):
-    """
-    
-
-    Parameters
-    ----------
-    cache : TYPE
-        DESCRIPTION.
-    name : TYPE
-        DESCRIPTION.
-
-    Returns
-    -------
-    new_version : TYPE
-        DESCRIPTION.
-
-    """
-    return max(list(cache[name].keys())) 
-
-def get_next_ver_for_table(cache, name):
-    """
-    
-
-    Parameters
-    ----------
-    cache : TYPE
-        DESCRIPTION.
-    name : TYPE
-        DESCRIPTION.
-
-    Returns
-    -------
-    new_version : TYPE
-        DESCRIPTION.
-
-    """
-    return get_high_ver_for_table(cache, name) + 1
-
-def get_table_random_from_cache(cache, name):
-    """
-    
-
-    Parameters
-    ----------
-    cache : TYPE
-        DESCRIPTION.
-    name : TYPE
-        DESCRIPTION.
-
-    Returns
-    -------
-    table : TYPE
-        DESCRIPTION.
-
-    """
-    if name in cache:
-        r = random.randrange(len(cache[name]))
-        for i, version in enumerate(cache[name]):
-            if i == r:
-                table = cache[name][version]['table']
-                if table is not None:
-                    return table
-    return None
-                            
-
-def get_table_from_cache(cache, name, version):
-    """
-    
-
-    Parameters
-    ----------
-    cache : TYPE
-        DESCRIPTION.
-    name : TYPE
-        DESCRIPTION.
-    version : TYPE
-        DESCRIPTION.
-
-    Returns
-    -------
-    table : TYPE
-        DESCRIPTION.
-
-    """
-    if name in cache:
-        if version in cache[name] and 'table' in cache[name][version]:
-            table = cache[name][version]['table']
-            if table is not None:
-                return table
-    return None
-
-def read_table_from_cache(cache, name, version):
-    """
-    
-
-    Parameters
-    ----------
-    cache : TYPE
-        DESCRIPTION.
-    name : TYPE
-        DESCRIPTION.
-    version : TYPE
-        DESCRIPTION.
-
-    Returns
-    -------
-    table : TYPE
-        DESCRIPTION.
-
-    """
-    table = get_table_from_cache(cache, name, version)
-    if table is not None:
-        table.read()
-    return table
-
-def add_table_to_cache(vtindex, table):
-    """
-    
-
-    Parameters
-    ----------
-    vtindex : TYPE
-        DESCRIPTION.
-    table : TYPE
-        DESCRIPTION.
-
-    Returns
-    -------
-    None.
-
-    """
-    if table.name not in vtindex:
-        vtindex[table.name] = {}
-    cur_ver_dict = vtindex[table.name]
-    if table.version not in cur_ver_dict:
-        cur_ver_dict[table.version] = {}
-    
-    if 'table' in cur_ver_dict[table.version]:
-        print_time_force(None, "table already set in cache! Overwriting...")
-    cur_ver_dict[table.version]['table'] = table
-
-class VerTable:
-    """
-    
-    """
-    
-    def __init__(self, table, folder, name, description, preamble, postamble, 
-                 semantic_key, version_delimiter, format_type, version, 
-                 lineage, command_dict):
-        """
-        
-
-        Parameters
-        ----------
-        table : TYPE
-            DESCRIPTION.
-        folder : TYPE
-            DESCRIPTION.
-        name : TYPE
-            DESCRIPTION.
-        description : TYPE
-            DESCRIPTION.
-        preamble : TYPE
-            DESCRIPTION.
-        postamble : TYPE
-            DESCRIPTION.
-        semantic_key : TYPE
-            DESCRIPTION.
-        format_type : TYPE
-            DESCRIPTION.
-        version : TYPE
-            DESCRIPTION.
-        lineage : TYPE
-            DESCRIPTION.
-        command_dict : TYPE
-            DESCRIPTION.
-
-        Returns
-        -------
-        None.
-
-        """
-        self.table = table
-        self.folder = folder
-        self.name = name
-        self.description = description
-        self.preamble = preamble
-        self.postamble = postamble
-        self.format_type = format_type
-        print_time(semantic_key, None)
-        self.semantic_key = semantic_key
-        self.version = version
-        if self.version == 0:
-            self.version_str = ""
-        else:
-            self.version_str = "_" + str(self.version)
-        if lineage is None:
-            lineage = []
-        print_time(lineage, "C")
-        self.lineage = lineage
-        self.command_dict = command_dict
-        print_time(self.name, None)
-        print_time(self.version_str, None)
-        self.filespec = os.path.join(self.folder, self.name + self.version_str)
-        self.input_table_entries = 0
-        self.input_table_attributes = 0
-        
-        json_dict = None
-        if self.description is None:
-            self.description = ""
-            if os.path.exists(self.filespec + ".json"):
-                with open(self.filespec + ".json", "r") as fp:
-                    json_dict = json.load(fp)
-                    print("")
-                    print("json_dict")
-                    print_time(json_dict, None)
-                    self.description = json_dict['description']
-                    if 'lineage' in json_dict:
-                        self.lineage = json_dict['lineage']
-                    if FAKE_MODEL:
-                        if 'semantic_key' not in json_dict:
-                            self.semantic_key = ["Model, Make, Year"]
-                    else:
-                        self.semantic_key = json_dict['semantic_key']
-                    if 'preamble' in json_dict:
-                        self.preamble = json_dict['preamble']
-                    if 'postamble' in json_dict:
-                        self.postamble = json_dict['postamble']
-                    if 'command' in json_dict:
-                        self.command_dict = json_dict['command']
-            
-        print_time(lineage, "D")
-        if json_dict is None:
-            json_dict = {}
-            json_dict['description'] = self.description
-            json_dict['lineage'] = self.lineage
-            json_dict['semantic_key'] = self.semantic_key
-            print_time(self.semantic_key, None)
-            json_dict['preamble'] = self.preamble
-            json_dict['postamble'] = self.postamble
-            json_dict['command'] = self.command_dict
-            with open(self.filespec + ".json", 'w') as fp:
-                json.dump(json_dict, fp, indent=4)
-            
-        # if self.table is None:
-        #     self.read()
-        if type(self.table) == str:
-            self.write()
-        elif self.table is not None: # type is dataframe
-            self.write()
-
-        if self.table is not None:
-            self.num_entries = self.table.shape[0]
-            self.num_table_attributes = self.table.shape[1]
-            
-    def __str__(self):
-        """
-        
-
-        Returns
-        -------
-        TYPE
-            DESCRIPTION.
-
-        """
-        if self.table is not None:
-            return self.table.to_csv(sep=self.format_type[1], index=False)
-        return "None"
-    
-    def write(self):
-        """
-        
-
-        Returns
-        -------
-        None.
-
-        """
-        # for now, csv only format type supported
-        filename = self.filespec + self.format_type[0]
-        if type(self.table) == str:
-            with open(filename, "w") as fp:
-                fp.write(self.table)
-            self.table = pd.read_csv(filename, sep=self.format_type[1])
-        self.table.reset_index(drop=True, inplace=True)
-        self.table.to_csv(filename, sep=self.format_type[1], index=False)
-            
-    def read(self):
-        """
-        
-
-        Returns
-        -------
-        None.
-
-        """
-        if self.table is None:
-            filename = self.filespec + self.format_type[0]
-            self.table = pd.read_csv(filename, sep=self.format_type[1])
-            self.num_entries = self.table.shape[0]
-            self.num_table_attributes = self.table.shape[1]
-            self.table.reset_index(drop=True, inplace=True)
-            self.table.to_csv(filename, sep=self.format_type[1], index=False)
-            return True
-        return False
-    
-    def purge(self):
-        self.table = None
-        
-    def get_num_entries(self):
-        was_none = self.read()
-        num_entries = self.table.shape[0]
-        if was_none:
-            self.purge()
-        return num_entries
-    
-    def get_num_attributes(self):
-        was_none = self.read()
-        num_entries = self.table.shape[1]
-        if was_none:
-            self.purge()
-        return num_entries
-    
-    def update(self, table):
-        """
-        
-
-        Parameters
-        ----------
-        table : TYPE
-            DESCRIPTION.
-
-        Returns
-        -------
-        None.
-
-        """
-        self.table = table
-        self.write()
-        
-    def get_table_header_only(self):
-        """
-        
-
-        Returns
-        -------
-        empty_table : TYPE
-            DESCRIPTION.
-
-        """
-        if self.table is None:
-            filename = self.filespec + self.format_type[0]
-            empty_table = pd.read_csv(filename, sep=self.format_type[1],
-                                      index_col=0, nrows=0)
-        else:
-            empty_table = self.table.drop(self.table.index) 
-        return empty_table
-    
-    def get_ineligible_columns_header_only(self):
-        """
-        
-
-        Returns
-        -------
-        empty_table : TYPE
-            DESCRIPTION.
-
-        """
-        if self.table is None:
-            filename = self.filespec + self.format_type[0]
-            empty_table = pd.read_csv(filename, sep=self.format_type[1],
-                                      index_col=0, nrows=0)
-        else:
-            empty_table = self.table.drop(self.table.index)
-        for i in self.lineage:
-            table = get_table_from_cache(cache, self.name, i)
-            if table.command_dict['type'] == 'del_col':
-                for col in table.command_dict['changed']:
-                    empty_table[col] = None
-        return empty_table
-    
-    def get_semantic_key(self):
-        return self.semantic_key
-    
-    def get_description(self):
-        return self.description
-    
-    def get_table_key_only(self):
-        """
-        
-
-        Returns
-        -------
-        TYPE
-            DESCRIPTION.
-
-        """
-        self.read()
-        return self.table[self.semantic_key]
-    
-    def get_ineligible_rows_key_only(self, cache):
-        """
-        
-
-        Returns
-        -------
-        TYPE
-            DESCRIPTION.
-
-        """
-        self.read()
-        df = self.table.copy()
-        if len(self.semantic_key) == 0:
-            dfsk = df.copy()
-        else:
-            dfsk = df[self.semantic_key].copy()
-        dfsk = dfsk.drop_duplicates()
-        for i in self.lineage:
-            table = get_table_from_cache(cache, self.name, i)
-            if table.command_dict['type'] == 'del_row':
-                extend_df = pd.DataFrame(table.command_dict['changed'])
-                if len(self.semantic_key) == 0:
-                    extend_dfsk = extend_df.copy()
-                else:
-                    extend_dfsk = extend_df[self.semantic_key].copy()
-                extend_dfsk = extend_dfsk.drop_duplicates()
-                print_time(extend_dfsk, None)
-                print_time(dfsk, None)
-                dfsk = pd.concat([dfsk, extend_dfsk])
-                dfsk = dfsk.drop_duplicates()
-        # dfsk = df[self.semantic_key].copy()
-        # dfsk = dfsk.drop_duplicates()
-        return dfsk
-    
 def new_table(cache, orig_table, version_delimiter, preamble, new_df, 
               postamble, command_dict, new_version):
     """
@@ -766,8 +783,8 @@ def new_table(cache, orig_table, version_delimiter, preamble, new_df,
                          orig_table.description, preamble, postamble,
                          orig_table.semantic_key, version_delimiter, 
                          orig_table.format_type,
-                         new_version, lineage, command_dict)
-    add_table_to_cache(cache, new_table)
+                         new_version, lineage, command_dict, DEBUG)
+    GenAITableExec.add_table_to_cache(cache, new_table)
 
 def add_table(orig_table, data, location, axis):
     """
@@ -870,43 +887,6 @@ def add_table(orig_table, data, location, axis):
         orig_table.table = None
     return new_df
         
-def build_model(model_type, model_id):
-    """
-    
-
-    Parameters
-    ----------
-    model_type : TYPE
-        DESCRIPTION.
-    model_id : TYPE
-        DESCRIPTION.
-
-    Returns
-    -------
-    TYPE
-        DESCRIPTION.
-    TYPE
-        DESCRIPTION.
-
-    """
-    if FAKE_MODEL:
-        return None, None
-    if model_type == 'nnsight':
-        tokenizer = AutoTokenizer.from_pretrained(model_id, unk_token="<unk>",
-                                                  pad_token='[PAD]')
-        model = LanguageModel(model_id, device_map='auto', tokenizer=tokenizer)
-        
-    elif model_type == 'transformers':
-        # os.environ['PYTORCH_MPS_HIGH_WATERMARK_RATIO'] = '0.0'
-        if ENVIRONMENT == "turing.wpi.edu":
-            model = AutoModelForCausalLM.from_pretrained(
-                model_id, device_map='auto') #, torch_dtype=torch.float16)
-        else: # ENVIRONMENT == "local_macos"
-            model = AutoModelForCausalLM.from_pretrained(
-                model_id, device_map='auto', torch_dtype=torch.float16)
-        
-        tokenizer = AutoTokenizer.from_pretrained(model_id, unk_token="<unk>")
-    return model, tokenizer
 
 def execute_prompts(model_type, tokenizer, model, genai_prompts):
     """
@@ -1025,7 +1005,7 @@ def add_rows(v_cache, table_orig, nrows, model_type, model, tokenizer):
             # our table is empty, use the original table for a source of fake 
             # rows, note that the original table was required to have at least
             # one row
-            prev_table = get_table_from_cache(v_cache, table_orig.name, 0)
+            prev_table = VerTable.get_table_from_cache(v_cache, table_orig.name, 0)
             was_none_prev = False
             if prev_table.table is None:
                 prev_table.read()
@@ -1057,8 +1037,10 @@ def add_rows(v_cache, table_orig, nrows, model_type, model, tokenizer):
         
     return genai_prompts.prompts, rsp
 
-def find_valid_csv_tables(text, nrows_expected, cols_expected, sep):
+def find_valid_csv_tables(table_orig, text, nrows_expected):
     valid_tables = []
+    cols_expected = table_orig.semantic_key
+    sep = table_orig.format_type[1]
     
     lines = text.split("\n")
     if len(lines) < nrows_expected:
@@ -1095,7 +1077,8 @@ def find_valid_csv_tables(text, nrows_expected, cols_expected, sep):
             table_text = "\n".join(lines[i:i+nrows_expected])
             print_time(table_text, None)
             try:
-                df = pd.read_csv(io.StringIO(table_text), sep=sep, header=None)
+                df = pd.read_csv(io.StringIO(table_text), sep=sep, header=None,
+                                 names=list(table_orig.table.columns))
                 preamble_text = "\n".join(lines[0:i])
                 postamble_text = "\n".join(lines[i+nrows_expected:])
                 valid_table = (preamble_text, df.copy(), postamble_text)
@@ -1157,9 +1140,6 @@ def parse_table_responses(table, responses, nrows_expected):
         print_time(response, None)
         # time.sleep(10)
         
-        preamble = ""
-        postamble = ""
-
         # BEGIN SEARCH FOR TABLE WITHIN RESPONSE        
         # The first thing we need to do is locate our table within the
         # prompt response.
@@ -1170,9 +1150,8 @@ def parse_table_responses(table, responses, nrows_expected):
         #      being within the prologue are far higher than the chances
         #      of the table being within the epilogue
 
-        valid_csv_tables = find_valid_csv_tables(response, nrows_expected,
-                                                 table.semantic_key,
-                                                 table.format_type[1])
+        valid_csv_tables = find_valid_csv_tables(table, response,
+                                                 nrows_expected)
         print_time(valid_csv_tables, None)
 
         # loop through valid tables
@@ -1232,7 +1211,7 @@ def add_cols(v_cache, table_orig, ncols, model_type, model, tokenizer):
             # our table is empty, use the original table for a source of fake 
             # rows, note that the original table was required to have at least
             # one row
-            prev_table = get_table_from_cache(v_cache, table_orig.name, 0)
+            prev_table = VerTable.get_table_from_cache(v_cache, table_orig.name, 0)
             was_none_prev = False
             if prev_table.table is None:
                 prev_table.read()
@@ -1501,272 +1480,16 @@ def delete_cols(table_orig, location):
             col_del_df[col] = df[col]
     return df.drop(df.columns[location], axis=1), col_del_df
 
-def build_model_and_cache(model_type, model_spec, tables_folder, 
-                         tables_version_delimiter):
-    """
+
+# """
+# Begin Script
+# """
+
     
-
-    Parameters
-    ----------
-    model_type : TYPE
-        DESCRIPTION.
-    model_spec : TYPE
-        DESCRIPTION.
-    tables_folder : TYPE
-        DESCRIPTION.
-    tables_version_delimiter : TYPE
-        DESCRIPTION.
-
-    Returns
-    -------
-    model : TYPE
-        DESCRIPTION.
-    tokenizer : TYPE
-        DESCRIPTION.
-    ver_table_cache : TYPE
-        DESCRIPTION.
-
-    """
-    model, tokenizer = build_model(model_type, model_spec)
-    ver_table_cache = build_ver_table_cache(tables_folder, 
-                                            tables_version_delimiter)
-    return model, tokenizer, ver_table_cache
-
-"""
-Begin Script
-"""
-model, tokenizer, cache = build_model_and_cache(MODEL_TYPE, MODEL_SPEC,
-                                                TABLES_FOLDER,
-                                                TABLES_VERSION_DELIMITER)
-
-used_gen = False
-for idx, command_idx in enumerate(CMD_PLAN):
-    # for command_idx in range(len(COMMANDS)):
-    # command_idx = 4
-    # command_idx = random.randrange(len(COMMANDS))
-    start_time = time.time()
-    new_version = get_next_ver_for_table(cache, "autona")
-    print_time(new_version, None)
-    if LINEAGE == "random":
-        table_orig = get_table_random_from_cache(cache, "autona")
-    else: # LINEAGE == "sequence"
-        table_orig = get_table_from_cache(cache, "autona", 
-                                          get_high_ver_for_table(cache, 
-                                                                 "autona"))
-    print_time(table_orig.version, None)
-    print_time(table_orig.semantic_key, None)
-    assert(len(table_orig.semantic_key) > 0)
-    if table_orig.table is None:
-        was_none = True
-        table_orig.read()
-    else:
-        was_none = False
-    prompts_output = None
-    command = COMMANDS[command_idx]
-    print_time(table_orig.semantic_key, None)
-    print_time_force(command, "Starting operation...")
-    command_type = command['type']
-    params = command['params']
-    params_list = get_params_list(params)
-    random.shuffle(params_list)
-    params = params_list[0]
-    if command_type == "add_rows":
-        num_entries = params['num_entries']
-        location = params['location']
-        axis = 0
-        nrows = table_orig.table.shape[0]
-        if params['location'] == 'top':
-            location = 0
-        elif params['location'] == 'bottom':
-            location = nrows - 1
-        else:
-            location = random.randrange(nrows)
-        params['location'] = location
-        prompts_input, prompts_output = add_rows(cache, table_orig, 
-                                                 num_entries, 
-                                                 MODEL_TYPE, 
-                                                 model, tokenizer)
-        if len(prompts_output) > 0:
-            used_gen = True
-        else:
-            print_time(None, "add_row: Table not found!")
-            time.sleep(10)
-            continue
-    elif command_type == "del_rows":
-        num_entries = params['num_entries']
-        location = params['location']
-        axis = 0
-        nrows = table_orig.table.shape[0]
-        if params['location'] == 'top':
-            location = 0
-        elif params['location'] == 'bottom':
-            location = nrows - 1
-        else:
-            location = random.sample(list(range(nrows)), num_entries)
-        new_df, changed_df = delete_rows(table_orig, num_entries, location)
-        preamble = ""
-        postamble = ""
-        if num_entries > 1:
-            deleted_row_mult_entires = True
-    elif command_type == "add_cols":
-        num_entries = params['num_entries']
-        location = params['location']
-        axis = 1
-        ncols = table_orig.table.shape[1]
-        if params['location'] == 'left':
-            location = 0
-        elif params['location'] == 'right':
-            location = ncols - 1
-        else:
-            location = random.randrange(ncols)
-        prompts_input, prompts_output = add_cols(cache, table_orig, 
-                                                 num_entries, 
-                                                 MODEL_TYPE, 
-                                                 model, tokenizer)
-        if len(prompts_output) > 0:
-            used_gen = True
-        else:
-            print_time(None, "add_col: Table not found!")
-            time.sleep(10)
-            continue
-    elif command_type == "del_cols":
-        num_entries = params['num_entries']
-        location = params['location']
-        axis = 1
-        indices_elig = []
-        print("")
-        print("table_orig.table")
-        print_time(table_orig.table, None)
-        for i, col in enumerate(table_orig.table):
-            if col not in table_orig.semantic_key:
-                indices_elig.append(i)
-        ncols = table_orig.table.shape[1]
-        max_indices_elig = len(indices_elig) / 2
-        if num_entries > max_indices_elig:
-            num_entries = min(num_entries, max_indices_elig)
-            if num_entries > 0:
-                print_time("del_col: reduced number of columns to delete "
-                           + f"outside of semantic key to {num_entries} "
-                           + "because will not allow to delete more than "
-                           + "half (rounded down) of the columns outside of "
-                           + "the semantic key", None)
-            else:
-                print_time("del_col: delete columns cancelled because will "
-                           + "not allow to delete more than half "
-                           + "(rounded down) of the columns outside of the "
-                           + "semantic key", None)
-                time.sleep(10)
-                continue
-        if params['location'] == 'left':
-            location = 0
-        elif params['location'] == 'right':
-            location = ncols - 1
-        else: # params['location'] == 'random'
-            print_time(indices_elig, None)
-            print_time(num_entries, None)
-            location = random.sample(indices_elig, num_entries)
-            print_time(location, None)
-        params['location'] = location
-        new_df, changed_df = delete_cols(table_orig, location)
-        print_time(new_df, None)
-        preamble = ""
-        postamble = ""
-    elif command_type == "fill_na":
-        location = params['location']
-        na_loc = None
-        na_list = find_all_na(table_orig.table)
-        if len(na_list) == 0:
-            print_time_force(None, "fill_na: no N/A values to retrieve!")
-            time.sleep(10)
-            continue
-        if params['location'] == 'random':
-            random.shuffle(na_list)
-        na_loc = na_list[0]
-        prompts_input, prompts_output = fill_na(cache, table_orig, na_loc,
-                                                MODEL_TYPE, model, tokenizer)
+if __name__ == '__main__':
+    genaitable_exec = GenAITableExec()
+    genaitable_exec.main()
     
-        if len(prompts_output) > 0:
-            used_gen = True
-        else:
-            print_time_force(None, "fill_na: Table not found!")
-            time.sleep(10)
-            continue
-        preamble = prompts_output[0]['preamble']
-        table_df = prompts_output[0]['output_table']
-        print_time(table_df, None)
-        if table_df is None:
-            print_time_force(None, "fill_na: Table not found!")
-            time.sleep(10)
-            continue # we did not find a table in the response, do nothing
-        postamble = prompts_output[0]['postamble']
-        new_df = table_orig.table.copy()
-        if na_loc[2] not in table_df:
-            new_df.at[na_loc[1], na_loc[2]] = \
-                table_df.at[table_df.index[0], 
-                            new_df.columns.get_loc(na_loc[2])]
-        else:
-            new_df.at[na_loc[1], na_loc[2]] = table_df.at[table_df.index[0], 
-                                                          na_loc[2]]
-        changed_df = pd.DataFrame(columns=[na_loc[2]])
-        changed_df.at[na_loc[1], na_loc[2]] = new_df.at[na_loc[1], na_loc[2]]
-    if command_type == "add_rows" or command_type == "add_cols":
-        preamble = prompts_output[0]['preamble']
-        table_df = prompts_output[0]['output_table']
-        output_table = table_df.to_csv(sep=table_orig.format_type[1])
-        print_time(table_df, None)
-        if table_df is None:
-            print_time_force(None, "add_row or add_col: Table not found!")
-            time.sleep(10)
-            continue # we did not find a table in the response, do nothing
-        postamble = prompts_output[0]['postamble']
-        new_df = add_table(table_orig, table_df, location, axis)
-        if new_df is None:
-            print_time_force(None, "Bad csv format of output")
-            time.sleep(10)
-            continue
-        new_df = new_df.drop_duplicates()
-        
-        if (command_type == "add_rows" 
-              and table_df.shape[0] > table_orig.table.shape[0]):
-            changed_df = pd.concat([table_df, new_df])
-            changed_df = changed_df.drop_duplicates()
-        else:
-            changed_df = table_df.copy()
-        if command_type == "add_cols":
-            for col in table_orig.semantic_key:
-                if col in changed_df:
-                    changed_df = changed_df.drop(col, axis=1)
-    if (command_type == "add_rows" or command_type == "add_cols" 
-        or command_type == "fill_na"):
-        begin_time = round(start_time, 0)
-        end_time = round(time.time(), 0)
-        duration = end_time - begin_time
-        if prompts_output is not None and len(prompts_output) > 0:
-            output_table = prompts_output[0]['output_table']\
-                .to_csv(sep=table_orig.format_type[1])
-        else:
-            output_table = None
-        command_dict = {'type': command_type,
-                        'prompt': prompts_input[0],
-                        'start time' : str(dt.datetime.fromtimestamp(
-                            begin_time)),
-                        'complete time': str(dt.datetime.fromtimestamp(
-                            end_time)),
-                        'duration (seconds)': int(duration),
-                        'params': params,
-                        'output_table': output_table,
-                        'changed': changed_df.to_dict()}
-    else:
-        command_dict = {'type': command_type,
-                        'params': params,
-                        'changed': changed_df.to_dict()}
-
-    new_table(cache, table_orig, TABLES_VERSION_DELIMITER, 
-              preamble, new_df, postamble, command_dict,
-              new_version)
-    if was_none:
-        table_orig.purge()
-    print_time_force(command, "Finished successfully")
 """
 End script
 """
