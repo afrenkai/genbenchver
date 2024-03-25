@@ -28,7 +28,7 @@ from gbv_utils import print_time
 
 # Note only semi-colon-delimited csv files are supported at this time
 
-FAKE_MODEL = False
+FAKE_MODEL = True
 
 DEBUG = True
 
@@ -40,8 +40,8 @@ MAX_ITER = 20
 LINEAGE = "sequence"
 # LINEAGE = "random"
 
-ENVIRONMENT = "turing.wpi.edu"
-# ENVIRONMENT = "local_macos"
+# ENVIRONMENT = "turing.wpi.edu"
+ENVIRONMENT = "local_macos"
 
 TABLES_VERSION_DELIMITER = "_"
 
@@ -103,12 +103,12 @@ random.seed(TIME_START)
 class GenAITableExec:
     # Singleton
  
-    def __init__(self):
+    def __init__(self, model, tokenizer):
         self.args = None
         self.tables_version_delimiter = "_"
         # model_type = 'nnsight'
-        self.model = None
-        self.tokenizer = None
+        self.model = model
+        self.tokenizer = tokenizer
         self.cache = None
         self.model_spec = MODEL_SPEC
     
@@ -350,48 +350,6 @@ class GenAITableExec:
                 if table is not None:
                     self.update_ver_table_cache(table, version)
 
-    def build_model(self):
-        """
-        
-    
-        Parameters
-        ----------
-        model_type : TYPE
-            DESCRIPTION.
-        model_id : TYPE
-            DESCRIPTION.
-    
-        Returns
-        -------
-        TYPE
-            DESCRIPTION.
-        TYPE
-            DESCRIPTION.
-    
-        """
-        if FAKE_MODEL:
-            self.model = None
-            self.tokenizer = None
-        model_type = self.args.model_type
-        model_id = MODEL_SPEC
-        
-        if model_type == 'nnsight':
-            self.tokenizer = AutoTokenizer.from_pretrained(model_id, 
-                                                           unk_token="<unk>",
-                                                           pad_token='[PAD]')
-            self.model = LanguageModel(model_id, device_map='auto', 
-                                       tokenizer=self.tokenizer)
-            
-        elif model_type == 'transformers':
-            # os.environ['PYTORCH_MPS_HIGH_WATERMARK_RATIO'] = '0.0'
-            if ENVIRONMENT == "turing.wpi.edu":
-                self.model = AutoModelForCausalLM.from_pretrained(
-                    model_id, device_map='auto') #, torch_dtype=torch.float16)
-            else: # ENVIRONMENT == "local_macos"
-                self.model = AutoModelForCausalLM.from_pretrained(
-                    model_id, device_map='auto', torch_dtype=torch.float16)
-            
-            self.tokenizer = AutoTokenizer.from_pretrained(model_id, unk_token="<unk>")
 
     def build_model_and_cache(self):
         """
@@ -418,9 +376,152 @@ class GenAITableExec:
             DESCRIPTION.
     
         """
-        self.build_model()
+        # build_model()
         self.build_ver_table_cache()
+      
+    def execute_prompts(self, genai_prompts):
+        """
         
+    
+        Parameters
+        ----------
+        model_type : TYPE
+            DESCRIPTION.
+        tokenizer : TYPE
+            DESCRIPTION.
+        model : TYPE
+            DESCRIPTION.
+        max_new_tokens : TYPE
+            DESCRIPTION.
+        prompts : TYPE
+            DESCRIPTION.
+    
+        Returns
+        -------
+        None.
+    
+        """
+        random.seed(42)
+        start_time = time.time()
+        start = dt.datetime.now()
+        print_time(f"--- starting at {start}", None)
+        prompts_output = []
+        
+        if self.model_type == 'nnsight':
+            with self.model.generate(max_new_tokens=genai_prompts.max_new_tokens, 
+                                     remote=False) as generator:
+                print_time("--- %s seconds ---" % (time.time() - start_time), None)
+                for prompt in genai_prompts.prompts:
+                    with generator.invoke("[INST] " + prompt + " /[INST]"):
+                        pass
+                    print_time("finished with prompt", None)
+                    print_time("--- %s seconds ---" % (time.time() - start_time), 
+                               None)
+            print_time("--- %s seconds ---" % (time.time() - start_time), None)
+            model_response = self.tokenizer.batch_decode(generator.output)
+            
+            for i in range(len(genai_prompts.prompts)):
+                prompts_output.append(model_response[i].split("</s")[0]\
+                                      .split("/[INST]")[-1])
+                
+                
+        
+        elif self.model_type == 'transformers':
+            inputs = self.tokenizer("[INST] " + genai_prompts.prompts[0] + " /[INST]",
+                                    return_tensors="pt").to(DEVICE_MAP)
+            
+            outputs = self.model.generate(
+                **inputs, max_new_tokens=genai_prompts.max_new_tokens)
+            for output in outputs:
+                print_time("--- %s seconds ---" % (time.time() - start_time), None)
+                model_response = self.tokenizer.decode(output,
+                                                       skip_special_tokens=True)
+                prompts_output.append(model_response.split("</s")[0]\
+                                      .split("/[INST]")[-1])
+    
+        print_time("--- %s seconds ---" % (time.time() - start_time), None)
+        return(prompts_output)
+
+    def add_rows(self, table_orig, params):
+        # prompts_input, prompts_output = \ 
+        #     self.add_rows(table_orig, params)
+        num_entries = params['num_entries']
+        location = params['location']
+        # axis = 0
+        nrows = table_orig.table.shape[0]
+        if params['location'] == 'top':
+            location = 0
+        elif params['location'] == 'bottom':
+            location = nrows - 1
+        else: # 'random'
+            location = random.randrange(nrows)
+        params['location'] = location
+        
+        genai_prompts = GenAITablePrompts(self.cache, table_orig, 50000)
+        genai_prompts.add_prompt('add_rows', nrows=num_entries)
+        
+        if self.args.fake_model:
+            responses = []
+            responses.append(
+                " Here are 2 new attributes generated for the table:"\
+                + "1. FuelType: This attribute indicates the type of fuel used "\
+                + "by the vehicle. The possible values are Gas, Diesel, Hybrid, "\
+                + "and Electric. The data for this attribute is obtained from "\
+                + "the official websites of the manufacturers or third-party "\
+                + "automotive data providers.\n"\
+                + "2. CityMPG: This attribute indicates the fuel efficiency "\
+                + "of the vehicle in city driving conditions, "\
+                + "measured in miles per gallon (MPG)."\
+                + "The data for this attribute is obtained from the official "\
+                + "fule economy ratings provided by the "\
+                + "Environmental Protection Agency (EPA) of the United States."
+                )
+            resp_table = table_orig.table.copy()
+            if resp_table.shape[0] == 0:
+                # our table is empty, use the original table for a source of fake 
+                # rows, note that the original table was required to have at least
+                # one row
+                prev_table = VerTable.get_table_from_cache(
+                    self.cache, table_orig.name, 0)
+                was_none_prev = False
+                if prev_table.table is None:
+                    prev_table.read()
+                    was_none_prev = True
+                resp_table = prev_table.table.copy()
+                if was_none_prev:
+                    prev_table.purge()
+            while resp_table.shape[0] < nrows:
+                resp_table = pd.concat([resp_table, resp_table], axis=0)
+            head_nrows = resp_table.head(nrows).to_csv(sep=table_orig.format_type[1],
+                                                       index=False)
+            responses.append(
+                f"Preamble\n\n{head_nrows}\n\nPostamble\n"
+                )
+            responses.append(
+                f"{head_nrows}\nPreamble\n\n{head_nrows}\n\nPostamble\n"
+                )
+            idx = random.randrange(len(responses))
+            responses = responses[idx:idx+1]
+        else:
+            responses = self.execute_prompts(genai_prompts)
+            # responses = execute_prompts(model_type, 
+            #                             tokenizer, model, 
+            #                             genai_prompts) 
+
+        rsp =  parse_table_responses(
+            table_orig, responses, nrows) 
+
+        # if was_none:
+        #     table_orig.purge()
+            
+        return genai_prompts.prompts, rsp
+
+    # prompts_input, prompts_output = add_rows(cache, table_orig, 
+    #                                           num_entries, 
+    #                                           model_type, 
+    #                                           model, 
+    #                                           tokenizer)
+
     def command_exec(self, cmd_id):
         start_time = time.time()
         
@@ -433,10 +534,12 @@ class GenAITableExec:
         new_version = GenAITableExec.get_next_ver_for_table(cache, table_name)
         self.print_debug(new_version, None)
         if LINEAGE == "random":
-            table_orig = GenAITableExec.get_table_random_from_cache(cache, table_name)
+            table_orig = GenAITableExec.\
+                get_table_random_from_cache(cache, table_name)
         else: # LINEAGE == "sequence"
             table_orig = VerTable.get_table_from_cache(
-                cache, table_name, GenAITableExec.get_high_ver_for_table(cache, table_name))
+                cache, table_name, GenAITableExec.\
+                    get_high_ver_for_table(cache, table_name))
         self.print_debug(table_orig.version, None)
         self.print_debug(table_orig.semantic_key, None)
         assert(len(table_orig.semantic_key) > 0)
@@ -457,26 +560,27 @@ class GenAITableExec:
         
         
         if command_type == "add_rows":
-            # prompts_input, prompts_output = \ 
-            #     self.add_rows(table_orig, params)
-            num_entries = params['num_entries']
-            location = params['location']
             axis = 0
-            nrows = table_orig.table.shape[0]
-            if params['location'] == 'top':
-                location = 0
-            elif params['location'] == 'bottom':
-                location = nrows - 1
-            else: # 'random'
-                location = random.randrange(nrows)
-            params['location'] = location
-            prompts_input, prompts_output = add_rows(cache, table_orig, 
-                                                      num_entries, 
-                                                      model_type, 
-                                                      model, 
-                                                      tokenizer)
+            prompts_input, prompts_output = \
+                self.add_rows(table_orig, params)
+            # num_entries = params['num_entries']
+            # location = params['location']
+            # axis = 0
+            # nrows = table_orig.table.shape[0]
+            # if params['location'] == 'top':
+            #     location = 0
+            # elif params['location'] == 'bottom':
+            #     location = nrows - 1
+            # else: # 'random'
+            #     location = random.randrange(nrows)
+            # params['location'] = location
+            # prompts_input, prompts_output = add_rows(cache, table_orig, 
+            #                                           num_entries, 
+            #                                           model_type, 
+            #                                           model, 
+            #                                           tokenizer)
             if len(prompts_output) == 0:
-                print_time(None, "add_row: Table not found!")
+                print_time(None, "add_rows: Table not found!")
                 time.sleep(10)
                 return False
         elif command_type == "del_rows":
@@ -604,7 +708,7 @@ class GenAITableExec:
                 time.sleep(10)
                 return False # we did not find a table in the response, do nothing
             postamble = prompts_output[0]['postamble']
-            new_df = add_table(table_orig, table_df, location, axis)
+            new_df = add_table(table_orig, table_df, params['location'], axis)
             if new_df is None:
                 print_time(None, "Bad csv format of output")
                 time.sleep(10)
@@ -886,156 +990,6 @@ def add_table(orig_table, data, location, axis):
     if was_none:
         orig_table.table = None
     return new_df
-        
-
-def execute_prompts(model_type, tokenizer, model, genai_prompts):
-    """
-    
-
-    Parameters
-    ----------
-    model_type : TYPE
-        DESCRIPTION.
-    tokenizer : TYPE
-        DESCRIPTION.
-    model : TYPE
-        DESCRIPTION.
-    max_new_tokens : TYPE
-        DESCRIPTION.
-    prompts : TYPE
-        DESCRIPTION.
-
-    Returns
-    -------
-    None.
-
-    """
-    random.seed(42)
-    start_time = time.time()
-    start = dt.datetime.now()
-    print_time(f"--- starting at {start}", None)
-    prompts_output = []
-    
-    if model_type == 'nnsight':
-        with model.generate(max_new_tokens=genai_prompts.max_new_tokens, 
-                            remote=False) as generator:
-            print_time("--- %s seconds ---" % (time.time() - start_time), None)
-            for prompt in genai_prompts.prompts:
-                with generator.invoke("[INST] " + prompt + " /[INST]"):
-                    pass
-                print_time("finished with prompt", None)
-                print_time("--- %s seconds ---" % (time.time() - start_time), 
-                           None)
-        print_time("--- %s seconds ---" % (time.time() - start_time), None)
-        model_response = tokenizer.batch_decode(generator.output)
-        
-        for i in range(len(genai_prompts.prompts)):
-            prompts_output.append(model_response[i].split("</s")[0]\
-                                  .split("/[INST]")[-1])
-            
-            
-    
-    elif model_type == 'transformers':
-        inputs = tokenizer("[INST] " + genai_prompts.prompts[0] + " /[INST]",
-                           return_tensors="pt").to(DEVICE_MAP)
-        
-        outputs = model.generate(**inputs, 
-                                 max_new_tokens=genai_prompts.max_new_tokens)
-        for output in outputs:
-            print_time("--- %s seconds ---" % (time.time() - start_time), None)
-            model_response = tokenizer.decode(output,
-                                              skip_special_tokens=True)
-            prompts_output.append(model_response.split("</s")[0]\
-                                  .split("/[INST]")[-1])
-
-    print_time("--- %s seconds ---" % (time.time() - start_time), None)
-    return(prompts_output)
-    
-def add_rows(v_cache, table_orig, nrows, model_type, model, tokenizer):
-    """
-    
-
-    Parameters
-    ----------
-    v_cache : TYPE
-        DESCRIPTION.
-    table_orig : TYPE
-        DESCRIPTION.
-    nrows : TYPE
-        DESCRIPTION.
-    model_type : TYPE
-        DESCRIPTION.
-    model : TYPE
-        DESCRIPTION.
-    tokenizer : TYPE
-        DESCRIPTION.
-
-    Returns
-    -------
-    TYPE
-        DESCRIPTION.
-
-    """
-    was_none = False
-    if table_orig.table is None:
-        was_none = True
-        table_orig.read()
-            
-    genai_prompts = GenAITablePrompts(v_cache, table_orig, 50000)
-    genai_prompts.add_prompt('add_rows', nrows=nrows)
-    
-    if FAKE_MODEL:
-        responses = []
-        responses.append(
-            " Here are 2 new attributes generated for the table:"\
-            + "1. FuelType: This attribute indicates the type of fuel used "\
-            + "by the vehicle. The possible values are Gas, Diesel, Hybrid, "\
-            + "and Electric. The data for this attribute is obtained from "\
-            + "the official websites of the manufacturers or third-party "\
-            + "automotive data providers.\n"\
-            + "2. CityMPG: This attribute indicates the fuel efficiency "\
-            + "of the vehicle in city driving conditions, "\
-            + "measured in miles per gallon (MPG)."\
-            + "The data for this attribute is obtained from the official "\
-            + "fule economy ratings provided by the "\
-            + "Environmental Protection Agency (EPA) of the United States."
-            )
-        resp_table = table_orig.table.copy()
-        if resp_table.shape[0] == 0:
-            # our table is empty, use the original table for a source of fake 
-            # rows, note that the original table was required to have at least
-            # one row
-            prev_table = VerTable.get_table_from_cache(v_cache, table_orig.name, 0)
-            was_none_prev = False
-            if prev_table.table is None:
-                prev_table.read()
-                was_none_prev = True
-            resp_table = prev_table.table.copy()
-            if was_none_prev:
-                prev_table.purge()
-        while resp_table.shape[0] < nrows:
-            resp_table = pd.concat([resp_table, resp_table], axis=0)
-        head_nrows = resp_table.head(nrows).to_csv(sep=table_orig.format_type[1],
-                                                   index=False)
-        responses.append(
-            f"Preamble\n\n{head_nrows}\n\nPostamble\n"
-            )
-        responses.append(
-            f"{head_nrows}\nPreamble\n\n{head_nrows}\n\nPostamble\n"
-            )
-        idx = random.randrange(len(responses))
-        responses = responses[idx:idx+1]
-    else:
-        responses = execute_prompts(model_type, tokenizer, model, 
-                                    genai_prompts) 
-
-    rsp =  parse_table_responses(
-        table_orig, responses, nrows) 
-
-    if was_none:
-        table_orig.purge()
-        
-    return genai_prompts.prompts, rsp
 
 def find_valid_csv_tables(table_orig, text, nrows_expected):
     valid_tables = []
@@ -1170,6 +1124,69 @@ def parse_table_responses(table, responses, nrows_expected):
             
     return(table_responses)
     
+def execute_prompts_static(model_type, tokenizer, model, genai_prompts):
+    """
+    
+
+    Parameters
+    ----------
+    model_type : TYPE
+        DESCRIPTION.
+    tokenizer : TYPE
+        DESCRIPTION.
+    model : TYPE
+        DESCRIPTION.
+    max_new_tokens : TYPE
+        DESCRIPTION.
+    prompts : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    None.
+
+    """
+    random.seed(42)
+    start_time = time.time()
+    start = dt.datetime.now()
+    print_time(f"--- starting at {start}", None)
+    prompts_output = []
+    
+    if model_type == 'nnsight':
+        with model.generate(max_new_tokens=genai_prompts.max_new_tokens, 
+                                 remote=False) as generator:
+            print_time("--- %s seconds ---" % (time.time() - start_time), None)
+            for prompt in genai_prompts.prompts:
+                with generator.invoke("[INST] " + prompt + " /[INST]"):
+                    pass
+                print_time("finished with prompt", None)
+                print_time("--- %s seconds ---" % (time.time() - start_time), 
+                           None)
+        print_time("--- %s seconds ---" % (time.time() - start_time), None)
+        model_response = tokenizer.batch_decode(generator.output)
+        
+        for i in range(len(genai_prompts.prompts)):
+            prompts_output.append(model_response[i].split("</s")[0]\
+                                  .split("/[INST]")[-1])
+            
+            
+    
+    elif model_type == 'transformers':
+        inputs = tokenizer("[INST] " + genai_prompts.prompts[0] + " /[INST]",
+                                return_tensors="pt").to(DEVICE_MAP)
+        
+        outputs = model.generate(
+            **inputs, max_new_tokens=genai_prompts.max_new_tokens)
+        for output in outputs:
+            print_time("--- %s seconds ---" % (time.time() - start_time), None)
+            model_response = tokenizer.decode(output,
+                                                   skip_special_tokens=True)
+            prompts_output.append(model_response.split("</s")[0]\
+                                  .split("/[INST]")[-1])
+
+    print_time("--- %s seconds ---" % (time.time() - start_time), None)
+    return(prompts_output)
+
 def add_cols(v_cache, table_orig, ncols, model_type, model, tokenizer):
     """
     
@@ -1267,8 +1284,8 @@ def add_cols(v_cache, table_orig, ncols, model_type, model, tokenizer):
         responses = responses[idx:idx+1]
     else:
             
-        responses = execute_prompts(model_type, tokenizer, model, 
-                                    genai_prompts)
+        responses = execute_prompts_static(model_type, tokenizer, model, 
+                                           genai_prompts)
     rsp =  parse_table_responses(
         table_orig, responses, table_orig.table.shape[0]) 
 
@@ -1377,8 +1394,8 @@ def fill_na(v_cache, table_orig, na_loc, model_type, model, tokenizer):
         
     else:
             
-        responses = execute_prompts(model_type, tokenizer, model, 
-                                    genai_prompts)
+        responses = execute_prompts_static(model_type, tokenizer, model, 
+                                           genai_prompts)
     rsp =  parse_table_responses(
         table_orig, responses, min(table_orig.table.shape[0], 3)) 
 
@@ -1480,6 +1497,48 @@ def delete_cols(table_orig, location):
             col_del_df[col] = df[col]
     return df.drop(df.columns[location], axis=1), col_del_df
 
+def build_model(framework, model_id):
+    """
+    
+
+    Parameters
+    ----------
+    model_type : TYPE
+        DESCRIPTION.
+    model_id : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    TYPE
+        DESCRIPTION.
+    TYPE
+        DESCRIPTION.
+
+    """
+    if FAKE_MODEL:
+        return None, None
+    model_id = MODEL_SPEC
+    
+    if framework == 'nnsight':
+        tokenizer = AutoTokenizer.from_pretrained(model_id, 
+                                                       unk_token="<unk>",
+                                                       pad_token='[PAD]')
+        model = LanguageModel(model_id, device_map='auto', 
+                                   tokenizer=tokenizer)
+        
+    elif framework == 'transformers':
+        # os.environ['PYTORCH_MPS_HIGH_WATERMARK_RATIO'] = '0.0'
+        if ENVIRONMENT == "turing.wpi.edu":
+            model = AutoModelForCausalLM.from_pretrained(
+                model_id, device_map='auto') #, torch_dtype=torch.float16)
+        else: # ENVIRONMENT == "local_macos"
+            model = AutoModelForCausalLM.from_pretrained(
+                model_id, device_map='auto', torch_dtype=torch.float16)
+        
+        tokenizer = AutoTokenizer.from_pretrained(model_id, unk_token="<unk>")
+
+    return model, tokenizer
 
 # """
 # Begin Script
@@ -1487,7 +1546,8 @@ def delete_cols(table_orig, location):
 
     
 if __name__ == '__main__':
-    genaitable_exec = GenAITableExec()
+    model, tokenizer = build_model(MODEL_TYPE, MODEL_SPEC)
+    genaitable_exec = GenAITableExec(model, tokenizer)
     genaitable_exec.main()
     
 """
