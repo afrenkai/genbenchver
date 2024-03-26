@@ -1,0 +1,11 @@
+{
+    "description": "information about works of classical literature",
+    "lineage": [],
+    "semantic_key": [
+        "Author",
+        "Title"
+    ],
+    "file_ext": ".csv",
+    "field_delim": ";",
+    "file_ext_name": "semi-colon"
+}
