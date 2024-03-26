@@ -28,7 +28,7 @@ from gbv_utils import print_time
 
 # Note only semi-colon-delimited csv files are supported at this time
 
-FAKE_MODEL = True
+FAKE_MODEL = False
 
 DEBUG = True
 
@@ -40,8 +40,8 @@ MAX_ITER = 20
 LINEAGE = "sequence"
 # LINEAGE = "random"
 
-# ENVIRONMENT = "turing.wpi.edu"
-ENVIRONMENT = "local_macos"
+ENVIRONMENT = "turing.wpi.edu"
+# ENVIRONMENT = "local_macos"
 
 TABLES_VERSION_DELIMITER = "_"
 
