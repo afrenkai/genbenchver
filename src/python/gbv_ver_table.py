@@ -36,8 +36,8 @@ class VerTableCache:
         for filename in os.listdir(self.folder):
             # for now, only csv supported
             filetype = "." + filename.split(".")[-1]
-            print_time(filetype, None)
-            print_time(self.supported_formats, None)
+            self.print_debug(filetype, None)
+            self.print_debug(self.supported_formats, None)
             if filetype in self.supported_formats:
                 fullname = filename.split(".")[0]
                 s = fullname.split(self.version_delimiter)
@@ -94,6 +94,10 @@ class VerTableCache:
         if table is not None:
             table.read()
         return table
+    
+    def print_debug(self, var, text):
+        if self.debug:
+            print_time(var, text)
     
 
 class VerTable:
@@ -188,9 +192,7 @@ class VerTable:
             if os.path.exists(self.filespec + ".json"):
                 with open(self.filespec + ".json", "r") as fp:
                     json_dict = json.load(fp)
-                    print("")
-                    print("json_dict")
-                    print_time(json_dict, None)
+                    self.print_debug(json_dict, None)
                     self.description = json_dict['description']
                     # if 'lineage' in json_dict:
                     self.lineage = json_dict['lineage']
@@ -435,8 +437,8 @@ class VerTable:
                 else:
                     extend_dfsk = extend_df[self.semantic_key].copy()
                 extend_dfsk = extend_dfsk.drop_duplicates()
-                print_time(extend_dfsk, None)
-                print_time(dfsk, None)
+                self.print_debug(extend_dfsk, None)
+                self.print_debug(dfsk, None)
                 dfsk = pd.concat([dfsk, extend_dfsk])
                 dfsk = dfsk.drop_duplicates()
         # dfsk = df[self.semantic_key].copy()

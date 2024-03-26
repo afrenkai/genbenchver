@@ -20,6 +20,7 @@ from nnsight import LanguageModel
 import shutil
 import math
 import copy
+import sys
 
 from gbv_prompts import GenAITablePrompts
 from gbv_ver_table import VerTable, VerTableCache
@@ -330,7 +331,7 @@ class GenAITableExec:
                 )
             idx = random.randrange(len(responses))
             responses = responses[idx:idx+1]
-            print_time(responses, None)
+            self.print_debug(responses, None)
         else:
             responses = self.execute_prompts(genai_prompts)
 
@@ -406,7 +407,7 @@ class GenAITableExec:
         else:
             location = random.sample(list(range(nrows)), num_entries)
         df = table_orig.table.copy()
-        print_time(location, None)
+        self.print_debug(location, None)
         changed_df = df.iloc[location,:].copy()
         idx = np.ones(len(df.index), dtype=bool)
         idx[location] = False
@@ -469,10 +470,10 @@ class GenAITableExec:
                 for col in old_columns:
                     colnew = col + "_NEW"
                     if not col.endswith("_NEW") and not colnew in old_columns:
-                        print_time(old_table, None)
-                        print_time(col, None)
+                        self.print_debug(old_table, None)
+                        self.print_debug(col, None)
                         resp_table[colnew] = old_table[col]
-                        print_time(resp_table, None)
+                        self.print_debug(resp_table, None)
                         col_count += 1
                         if col_count >= ncols:
                             break
@@ -482,7 +483,7 @@ class GenAITableExec:
                     colnew = col + "_NEW"
                     if not colnew in old_columns:
                         resp_table[colnew] = old_table[col]
-                        print_time(resp_table, None)
+                        self.print_debug(resp_table, None)
                         col_count += 1
                         if col_count >= ncols:
                             break
@@ -490,7 +491,7 @@ class GenAITableExec:
                     continue
                 for col in old_columns:
                     resp_table[col + "_NEW"] = old_table[col]
-                    print_time(resp_table, None)
+                    self.print_debug(resp_table, None)
                     col_count += 1
                     if col_count >= ncols:
                         break
@@ -579,8 +580,6 @@ class GenAITableExec:
         num_entries = params['num_entries']
         location = params['location']
         indices_elig = []
-        print("")
-        print("table_orig.table")
         self.print_debug(table_orig.table, None)
         for i, col in enumerate(table_orig.table):
             if col not in table_orig.semantic_key:
@@ -615,22 +614,22 @@ class GenAITableExec:
         
         df = table_orig.table.copy()
         
-        print_time(location, None)
+        self.print_debug(location, None)
         col_del_list = []
         for i, col in enumerate(df):
             if i in location:
                 col_del_list.append(col)
-                print_time(None, f"deleting col {col} for location {i}")
-                print_time(col_del_list, None)
+                self.print_debug(None, f"deleting col {col} for location {i}")
+                self.print_debug(col_del_list, None)
                 
-        print_time(location, None)
-        print_time(df, None)
+        self.print_debug(location, None)
+        self.print_debug(df, None)
         changed_df = pd.DataFrame(columns=col_del_list)
         for i, col in enumerate(df):
             if i in location:
                 # col_del_list.append(col)
-                print_time(None, f"deleting col {col} for location {i}")
-                print_time(changed_df, None)
+                self.print_debug(None, f"deleting col {col} for location {i}")
+                self.print_debug(changed_df, None)
                 
                 changed_df[col] = df[col]
         new_df = df.drop(df.columns[location], axis=1)
@@ -804,7 +803,7 @@ class GenAITableExec:
         changed_df = pd.DataFrame(columns=[na_loc[2]])
         changed_df.at[na_loc[1], na_loc[2]] = new_df.at[na_loc[1], na_loc[2]]
         
-        print_time(changed_df, None)
+        self.print_debug(changed_df, None)
         begin_time = round(start_time, 0)
         end_time = round(time.time(), 0)
         duration = end_time - begin_time
@@ -850,7 +849,7 @@ class GenAITableExec:
         
         na_loc = (rand_row, row_index, use_col)
         params['na_loc'] = na_loc
-        print_time(na_loc, "update_val setting to N/A")
+        self.print_debug(na_loc, "update_val setting to N/A")
         new_df, command_dict = self.fill_na(table_orig, params)
         table_orig.table = old_table.copy()
         command_dict['type'] = 'update_val'
@@ -1070,11 +1069,11 @@ class GenAITableExec:
         command = COMMANDS[cmd_id]
         self.print_debug(table_orig.semantic_key, None)
         command_type = command['type']
-        print_time(command, f"Starting operation...{command_type}")
         params = command['params']
         params_list = get_params_list(params)
         random.shuffle(params_list)
         params = params_list[0]
+        print_time(params, f"Starting operation...{command_type}")
         
         if command_type == "add_rows":
             new_df, command_dict = self.add_rows(table_orig, params)
@@ -1097,7 +1096,7 @@ class GenAITableExec:
         if was_none:
             table_orig.purge()
 
-        print_time(command, "Finished successfully")
+        print_time(command_type, "Finished successfully")
         return True
         
     def main(self, args):
@@ -1176,7 +1175,7 @@ def main():
         description=('Auto-generates versions of base file using '
                      + 'generative AI'))
     parser.add_argument(
-        '--debug', dest='debug', action='store_true',default=False,
+        '--debug', dest='debug', action='store_true', default=False,
         help='Turns on debug logging to stdout. Default is off.')
     # parser.add_argument(
     #     '--fake', dest='fake_model', action='store_true', 
