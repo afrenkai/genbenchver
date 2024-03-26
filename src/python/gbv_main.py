@@ -1073,7 +1073,10 @@ class GenAITableExec:
         params_list = get_params_list(params)
         random.shuffle(params_list)
         params = params_list[0]
-        print_time(params, f"Starting operation...{command_type}")
+        print_time(params, (f"Starting operation...{command_type} for "
+                            + f"{table_name}, base version "
+                            + f"{table_orig.version}, new version "
+                            + f"{new_version}"))
         
         if command_type == "add_rows":
             new_df, command_dict = self.add_rows(table_orig, params)
@@ -1217,6 +1220,8 @@ def main():
               + 'Default is the current working directory.'))
     
     args = parser.parse_args()
+    
+    print_time(args.name, "table of operations")
     
     model, tokenizer = build_model(args.framework, MODEL_SPEC, 
                                    args.device_map, args.dtype)
