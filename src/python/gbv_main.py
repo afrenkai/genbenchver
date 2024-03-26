@@ -43,19 +43,22 @@ COMMANDS = [
      'params': {'num_entries' : [1, 2, 3, 4, 5],
                 'location' : ['top', 'bottom', 'random']}},
     {'type': 'del_rows',
-     'params': {'num_entries' : [1, 2, 3, 4, 5],
+     'params': {'num_entries' : [1, 2, 3],
                 'location' : ['random']}},
     {'type': 'add_cols',
      'params': {'num_entries' : [1, 2, 3], # [1, 2, 3, 4, 5],
                 'location' : ['left', 'right', 'random']}},
     {'type': 'del_cols',
-     'params': {'num_entries' : [1, 2, 3, 4, 5],
+     'params': {'num_entries' : [1],
                 'location' : ['random']}},
     {'type': 'fill_na',
+    'params': {'location' : ['first', 'random']}},
+    {'type': 'update_val',
     'params': {'location' : ['first', 'random']}}
     ]
 
-# CMD_PLAN = [
+CMD_PLAN = [
+    # 5, # update_val
 #     4, # fill_na
 #     4, # fill_na
 #     0, # add_row
@@ -66,8 +69,7 @@ COMMANDS = [
 #     2, # add_col
 #     1, # del_row
 #     0, # add_row
-#     'random'
-#     ]
+    ]
 
 TIME_START = time.time()
 DATETIME_START = dt.datetime.now()
@@ -679,7 +681,7 @@ class GenAITableExec:
     
             if na_loc[0] == 0:
                 if resp_table.shape[0] > 1:
-                    dummy_val = resp_table.iloc[resp_table.index[1], na_loc[2]]
+                    dummy_val = resp_table.at[resp_table.index[1], na_loc[2]]
                 else:
                     dummy_val = 0
             else:
@@ -761,16 +763,18 @@ class GenAITableExec:
     def fill_na(self, table_orig, params):
         start_time = round(time.time(), 0)
         # location = params['location']
-        na_loc = None
-        na_list = self.find_all_na(table_orig.table)
-        if len(na_list) == 0:
-            print_time(None, "fill_na: no N/A values to retrieve!")
-            time.sleep(10)
-            return None, None
-        if params['location'] == 'random':
-            random.shuffle(na_list)
-        na_loc = na_list[0]
-        params['na_loc'] = na_loc
+        if 'na_loc' not in params or params['na_loc'] is None:
+            na_list = self.find_all_na(table_orig.table)
+            if len(na_list) == 0:
+                print_time(None, "fill_na: no N/A values to retrieve!")
+                time.sleep(10)
+                return None, None
+            if params['location'] == 'random':
+                random.shuffle(na_list)
+            na_loc = na_list[0]
+            params['na_loc'] = na_loc
+        else:
+            na_loc = params['na_loc']
         
         prompts_input, prompts_output = self.fill_na_exec(table_orig, params)
 
@@ -821,6 +825,39 @@ class GenAITableExec:
                         'preamble': preamble,
                         'postamble': postamble,
                         'changed': changed_df.to_dict()}
+        
+        return new_df, command_dict
+    
+    def update_val(self, table_orig, params):
+        rand_row = random.randrange(table_orig.table.shape[0])
+        num_cols_eligible = (table_orig.table.shape[1] 
+                             - len(table_orig.semantic_key))
+        if num_cols_eligible <= 0:
+            return None, None
+        rand_col = random.randrange(num_cols_eligible)
+        i = 0
+        use_col = None
+        for col in table_orig.table:
+            if col not in table_orig.semantic_key:
+                if rand_col == i:
+                    use_col = col
+                else:
+                    i += 1
+        
+        old_table = table_orig.table.copy()
+        row = table_orig.table.iloc[rand_row]
+        row_index = table_orig.table.index[rand_row]
+        print_time(row, None)
+        print_time(row_index, None)
+        print_time(use_col, None)
+        table_orig.table.at[row_index, use_col] = np.nan
+        
+        na_loc = (rand_row, row_index, use_col)
+        params['na_loc'] = na_loc
+        print_time(na_loc, "update_val setting to N/A")
+        new_df, command_dict = self.fill_na(table_orig, params)
+        table_orig.table = old_table.copy()
+        command_dict['type'] = 'update_val'
         
         return new_df, command_dict
     
@@ -1053,6 +1090,8 @@ class GenAITableExec:
             new_df, command_dict = self.del_cols(table_orig, params)
         elif command_type == "fill_na":
             new_df, command_dict = self.fill_na(table_orig, params)
+        elif command_type == "update_val":
+            new_df, command_dict = self.update_val(table_orig, params)
     
         if new_df is None:
             return False
@@ -1070,8 +1109,11 @@ class GenAITableExec:
         self.args = args
 
         numver = 0
-        for _ in range(self.args.max_iter):
-            command_idx = random.randrange(len(COMMANDS))
+        for idx in range(self.args.max_iter):
+            if idx < len(CMD_PLAN):
+                command_idx = CMD_PLAN[idx]
+            else:
+                command_idx = random.randrange(len(COMMANDS))
             if self.command_exec(command_idx):
                 numver += 1
             if numver >= self.args.num_ver:
