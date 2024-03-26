@@ -110,6 +110,11 @@ def convert(name, folder, format_type, version_delim, orig_delim):
     dfn = os.path.join(folder, name + version_delim + "0.json")
     shutil.copy(sfn, dfn)
 
+def print_debug(var, text):
+    if not DEBUG:
+        return
+    print_time(var, text)
+
 class GenAITableExec:
     # Singleton
  
@@ -574,7 +579,7 @@ class GenAITableExec:
 
 def find_all_na(df):
     na_df = df.isna().copy()
-    print_time(na_df, None)
+    print_debug(na_df, None)
     na_indices = []
     i = 0
     for index, row in na_df.iterrows():
@@ -635,7 +640,7 @@ def new_table(cache, orig_table, version_delimiter, new_df, command_dict,
 
     """
     lineage = orig_table.lineage
-    print_time(lineage, "E")
+    print_debug(lineage, "E")
     if lineage is None:
         lineage = []
     # if orig_table.version > 0:
@@ -645,7 +650,7 @@ def new_table(cache, orig_table, version_delimiter, new_df, command_dict,
     if len(lineage) > 0:
         assert(lineage[-1] != orig_table.version)
     lineage.append(orig_table.version)
-    print_time(lineage, "A")
+    print_debug(lineage, "A")
     info = {'description': orig_table.description,
             'lineage': lineage,
             'semantic_key': orig_table.semantic_key,
@@ -704,8 +709,8 @@ def add_table(orig_table, data, location, axis):
         for col in old_table:
             if col not in df:
                 df[col] = np.nan
-        print_time(old_table, "row")
-        print_time(df, "row")
+        print_debug(old_table, "row")
+        print_debug(df, "row")
         if location == 0:
             new_df = pd.concat([df, old_table], axis=axis)
         elif location == (n_entries-1):
@@ -718,10 +723,10 @@ def add_table(orig_table, data, location, axis):
         # For column we do an outer join on the semantic key so as not to
         # use the index
         
-        print_time(df, "col")
-        print_time(old_table, "col")
+        print_debug(df, "col")
+        print_debug(old_table, "col")
         new_df = old_table.merge(df, how='outer', on=orig_table.semantic_key)
-        print_time(new_df, "col")
+        print_debug(new_df, "col")
         
         cols_new = []
 
@@ -756,7 +761,7 @@ def add_table(orig_table, data, location, axis):
         new_df = new_df[cols_new]
         
     new_df.reset_index(drop=True, inplace=True)            
-    print_time(new_df, None)
+    print_debug(new_df, None)
     if was_none:
         orig_table.table = None
     return new_df
@@ -799,7 +804,7 @@ def find_valid_csv_tables(table_orig, text, nrows_expected):
                 valid = False
         if valid:        
             table_text = "\n".join(lines[i:i+nrows_expected])
-            print_time(table_text, None)
+            print_debug(table_text, None)
             try:
                 df = pd.read_csv(io.StringIO(table_text), sep=sep, header=None,
                                  names=list(table_orig.table.columns))
@@ -824,11 +829,11 @@ def find_valid_csv_tables(table_orig, text, nrows_expected):
         
         if valid:
             for j in range(len(lines)):
-                print_time(lines[j], None)
+                print_debug(lines[j], None)
                 lines[j] = lines[j].strip()
-                print_time(lines[j], None)
+                print_debug(lines[j], None)
             table_text = "\n".join(lines[i:i+nrows_expected+1])
-            print_time(table_text, None)
+            print_debug(table_text, None)
             try:
                 df = pd.read_csv(io.StringIO(table_text), sep=sep)
                 preamble_text = "\n".join(lines[0:i])
@@ -858,10 +863,10 @@ def parse_table_responses(table, responses, nrows_expected):
     """
     # only supports one response for now
     table_responses = []
-    print_time(nrows_expected, None)
+    print_debug(nrows_expected, None)
     for response in responses:
         
-        print_time(response, None)
+        print_debug(response, None)
         # time.sleep(10)
         
         # BEGIN SEARCH FOR TABLE WITHIN RESPONSE        
@@ -876,7 +881,7 @@ def parse_table_responses(table, responses, nrows_expected):
 
         valid_csv_tables = find_valid_csv_tables(table, response,
                                                  nrows_expected)
-        print_time(valid_csv_tables, None)
+        print_debug(valid_csv_tables, None)
 
         # loop through valid tables
         col_valid_csv_table = None
@@ -889,7 +894,7 @@ def parse_table_responses(table, responses, nrows_expected):
                 'output_table': col_valid_csv_table[1].copy(),
                 'postamble': col_valid_csv_table[2]
                 }
-            print_time(table_response, None)
+            print_debug(table_response, None)
             table_responses.append(table_response)
             
     return(table_responses)
