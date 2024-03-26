@@ -28,9 +28,9 @@ from gbv_utils import print_time
 
 # Note only semi-colon-delimited csv files are supported at this time
 
-FAKE_MODEL = False
+FAKE_MODEL = True
 
-DEBUG = True
+DEBUG = False
 
 # BASE_TABLE_NAME = "autona"
 
@@ -209,7 +209,33 @@ class GenAITableExec:
     
         print_time("--- %s seconds ---" % (time.time() - start_time), None)
         return(prompts_output)
+    
+    def get_text_from_output(self, prompt_output, sep):
+        preamble = prompt_output['preamble']
+        table_df = prompt_output['output_table']
+        output_table = table_df.to_csv(sep=sep)
+        postamble = prompt_output['postamble']
+        
+        return table_df, preamble, output_table, postamble
 
+    def add_table(self, table_orig, table_df, location, axis):
+        # preamble = prompt_output['preamble']
+        # table_df = prompt_output['output_table']
+        # output_table = table_df.to_csv(sep=table_orig.format_type[1])
+        # postamble = prompt_output['postamble']
+        self.print_debug(table_df, None)
+        if table_df is None:
+            print_time(None, "add_row or add_col: Table not found!")
+            time.sleep(10)
+            return False # we did not find a table in the response, do nothing
+        new_df = add_table(table_orig, table_df, location, axis)
+        if new_df is None:
+            print_time(None, "Bad csv format of output")
+            time.sleep(10)
+            return False
+        new_df = new_df.drop_duplicates()
+        return new_df
+            
     def add_rows(self, table_orig, params):
         # prompts_input, prompts_output = \ 
         #     self.add_rows(table_orig, params)
@@ -318,12 +344,15 @@ class GenAITableExec:
         prompts_output = None
         command = COMMANDS[cmd_id]
         self.print_debug(table_orig.semantic_key, None)
-        print_time(command, "Starting operation...")
         command_type = command['type']
+        print_time(command, f"Starting operation...{command_type}")
         params = command['params']
         params_list = get_params_list(params)
         random.shuffle(params_list)
         params = params_list[0]
+        
+        use_prompt = ['add_rows', 'add_cols'] # add 'fill_na' later
+        result_add_table = ['add_rows', 'add_cols']
         
         
         if command_type == "add_rows":
@@ -466,35 +495,63 @@ class GenAITableExec:
                                                               na_loc[2]]
             changed_df = pd.DataFrame(columns=[na_loc[2]])
             changed_df.at[na_loc[1], na_loc[2]] = new_df.at[na_loc[1], na_loc[2]]
-        if command_type == "add_rows" or command_type == "add_cols":
-            preamble = prompts_output[0]['preamble']
-            table_df = prompts_output[0]['output_table']
-            output_table = table_df.to_csv(sep=table_orig.format_type[1])
-            self.print_debug(table_df, None)
-            if table_df is None:
-                print_time(None, "add_row or add_col: Table not found!")
+        if command_type in use_prompt:
+            table_df, preamble, output_table, postamble = \
+                self.get_text_from_output(prompts_output[0], 
+                                          table_orig.format_type[1])
+            if output_table == "":
+                print_time(None, "Table not found!")
                 time.sleep(10)
                 return False # we did not find a table in the response, do nothing
-            postamble = prompts_output[0]['postamble']
-            new_df = add_table(table_orig, table_df, params['location'], axis)
-            if new_df is None:
-                print_time(None, "Bad csv format of output")
-                time.sleep(10)
-                return False
-            new_df = new_df.drop_duplicates()
             
-            if (command_type == "add_rows" 
-                  and table_df.shape[0] > table_orig.table.shape[0]):
-                changed_df = pd.concat([table_df, new_df])
-                changed_df = changed_df.drop_duplicates()
-            else:
-                changed_df = table_df.copy()
-            if command_type == "add_cols":
-                for col in table_orig.semantic_key:
-                    if col in changed_df:
-                        changed_df = changed_df.drop(col, axis=1)
+        if command_type in result_add_table:
+            new_df = self.add_table(table_orig, 
+                                    prompts_output[0]['output_table'], 
+                                    params['location'], axis)
+            
+            
+        # if command_type == "add_rows" or command_type == "add_cols":
+            # preamble = prompts_output[0]['preamble']
+            # table_df = prompts_output[0]['output_table']
+            # output_table = table_df.to_csv(sep=table_orig.format_type[1])
+            # # self.print_debug(table_df, None)
+            # # if table_df is None:
+            # #     print_time(None, "add_row or add_col: Table not found!")
+            # #     time.sleep(10)
+            # #     return False # we did not find a table in the response, do nothing
+            # postamble = prompts_output[0]['postamble']
+            # new_df = add_table(table_orig, table_df, params['location'], axis)
+            # if new_df is None:
+            #     print_time(None, "Bad csv format of output")
+            #     time.sleep(10)
+            #     return False
+            # new_df = new_df.drop_duplicates()
+    # def get_text_from_output(self, prompt_output, sep):
+    #     preamble = prompt_output['preamble']
+    #     table_df = prompt_output['output_table']
+    #     output_table = table_df.to_csv(sep=sep)
+    #     postamble = prompt_output['postamble']
+        
+    #     return preamble, output_table, postamble
+
+    # def add_table(self, table_orig, table_df, location, axis):
+            
+            
+        if (command_type == "add_rows" 
+              and table_df.shape[0] > table_orig.table.shape[0]):
+            changed_df = pd.concat([table_df, new_df])
+            changed_df = changed_df.drop_duplicates()
+            print_time(changed_df, "add_rows")
+        elif command_type == "add_rows" or command_type == 'add_cols':
+            changed_df = table_df.copy()
+            print_time(changed_df, "add_rows")
+        if command_type == "add_cols":
+            for col in table_orig.semantic_key:
+                if col in changed_df:
+                    changed_df = changed_df.drop(col, axis=1)
         if (command_type == "add_rows" or command_type == "add_cols" 
             or command_type == "fill_na"):
+            print_time(changed_df, "add_rows")
             begin_time = round(start_time, 0)
             end_time = round(time.time(), 0)
             duration = end_time - begin_time
