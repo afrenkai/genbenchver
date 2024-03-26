@@ -32,37 +32,41 @@ FAKE_MODEL = False
 
 DEBUG = True
 
-BASE_TABLE_NAME = "autona"
+# BASE_TABLE_NAME = "autona"
 
-NUM_VER = 10
-MAX_ITER = 20
+# NUM_VER = 10
+# MAX_ITER = 20
 
-LINEAGE = "sequence"
+# LINEAGE = "sequence"
 # LINEAGE = "random"
 
-ENVIRONMENT = "turing.wpi.edu"
+# ENVIRONMENT = "turing.wpi.edu"
 # ENVIRONMENT = "local_macos"
 
-TABLES_VERSION_DELIMITER = "_"
 
 # MODEL_SPEC = 'learnanything/llama-7b-huggingface'
 MODEL_SPEC = 'mistralai/Mixtral-8x7B-Instruct-v0.1'
 # MODEL_SPEC = 'mistralai/Mistral-7B-v0.1'
 
+TABLES_VERSION_DELIMITER = "_"
 FORMAT_CSV_DELIMITER = ';'
 FORMAT_CSV_DELIMITER_NAME = "semi-colon"
 FORMAT_CSV = '.csv'
 FORMAT_TYPE = (FORMAT_CSV, FORMAT_CSV_DELIMITER, FORMAT_CSV_DELIMITER_NAME)
+SUPPORTED_FORMATS = [FORMAT_CSV]
 
-if ENVIRONMENT == "turing.wpi.edu":
-    MODEL_TYPE = 'nnsight'
-    DEVICE_MAP = "cuda"
-    TABLES_FOLDER = "../../tables"
-else: # ENVIRONMENT == "local_macos"
-    os.environ["PYTORCH_MPS_HIGH_WATERMARK_RATIO"] = "0.0"
-    MODEL_TYPE = 'transformers'
-    DEVICE_MAP = "mps"
-    TABLES_FOLDER = "../../tables"
+# FRAMEWORK = 'nnsight'
+# FRAMEWORK = 'transformers'
+
+# if ENVIRONMENT == "turing.wpi.edu":
+#     MODEL_TYPE = 'nnsight'
+#     DEVICE_MAP = "cuda"
+#     TABLES_FOLDER = "../../tables"
+# else: # ENVIRONMENT == "local_macos"
+#     os.environ["PYTORCH_MPS_HIGH_WATERMARK_RATIO"] = "0.0"
+#     MODEL_TYPE = 'transformers'
+#     DEVICE_MAP = "mps"
+#     TABLES_FOLDER = "../../tables"
 
 COMMANDS = [
     {'type': 'add_rows',
@@ -81,19 +85,19 @@ COMMANDS = [
     'params': {'location' : ['first', 'random']}}
     ]
 
-CMD_PLAN = [
-    4, # fill_na
-    4, # fill_na
-    0, # add_row
-    2, # add_col
-    3, # del_col
-    1, # del_row
-    4, # fill_na
-    2, # add_col
-    1, # del_row
-    0, # add_row
-    'random'
-    ]
+# CMD_PLAN = [
+#     4, # fill_na
+#     4, # fill_na
+#     0, # add_row
+#     2, # add_col
+#     3, # del_col
+#     1, # del_row
+#     4, # fill_na
+#     2, # add_col
+#     1, # del_row
+#     0, # add_row
+#     'random'
+#     ]
 
 TIME_START = time.time()
 DATETIME_START = dt.datetime.now()
@@ -120,7 +124,7 @@ class GenAITableExec:
  
     def __init__(self, cache, model, tokenizer):
         self.args = None
-        self.tables_version_delimiter = "_"
+        self.tables_version_delimiter = TABLES_VERSION_DELIMITER
         # model_type = 'nnsight'
         self.model = model
         self.tokenizer = tokenizer
@@ -171,7 +175,7 @@ class GenAITableExec:
         print_time(f"--- starting at {start}", None)
         prompts_output = []
         
-        if self.args.model_type == 'nnsight':
+        if self.framework == 'nnsight':
             with self.model.generate(max_new_tokens=genai_prompts.max_new_tokens, 
                                      remote=False) as generator:
                 print_time("--- %s seconds ---" % (time.time() - start_time), None)
@@ -190,9 +194,9 @@ class GenAITableExec:
                 
                 
         
-        elif self.args.model_type == 'transformers':
+        elif self.framework == 'transformers':
             inputs = self.tokenizer("[INST] " + genai_prompts.prompts[0] + " /[INST]",
-                                    return_tensors="pt").to(DEVICE_MAP)
+                                    return_tensors="pt").to(self.args.device_map)
             
             outputs = self.model.generate(
                 **inputs, max_new_tokens=genai_prompts.max_new_tokens)
@@ -291,9 +295,10 @@ class GenAITableExec:
         
         cache = self.cache
         table_name = self.args.name
-        model_type = self.args.model_type
+        model_type = self.args.framework
         model = self.model
         tokenizer = self.tokenizer
+        device_map = self.args.device_map
         
         new_version = cache.get_next_ver_for_table(table_name)
         self.print_debug(new_version, None)
@@ -376,7 +381,8 @@ class GenAITableExec:
             prompts_input, prompts_output = add_cols(cache, table_orig, 
                                                      num_entries, 
                                                      model_type, 
-                                                     model, tokenizer)
+                                                     model, tokenizer,
+                                                     device_map)
             if len(prompts_output) == 0:
                 print_time(None, "add_col: Table not found!")
                 time.sleep(10)
@@ -436,7 +442,7 @@ class GenAITableExec:
             na_loc = na_list[0]
             prompts_input, prompts_output = fill_na(cache, table_orig, na_loc,
                                                     model_type, self.model, 
-                                                    self.tokenizer)
+                                                    self.tokenizer, device_map)
         
             if len(prompts_output) <= 0:
                 print_time(None, "fill_na: Table not found!")
@@ -514,58 +520,60 @@ class GenAITableExec:
                             'params': params,
                             'changed': changed_df.to_dict()}
     
-        new_table(cache, table_orig, TABLES_VERSION_DELIMITER, new_df, 
+        new_table(cache, table_orig, self.tables_version_delimiter, new_df, 
                   command_dict, new_version)
         if was_none:
             table_orig.purge()
         print_time(command, "Finished successfully")
         return True
         
-    def main(self):
-        print_time(None, "Starting globally...")
+    def main(self, args):
         
-        parser = argparse.ArgumentParser(
-            description=('Auto-generates versions of base file using '
-                         + 'generative AI'))
-        parser.add_argument(
-            '-d', '--debug', dest='debug', action='store_true',default=False,
-            help='Turns on debug logging to stdout. Default is off.')
-        parser.add_argument(
-            '-f', '--fake', dest='fake_model', action='store_true', 
-            default=False,
-            help=('Tests code with fake responses without using the '
-                  + 'generative AI. Default uses real interaction.'))
-        parser.add_argument(
-            '-s', '--sep', dest='orig_delim', type=str, default=',',
-            help=('Column separator of the original file. Only used before '
-                  + 'versions have been generated. Default is comma'))
-        parser.add_argument(
-            '-l', '--lineage', dest='lineage', type=str, default="sequence",
-            help=('Type of lineage for versions created: '
-                  + '"sequence" (default) | "random"'))
-        parser.add_argument(
-            '-g', '--gpu', dest='device_map', type=str, default='cuda',
-            help='Type of GPU: "cuda" (default) | "mps"')
-        parser.add_argument(
-            '-n', '--numver', dest='num_ver', type=int, default=10,
-            help=('Number of versions to create. Default is 10. '
-                  + 'Unsuccessful attempts do not count'))
-        parser.add_argument(
-            '-i', '--maxiter', dest='max_iter', type=int, default=20,
-            help='Maximum number of table create attempts. Default is 20.')
-        parser.add_argument(
-            '-m', '--model', dest='model_type', type=str, default='nnsight',
-            help=('Model framework type: nnsight | transformers. Default is '
-                  + 'nnsight'))
-        parser.add_argument('name', type=str,
-            help=('Filename of the table without extension '
-                  + '(only .csv extension is supported)'))
-        parser.add_argument(
-            'tablesdir', type=str, default=".",
-            help=('Directory locaton of the tables. ' 
-                  + 'Default is the current working directory.'))
+        # print_time(None, "Starting globally...")
         
-        self.args = parser.parse_args()
+        # parser = argparse.ArgumentParser(
+        #     description=('Auto-generates versions of base file using '
+        #                  + 'generative AI'))
+        # parser.add_argument(
+        #     '-d', '--debug', dest='debug', action='store_true',default=False,
+        #     help='Turns on debug logging to stdout. Default is off.')
+        # parser.add_argument(
+        #     '-f', '--fake', dest='fake_model', action='store_true', 
+        #     default=False,
+        #     help=('Tests code with fake responses without using the '
+        #           + 'generative AI. Default uses real interaction.'))
+        # parser.add_argument(
+        #     '-s', '--sep', dest='orig_delim', type=str, default=',',
+        #     help=('Column separator of the original file. Only used before '
+        #           + 'versions have been generated. Default is comma'))
+        # parser.add_argument(
+        #     '-l', '--lineage', dest='lineage', type=str, default="sequence",
+        #     help=('Type of lineage for versions created: '
+        #           + '"sequence" (default) | "random"'))
+        # parser.add_argument(
+        #     '-g', '--gpu', dest='device_map', type=str, default='cuda',
+        #     help='Type of GPU: "cuda" (default) | "mps"')
+        # parser.add_argument(
+        #     '-n', '--numver', dest='num_ver', type=int, default=10,
+        #     help=('Number of versions to create. Default is 10. '
+        #           + 'Unsuccessful attempts do not count'))
+        # parser.add_argument(
+        #     '-i', '--maxiter', dest='max_iter', type=int, default=20,
+        #     help='Maximum number of table create attempts. Default is 20.')
+        # parser.add_argument(
+        #     '-m', '--model', dest='model_type', type=str, default='nnsight',
+        #     help=('Model framework type: nnsight | transformers. Default is '
+        #           + 'nnsight'))
+        # parser.add_argument('name', type=str,
+        #     help=('Filename of the table without extension '
+        #           + '(only .csv extension is supported)'))
+        # parser.add_argument(
+        #     'tablesdir', type=str, default=".",
+        #     help=('Directory locaton of the tables. ' 
+        #           + 'Default is the current working directory.'))
+        
+        # self.args = parser.parse_args()
+        self.args = args
 
         # self.build_model_and_cache()
 
@@ -899,7 +907,8 @@ def parse_table_responses(table, responses, nrows_expected):
             
     return(table_responses)
     
-def execute_prompts_static(model_type, tokenizer, model, genai_prompts):
+def execute_prompts_static(model_type, tokenizer, model, device_map, 
+                           genai_prompts):
     """
     
 
@@ -948,7 +957,7 @@ def execute_prompts_static(model_type, tokenizer, model, genai_prompts):
     
     elif model_type == 'transformers':
         inputs = tokenizer("[INST] " + genai_prompts.prompts[0] + " /[INST]",
-                                return_tensors="pt").to(DEVICE_MAP)
+                                return_tensors="pt").to(device_map)
         
         outputs = model.generate(
             **inputs, max_new_tokens=genai_prompts.max_new_tokens)
@@ -962,7 +971,8 @@ def execute_prompts_static(model_type, tokenizer, model, genai_prompts):
     print_time("--- %s seconds ---" % (time.time() - start_time), None)
     return(prompts_output)
 
-def add_cols(v_cache, table_orig, ncols, model_type, model, tokenizer):
+def add_cols(v_cache, table_orig, ncols, model_type, model, tokenizer,
+             device_map):
     """
     
 
@@ -1059,7 +1069,8 @@ def add_cols(v_cache, table_orig, ncols, model_type, model, tokenizer):
         responses = responses[idx:idx+1]
     else:
             
-        responses = execute_prompts_static(model_type, tokenizer, model, 
+        responses = execute_prompts_static(model_type, tokenizer, model,
+                                           device_map,
                                            genai_prompts)
     rsp =  parse_table_responses(
         table_orig, responses, table_orig.table.shape[0]) 
@@ -1069,7 +1080,8 @@ def add_cols(v_cache, table_orig, ncols, model_type, model, tokenizer):
         
     return genai_prompts.prompts, rsp
 
-def fill_na(v_cache, table_orig, na_loc, model_type, model, tokenizer):
+def fill_na(v_cache, table_orig, na_loc, model_type, model, tokenizer,
+            device_map):
 
     was_none = False
     if table_orig.table is None:
@@ -1168,7 +1180,8 @@ def fill_na(v_cache, table_orig, na_loc, model_type, model, tokenizer):
         
     else:
             
-        responses = execute_prompts_static(model_type, tokenizer, model, 
+        responses = execute_prompts_static(model_type, tokenizer, model,
+                                           device_map,
                                            genai_prompts)
     rsp =  parse_table_responses(
         table_orig, responses, min(table_orig.table.shape[0], 3)) 
@@ -1271,7 +1284,7 @@ def delete_cols(table_orig, location):
             col_del_df[col] = df[col]
     return df.drop(df.columns[location], axis=1), col_del_df
 
-def build_model(framework, model_id):
+def build_model(framework, model_id, device_map, data_type):
     """
     
 
@@ -1298,17 +1311,24 @@ def build_model(framework, model_id):
         tokenizer = AutoTokenizer.from_pretrained(model_id, 
                                                        unk_token="<unk>",
                                                        pad_token='[PAD]')
-        model = LanguageModel(model_id, device_map='auto', 
+        model = LanguageModel(model_id, device_map=device_map, 
                                    tokenizer=tokenizer)
         
     elif framework == 'transformers':
         # os.environ['PYTORCH_MPS_HIGH_WATERMARK_RATIO'] = '0.0'
-        if ENVIRONMENT == "turing.wpi.edu":
+        if data_type == "float16":
             model = AutoModelForCausalLM.from_pretrained(
-                model_id, device_map='auto') #, torch_dtype=torch.float16)
-        else: # ENVIRONMENT == "local_macos"
+                model_id, device_map=device_map, torch_dtype=torch.float16)
+        else: # None
             model = AutoModelForCausalLM.from_pretrained(
-                model_id, device_map='auto', torch_dtype=torch.float16)
+                model_id, device_map=device_map) #, torch_dtype=torch.float16)
+
+        # if ENVIRONMENT == "turing.wpi.edu":
+        #     model = AutoModelForCausalLM.from_pretrained(
+        #         model_id, device_map='auto') #, torch_dtype=torch.float16)
+        # else: # ENVIRONMENT == "local_macos"
+        #     model = AutoModelForCausalLM.from_pretrained(
+        #         model_id, device_map='auto', torch_dtype=torch.float16)
         
         tokenizer = AutoTokenizer.from_pretrained(model_id, unk_token="<unk>")
 
@@ -1318,13 +1338,71 @@ def build_model(framework, model_id):
 # Begin Script
 # """
 
+def main():
+    print_time(None, "Starting globally...")
+    
+    parser = argparse.ArgumentParser(
+        description=('Auto-generates versions of base file using '
+                     + 'generative AI'))
+    parser.add_argument(
+        '--debug', dest='debug', action='store_true',default=False,
+        help='Turns on debug logging to stdout. Default is off.')
+    parser.add_argument(
+        '--fake', dest='fake_model', action='store_true', 
+        default=False,
+        help=('Tests code with fake responses without using the '
+              + 'generative AI. Default uses real interaction.'))
+    parser.add_argument(
+        '-s', '--sep', dest='orig_delim', type=str, default=',',
+        help=('Column separator of the original file. Only used before '
+              + 'versions have been generated. Default is comma'))
+    parser.add_argument(
+        '-l', '--lineage', dest='lineage', type=str, default="sequence",
+        help=('Type of lineage for versions created: '
+              + '"sequence" (default) | "random"'))
+    parser.add_argument(
+        '-g', '--gpu', dest='device_map', type=str, default="auto",
+        help=('Specify type of GPU: "cuda" (default) | "mps". '
+              + 'Default is "auto"'))
+    parser.add_argument(
+        '-n', '--numver', dest='num_ver', type=int, default=10,
+        help=('Number of versions to create. Default is 10. '
+              + 'Unsuccessful attempts do not count'))
+    parser.add_argument(
+        '-i', '--maxiter', dest='max_iter', type=int, default=20,
+        help='Maximum number of table create attempts. Default is 20.')
+    parser.add_argument(
+        '-f', '--framework', dest='framework', type=str, default='nnsight',
+        help=('Model framework type: nnsight | transformers. Default is '
+              + 'nnsight'))
+    parser.add_argument(
+        '-d', '--datatype', dest='dtype', type=str, default=None,
+        help=('Data type for model. Use "float16" to reduce footprint. '
+              + ' Default is None'))
+    parser.add_argument('name', type=str,
+        help=('Filename of the table without extension '
+              + '(only .csv extension is supported)'))
+    parser.add_argument('tablesdir', type=str, default=".",
+        help=('Directory locaton of the tables. ' 
+              + 'Default is the current working directory.'))
+    
+    args = parser.parse_args()
+
+    model, tokenizer = build_model(args.framework, MODEL_SPEC, 
+                                   args.device_map, args.dtype)
+    v_cache = VerTableCache(args.tablesdir, 
+                            supported_formats=SUPPORTED_FORMATS,
+                            debug=args.debug, new_format_type=FORMAT_TYPE)
+    genaitable_exec = GenAITableExec(v_cache, model, tokenizer)
+    genaitable_exec.main(args)
     
 if __name__ == '__main__':
-    model, tokenizer = build_model(MODEL_TYPE, MODEL_SPEC)
-    v_cache = VerTableCache(TABLES_FOLDER, supported_formats=[FORMAT_TYPE[0]],
-                            debug=DEBUG, new_format_type=FORMAT_TYPE)
-    genaitable_exec = GenAITableExec(v_cache, model, tokenizer)
-    genaitable_exec.main()
+    main()
+    # model, tokenizer = build_model(args.framework, MODEL_SPEC)
+    # v_cache = VerTableCache(args.tablesdir, supported_formats=[FORMAT_TYPE[0]],
+    #                         debug=args.debug, new_format_type=FORMAT_TYPE)
+    # genaitable_exec = GenAITableExec(v_cache, model, tokenizer)
+    # genaitable_exec.main(args)
     
 """
 End script
