@@ -845,11 +845,7 @@ class GenAITableExec:
                     i += 1
         
         old_table = table_orig.table.copy()
-        row = table_orig.table.iloc[rand_row]
         row_index = table_orig.table.index[rand_row]
-        print_time(row, None)
-        print_time(row_index, None)
-        print_time(use_col, None)
         table_orig.table.at[row_index, use_col] = np.nan
         
         na_loc = (rand_row, row_index, use_col)
