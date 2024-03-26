@@ -28,7 +28,7 @@ from gbv_utils import print_time
 
 # Note only semi-colon-delimited csv files are supported at this time
 
-FAKE_MODEL = True
+FAKE_MODEL = False
 
 DEBUG = False
 
