@@ -23,7 +23,7 @@ import shutil
 import math
 
 from gbv_prompts import GenAITablePrompts
-from gbv_ver_table import VerTable
+from gbv_ver_table import VerTable, VerTableCache
 from gbv_utils import print_time
 
 # Note only semi-colon-delimited csv files are supported at this time
@@ -100,16 +100,26 @@ DATETIME_START = dt.datetime.now()
 
 random.seed(TIME_START)
 
+def convert(name, folder, format_type, version_delim, orig_delim):
+    fn = os.path.join(folder, name + FORMAT_TYPE[0])
+    df = pd.read_csv(fn, sep=orig_delim)
+    fn = os.path.join(folder, (name + version_delim + "0" + FORMAT_TYPE[0]))
+    df.to_csv(fn, sep=FORMAT_CSV_DELIMITER)
+    
+    sfn = os.path.join(folder, name + ".json")
+    dfn = os.path.join(folder, name + version_delim + "0.json")
+    shutil.copy(sfn, dfn)
+
 class GenAITableExec:
     # Singleton
  
-    def __init__(self, model, tokenizer):
+    def __init__(self, cache, model, tokenizer):
         self.args = None
         self.tables_version_delimiter = "_"
         # model_type = 'nnsight'
         self.model = model
         self.tokenizer = tokenizer
-        self.cache = None
+        self.cache = cache
         self.model_spec = MODEL_SPEC
     
     def print_debug(self, var, text):
@@ -127,258 +137,7 @@ class GenAITableExec:
         sfn = os.path.join(self.args.tablesdir, self.args.name + ".json")
         dfn = os.path.join(self.args.tablesdir, self.args.name + "_0.json")
         shutil.copy(sfn, dfn)
-        
     
-    def update_ver_table_cache(self, table, version):
-        """
-        
-    
-        Parameters
-        ----------
-        vtindex : TYPE
-            DESCRIPTION.
-        name : TYPE
-            DESCRIPTION.
-        table : TYPE
-            DESCRIPTION.
-        version : TYPE
-            DESCRIPTION.
-    
-        Returns
-        -------
-        None.
-    
-        """
-        if self.args.name not in self.cache:
-            self.cache[self.args.name] = {}
-        name_dict = self.cache[self.args.name]
-        name_dict[version] = {'table': table}
-        
-    
-    def get_high_ver_for_table(cache, name):
-        """
-        
-    
-        Parameters
-        ----------
-        cache : TYPE
-            DESCRIPTION.
-        name : TYPE
-            DESCRIPTION.
-    
-        Returns
-        -------
-        new_version : TYPE
-            DESCRIPTION.
-    
-        """
-        return max(list(cache[name].keys())) 
-    
-    def get_next_ver_for_table(cache, name):
-        """
-        
-    
-        Parameters
-        ----------
-        cache : TYPE
-            DESCRIPTION.
-        name : TYPE
-            DESCRIPTION.
-    
-        Returns
-        -------
-        new_version : TYPE
-            DESCRIPTION.
-    
-        """
-        return GenAITableExec.get_high_ver_for_table(cache, name) + 1
-    
-    def get_table_random_from_cache(cache, name):
-        """
-        
-    
-        Parameters
-        ----------
-        cache : TYPE
-            DESCRIPTION.
-        name : TYPE
-            DESCRIPTION.
-    
-        Returns
-        -------
-        table : TYPE
-            DESCRIPTION.
-    
-        """
-        if name in cache:
-            r = random.randrange(len(cache[name]))
-            for i, version in enumerate(cache[name]):
-                if i == r:
-                    table = cache[name][version]['table']
-                    if table is not None:
-                        return table
-        return None
-                                
-    
-    def read_table_from_cache(cache, name, version):
-        """
-        
-    
-        Parameters
-        ----------
-        cache : TYPE
-            DESCRIPTION.
-        name : TYPE
-            DESCRIPTION.
-        version : TYPE
-            DESCRIPTION.
-    
-        Returns
-        -------
-        table : TYPE
-            DESCRIPTION.
-    
-        """
-        table = VerTable.get_table_from_cache(cache, name, version)
-        if table is not None:
-            table.read()
-        return table
-    
-    def add_table_to_cache(vtindex, table):
-        """
-        
-    
-        Parameters
-        ----------
-        vtindex : TYPE
-            DESCRIPTION.
-        table : TYPE
-            DESCRIPTION.
-    
-        Returns
-        -------
-        None.
-    
-        """
-        if table.name not in vtindex:
-            vtindex[table.name] = {}
-        cur_ver_dict = vtindex[table.name]
-        if table.version not in cur_ver_dict:
-            cur_ver_dict[table.version] = {}
-        
-        if 'table' in cur_ver_dict[table.version]:
-            print_time(None, "table already set in cache! Overwriting...")
-        cur_ver_dict[table.version]['table'] = table
-
-    def build_ver_table_cache(self):
-        """
-        
-    
-        Parameters
-        ----------
-        folder : TYPE
-            DESCRIPTION.
-        version_delimiter : TYPE
-            DESCRIPTION.
-    
-        Returns
-        -------
-        cache : TYPE
-            DESCRIPTION.
-    
-        """
-        self.cache = {}
-        tables_folder = self.args.tablesdir
-        version_delimiter = self.tables_version_delimiter
-        
-        # get base files first
-        for filename in os.listdir(tables_folder):
-            # for now, only csv supported
-            if filename.endswith(".csv") and filename.startswith(self.args.name):
-                fullname = filename.split(".")[0]
-                s = fullname.split(version_delimiter)
-                description = None
-                lineage = []
-                semantic_key = ""
-                preamble = None
-                postamble = None
-                command_dict = None
-                if len(s) == 1:
-                    name = s[0]
-                    version = None
-                    json_fn = name + ".json"
-                elif len(s) >= 2:
-                    if s[-1].isdecimal():
-                        name = version_delimiter.join(s[0:-1])
-                        version = int(s[-1])
-                        json_fn = (name + version_delimiter + str(version) 
-                                   + ".json")
-                    else:
-                        name = version_delimiter.join(s)
-                        version = None
-                        json_fn = name + ".json"
-                json_ffn = os.path.join(tables_folder, json_fn)
-                if os.path.exists(json_ffn):
-                    with open(json_ffn) as fp:
-                        json_dict = json.load(fp)
-                    if json_dict is not None:
-                        description = json_dict['description']
-                        if 'lineage' in json_dict:
-                            lineage = json_dict['lineage']
-                        if 'semantic_key' not in json_dict:
-                            if FAKE_MODEL:
-                                semantic_key = ["Model", "Make", "Year"]
-                        else:
-                            semantic_key = json_dict['semantic_key']
-                        if 'preamble' in json_dict:
-                            preamble = json_dict['preamble']
-                        if 'postamble' in json_dict:
-                            postamble = json_dict['postamble']
-                        if 'command' in json_dict:
-                            command_dict = json_dict['command']
-                    if version is None and name == self.args.name:
-                        # convert file 
-                        self.convert()
-                        version = 0
-                print_time(semantic_key, None)
-                print_time(lineage, None)
-                table = VerTable(None, tables_folder, name, description, 
-                                 preamble, postamble, semantic_key, 
-                                 version_delimiter, 
-                                 FORMAT_TYPE, version, lineage, command_dict,
-                                 self.args.debug)
-                if table is not None:
-                    self.update_ver_table_cache(table, version)
-
-
-    def build_model_and_cache(self):
-        """
-        
-    
-        Parameters
-        ----------
-        model_type : TYPE
-            DESCRIPTION.
-        model_spec : TYPE
-            DESCRIPTION.
-        tables_folder : TYPE
-            DESCRIPTION.
-        tables_version_delimiter : TYPE
-            DESCRIPTION.
-    
-        Returns
-        -------
-        model : TYPE
-            DESCRIPTION.
-        tokenizer : TYPE
-            DESCRIPTION.
-        ver_table_cache : TYPE
-            DESCRIPTION.
-    
-        """
-        # build_model()
-        self.build_ver_table_cache()
-      
     def execute_prompts(self, genai_prompts):
         """
         
@@ -531,15 +290,13 @@ class GenAITableExec:
         model = self.model
         tokenizer = self.tokenizer
         
-        new_version = GenAITableExec.get_next_ver_for_table(cache, table_name)
+        new_version = cache.get_next_ver_for_table(table_name)
         self.print_debug(new_version, None)
         if LINEAGE == "random":
-            table_orig = GenAITableExec.\
-                get_table_random_from_cache(cache, table_name)
+            table_orig = cache.get_table_random_from_cache(table_name)
         else: # LINEAGE == "sequence"
-            table_orig = VerTable.get_table_from_cache(
-                cache, table_name, GenAITableExec.\
-                    get_high_ver_for_table(cache, table_name))
+            table_orig = cache.get(table_name, 
+                                   cache.get_high_ver_for_table(table_name))
         self.print_debug(table_orig.version, None)
         self.print_debug(table_orig.semantic_key, None)
         assert(len(table_orig.semantic_key) > 0)
@@ -744,15 +501,16 @@ class GenAITableExec:
                             'duration (seconds)': int(duration),
                             'params': params,
                             'output_table': output_table,
+                            'preamble': preamble,
+                            'postamble': postamble,
                             'changed': changed_df.to_dict()}
         else:
             command_dict = {'type': command_type,
                             'params': params,
                             'changed': changed_df.to_dict()}
     
-        new_table(cache, table_orig, TABLES_VERSION_DELIMITER, 
-                  preamble, new_df, postamble, command_dict,
-                  new_version)
+        new_table(cache, table_orig, TABLES_VERSION_DELIMITER, new_df, 
+                  command_dict, new_version)
         if was_none:
             table_orig.purge()
         print_time(command, "Finished successfully")
@@ -804,7 +562,7 @@ class GenAITableExec:
         
         self.args = parser.parse_args()
 
-        self.build_model_and_cache()
+        # self.build_model_and_cache()
 
         numver = 0
         for _ in range(self.args.max_iter):
@@ -846,8 +604,10 @@ def get_params_list(params_dict):
     combinations = list(itertools.product(*vals))
     return [dict(zip(keys, combination)) for combination in combinations]
 
-def new_table(cache, orig_table, version_delimiter, preamble, new_df, 
-              postamble, command_dict, new_version):
+# def new_table(cache, orig_table, version_delimiter, preamble, new_df, 
+#               postamble, command_dict, new_version):
+def new_table(cache, orig_table, version_delimiter, new_df, command_dict, 
+              new_version):
     """
     
 
@@ -883,12 +643,19 @@ def new_table(cache, orig_table, version_delimiter, preamble, new_df,
             assert(lineage[-1] != orig_table.version)
         lineage.append(orig_table.version)
     print_time(lineage, "A")
-    new_table = VerTable(new_df, orig_table.folder, orig_table.name,
-                         orig_table.description, preamble, postamble,
-                         orig_table.semantic_key, version_delimiter, 
-                         orig_table.format_type,
-                         new_version, lineage, command_dict, DEBUG)
-    GenAITableExec.add_table_to_cache(cache, new_table)
+    info = {'description': orig_table.description,
+            'lineage': lineage,
+            'semantic_key': orig_table.semantic_key,
+            'file_ext': orig_table.format_type[0],
+            'field_delim': orig_table.format_type[1],
+            'file_ext_name': orig_table.format_type[2]}
+    new_table = VerTable(new_df, orig_table.name, orig_table.folder,
+                         new_version, info, 
+                         version_delimiter=version_delimiter,
+                         format_type=orig_table.format_type,
+                         create_command=command_dict,
+                         debug=DEBUG)
+    cache.add(new_table)
 
 def add_table(orig_table, data, location, axis):
     """
@@ -1316,7 +1083,6 @@ def fill_na(v_cache, table_orig, na_loc, model_type, model, tokenizer):
 
         for col in sem_key:
             sem_val.append(table_orig.table.at[na_loc[1], col])
-        # semantic_values_str = table.format_type[1].join(semantic_values)
         num_rows = min(table_orig.table.shape[0], 3)
         if num_rows == 3:
             if na_loc[0] == 0:
@@ -1547,7 +1313,9 @@ def build_model(framework, model_id):
     
 if __name__ == '__main__':
     model, tokenizer = build_model(MODEL_TYPE, MODEL_SPEC)
-    genaitable_exec = GenAITableExec(model, tokenizer)
+    v_cache = VerTableCache(TABLES_FOLDER, supported_formats=[FORMAT_TYPE[0]],
+                            debug=DEBUG, new_format_type=FORMAT_TYPE)
+    genaitable_exec = GenAITableExec(v_cache, model, tokenizer)
     genaitable_exec.main()
     
 """

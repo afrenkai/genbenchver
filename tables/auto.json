@@ -6,7 +6,7 @@
         "Make",
         "Year"
     ],
-    "preamble": null,
-    "postamble": null,
-    "command": null
+    "file_ext": ".csv",
+    "field_delim": ";",
+    "file_ext_name": "semi-colon"
 }
