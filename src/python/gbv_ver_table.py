@@ -10,6 +10,7 @@ import os
 import json
 import pandas as pd
 import random
+import sys
 from gbv_utils import print_time
 
 class VerTableCache:
@@ -102,7 +103,7 @@ class VerTable:
     
     def print_debug(self, var, text):
         if self.debug:
-            print_time(self, var, text)
+            print_time(var, text)
     
     def __init__(self, table, name, folder, version, info, **kwargs): 
         """
@@ -242,6 +243,7 @@ class VerTable:
         return "None"
     
     def convert(self, new_format_type):
+        self.print_debug(new_format_type, "convert")
         new_version = 0
         new_version_str = self.version_delimiter + str(new_version)
         new_filespec = os.path.join(self.folder, (self.name + new_version_str 
@@ -256,7 +258,7 @@ class VerTable:
         new_delim = new_format_type[1]
 
         df = pd.read_csv(old_filespec, sep=orig_delim)
-        df.to_csv(new_filespec, sep=new_delim)
+        df.to_csv(new_filespec, sep=new_delim, index=False)
 
         json_dict = {}
         json_dict['description'] = self.description
@@ -307,7 +309,7 @@ class VerTable:
             # self.num_entries = self.table.shape[0]
             # self.num_table_attributes = self.table.shape[1]
             self.table.reset_index(drop=True, inplace=True)
-            self.table.to_csv(filename, sep=self.format_type[1], index=False)
+            # self.table.to_csv(filename, sep=self.format_type[1], index=False)
             return True
         return False
     
