@@ -150,7 +150,7 @@ class GenAITableExec:
         print_time(f"--- starting at {start}", None)
         prompts_output = []
         
-        if self.framework == 'nnsight':
+        if self.args.framework == 'nnsight':
             with self.model.generate(max_new_tokens=genai_prompts.max_new_tokens, 
                                      remote=False) as generator:
                 print_time("--- %s seconds ---" % (time.time() - start_time), None)
@@ -169,7 +169,7 @@ class GenAITableExec:
                 
                 
         
-        elif self.framework == 'transformers':
+        elif self.args.framework == 'transformers':
             inputs = self.tokenizer("[INST] " + genai_prompts.prompts[0] + " /[INST]",
                                     return_tensors="pt").to(self.args.device_map)
             
