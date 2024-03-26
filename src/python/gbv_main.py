@@ -12,9 +12,7 @@ import random
 import time
 import datetime as dt
 import io
-import json
 import itertools
-# import inspect
 import argparse
 from transformers import AutoModelForCausalLM, AutoTokenizer
 import torch
@@ -28,21 +26,9 @@ from gbv_utils import print_time
 
 # Note only semi-colon-delimited csv files are supported at this time
 
-FAKE_MODEL = False
+FAKE_MODEL = True
 
 DEBUG = False
-
-# BASE_TABLE_NAME = "autona"
-
-# NUM_VER = 10
-# MAX_ITER = 20
-
-# LINEAGE = "sequence"
-# LINEAGE = "random"
-
-# ENVIRONMENT = "turing.wpi.edu"
-# ENVIRONMENT = "local_macos"
-
 
 # MODEL_SPEC = 'learnanything/llama-7b-huggingface'
 MODEL_SPEC = 'mistralai/Mixtral-8x7B-Instruct-v0.1'
@@ -54,19 +40,6 @@ FORMAT_CSV_DELIMITER_NAME = "semi-colon"
 FORMAT_CSV = '.csv'
 FORMAT_TYPE = (FORMAT_CSV, FORMAT_CSV_DELIMITER, FORMAT_CSV_DELIMITER_NAME)
 SUPPORTED_FORMATS = [FORMAT_CSV]
-
-# FRAMEWORK = 'nnsight'
-# FRAMEWORK = 'transformers'
-
-# if ENVIRONMENT == "turing.wpi.edu":
-#     MODEL_TYPE = 'nnsight'
-#     DEVICE_MAP = "cuda"
-#     TABLES_FOLDER = "../../tables"
-# else: # ENVIRONMENT == "local_macos"
-#     os.environ["PYTORCH_MPS_HIGH_WATERMARK_RATIO"] = "0.0"
-#     MODEL_TYPE = 'transformers'
-#     DEVICE_MAP = "mps"
-#     TABLES_FOLDER = "../../tables"
 
 COMMANDS = [
     {'type': 'add_rows',
@@ -219,10 +192,6 @@ class GenAITableExec:
         return table_df, preamble, output_table, postamble
 
     def add_table(self, table_orig, table_df, location, axis):
-        # preamble = prompt_output['preamble']
-        # table_df = prompt_output['output_table']
-        # output_table = table_df.to_csv(sep=table_orig.format_type[1])
-        # postamble = prompt_output['postamble']
         self.print_debug(table_df, None)
         if table_df is None:
             print_time(None, "add_row or add_col: Table not found!")
@@ -236,7 +205,7 @@ class GenAITableExec:
         new_df = new_df.drop_duplicates()
         return new_df
             
-    def add_rows(self, table_orig, params):
+    def add_rows_exec(self, table_orig, params):
         # prompts_input, prompts_output = \ 
         #     self.add_rows(table_orig, params)
         num_entries = params['num_entries']
@@ -310,12 +279,60 @@ class GenAITableExec:
             
         return genai_prompts.prompts, rsp
 
-    # prompts_input, prompts_output = add_rows(cache, table_orig, 
-    #                                           num_entries, 
-    #                                           model_type, 
-    #                                           model, 
-    #                                           tokenizer)
+    def add_rows(self, table_orig, params):
+        start_time = round(time.time(), 0)
+        axis = 0
+        prompts_input, prompts_output = \
+            self.add_rows_exec(table_orig, params)
 
+        if prompts_output is None or len(prompts_output) == 0:
+            print_time(None, "add_rows: Table not found!")
+            time.sleep(10)
+            return None, None
+
+        table_df, preamble, output_table, postamble = \
+            self.get_text_from_output(prompts_output[0], 
+                                      table_orig.format_type[1])
+        if output_table == "":
+            print_time(None, "Table not found!")
+            time.sleep(10)
+            return None, None # we did not find a table in the response, do nothing
+            
+        new_df = self.add_table(table_orig, 
+                                prompts_output[0]['output_table'], 
+                                params['location'], axis)
+        if (table_df.shape[0] > table_orig.table.shape[0]):
+            changed_df = pd.concat([table_df, new_df])
+            changed_df = changed_df.drop_duplicates()
+            print_debug(changed_df, "add_rows")
+        else:
+            changed_df = table_df.copy()
+            print_debug(changed_df, "add_rows")
+
+        print_debug(changed_df, None)
+        end_time = round(time.time(), 0)
+        duration = end_time - start_time
+        if prompts_output is not None and len(prompts_output) > 0:
+            output_table = prompts_output[0]['output_table']\
+                .to_csv(sep=table_orig.format_type[1])
+        else:
+            output_table = None
+            
+        command_dict = {'type': 'add_rows',
+                        'prompt': prompts_input[0],
+                        'start time' : str(dt.datetime.fromtimestamp(
+                            start_time)),
+                        'complete time': str(dt.datetime.fromtimestamp(
+                            end_time)),
+                        'duration (seconds)': int(duration),
+                        'params': params,
+                        'output_table': output_table,
+                        'preamble': preamble,
+                        'postamble': postamble,
+                        'changed': changed_df.to_dict()}
+        
+        return new_df, command_dict
+            
     def command_exec(self, cmd_id):
         start_time = time.time()
         
@@ -341,6 +358,7 @@ class GenAITableExec:
             table_orig.read()
         else:
             was_none = False
+        prompts_input = None
         prompts_output = None
         command = COMMANDS[cmd_id]
         self.print_debug(table_orig.semantic_key, None)
@@ -351,33 +369,13 @@ class GenAITableExec:
         random.shuffle(params_list)
         params = params_list[0]
         
-        use_prompt = ['add_rows', 'add_cols'] # add 'fill_na' later
         result_add_table = ['add_rows', 'add_cols']
         
         
         if command_type == "add_rows":
             axis = 0
-            prompts_input, prompts_output = \
-                self.add_rows(table_orig, params)
-            # num_entries = params['num_entries']
-            # location = params['location']
-            # axis = 0
-            # nrows = table_orig.table.shape[0]
-            # if params['location'] == 'top':
-            #     location = 0
-            # elif params['location'] == 'bottom':
-            #     location = nrows - 1
-            # else: # 'random'
-            #     location = random.randrange(nrows)
-            # params['location'] = location
-            # prompts_input, prompts_output = add_rows(cache, table_orig, 
-            #                                           num_entries, 
-            #                                           model_type, 
-            #                                           model, 
-            #                                           tokenizer)
-            if len(prompts_output) == 0:
-                print_time(None, "add_rows: Table not found!")
-                time.sleep(10)
+            new_df, command_dict = self.add_rows(table_orig, params)
+            if new_df is None or command_dict is None:
                 return False
         elif command_type == "del_rows":
             num_entries = params['num_entries']
@@ -477,105 +475,69 @@ class GenAITableExec:
                 print_time(None, "fill_na: Table not found!")
                 time.sleep(10)
                 return False
-            preamble = prompts_output[0]['preamble']
-            table_df = prompts_output[0]['output_table']
-            self.print_debug(table_df, None)
-            if table_df is None:
-                print_time(None, "fill_na: Table not found!")
-                time.sleep(10)
-                return False # we did not find a table in the response, do nothing
-            postamble = prompts_output[0]['postamble']
-            new_df = table_orig.table.copy()
-            if na_loc[2] not in table_df:
-                new_df.at[na_loc[1], na_loc[2]] = \
-                    table_df.at[table_df.index[0], 
-                                new_df.columns.get_loc(na_loc[2])]
+            
+        if command_type != "add_rows":
+            if prompts_output is not None:
+                table_df, preamble, output_table, postamble = \
+                    self.get_text_from_output(prompts_output[0], 
+                                              table_orig.format_type[1])
+                if output_table == "":
+                    print_time(None, "Table not found!")
+                    time.sleep(10)
+                    return False # we did not find a table in the response, do nothing
+                
+            if command_type == "add_cols":
+                new_df = self.add_table(table_orig, 
+                                        prompts_output[0]['output_table'], 
+                                        params['location'], axis)
+            elif command_type == "fill_na":
+                new_df = table_orig.table.copy()
+                if na_loc[2] not in table_df:
+                    new_df.at[na_loc[1], na_loc[2]] = \
+                        table_df.at[table_df.index[0], 
+                                    new_df.columns.get_loc(na_loc[2])]
+                else:
+                    new_df.at[na_loc[1], na_loc[2]] = table_df.at[table_df.index[0], 
+                                                                  na_loc[2]]
+                
+                
+            if command_type == 'add_cols':
+                changed_df = table_df.copy()
+                print_time(changed_df, "add_rows")
+            elif command_type == "fill_na":
+                changed_df = pd.DataFrame(columns=[na_loc[2]])
+                changed_df.at[na_loc[1], na_loc[2]] = new_df.at[na_loc[1], na_loc[2]]
+                
+            if command_type == "add_cols":
+                for col in table_orig.semantic_key:
+                    if col in changed_df:
+                        changed_df = changed_df.drop(col, axis=1)
+            if prompts_input is not None:
+                print_time(changed_df, None)
+                begin_time = round(start_time, 0)
+                end_time = round(time.time(), 0)
+                duration = end_time - begin_time
+                if prompts_output is not None and len(prompts_output) > 0:
+                    output_table = prompts_output[0]['output_table']\
+                        .to_csv(sep=table_orig.format_type[1])
+                else:
+                    output_table = None
+                command_dict = {'type': command_type,
+                                'prompt': prompts_input[0],
+                                'start time' : str(dt.datetime.fromtimestamp(
+                                    begin_time)),
+                                'complete time': str(dt.datetime.fromtimestamp(
+                                    end_time)),
+                                'duration (seconds)': int(duration),
+                                'params': params,
+                                'output_table': output_table,
+                                'preamble': preamble,
+                                'postamble': postamble,
+                                'changed': changed_df.to_dict()}
             else:
-                new_df.at[na_loc[1], na_loc[2]] = table_df.at[table_df.index[0], 
-                                                              na_loc[2]]
-            changed_df = pd.DataFrame(columns=[na_loc[2]])
-            changed_df.at[na_loc[1], na_loc[2]] = new_df.at[na_loc[1], na_loc[2]]
-        if command_type in use_prompt:
-            table_df, preamble, output_table, postamble = \
-                self.get_text_from_output(prompts_output[0], 
-                                          table_orig.format_type[1])
-            if output_table == "":
-                print_time(None, "Table not found!")
-                time.sleep(10)
-                return False # we did not find a table in the response, do nothing
-            
-        if command_type in result_add_table:
-            new_df = self.add_table(table_orig, 
-                                    prompts_output[0]['output_table'], 
-                                    params['location'], axis)
-            
-            
-        # if command_type == "add_rows" or command_type == "add_cols":
-            # preamble = prompts_output[0]['preamble']
-            # table_df = prompts_output[0]['output_table']
-            # output_table = table_df.to_csv(sep=table_orig.format_type[1])
-            # # self.print_debug(table_df, None)
-            # # if table_df is None:
-            # #     print_time(None, "add_row or add_col: Table not found!")
-            # #     time.sleep(10)
-            # #     return False # we did not find a table in the response, do nothing
-            # postamble = prompts_output[0]['postamble']
-            # new_df = add_table(table_orig, table_df, params['location'], axis)
-            # if new_df is None:
-            #     print_time(None, "Bad csv format of output")
-            #     time.sleep(10)
-            #     return False
-            # new_df = new_df.drop_duplicates()
-    # def get_text_from_output(self, prompt_output, sep):
-    #     preamble = prompt_output['preamble']
-    #     table_df = prompt_output['output_table']
-    #     output_table = table_df.to_csv(sep=sep)
-    #     postamble = prompt_output['postamble']
-        
-    #     return preamble, output_table, postamble
-
-    # def add_table(self, table_orig, table_df, location, axis):
-            
-            
-        if (command_type == "add_rows" 
-              and table_df.shape[0] > table_orig.table.shape[0]):
-            changed_df = pd.concat([table_df, new_df])
-            changed_df = changed_df.drop_duplicates()
-            print_time(changed_df, "add_rows")
-        elif command_type == "add_rows" or command_type == 'add_cols':
-            changed_df = table_df.copy()
-            print_time(changed_df, "add_rows")
-        if command_type == "add_cols":
-            for col in table_orig.semantic_key:
-                if col in changed_df:
-                    changed_df = changed_df.drop(col, axis=1)
-        if (command_type == "add_rows" or command_type == "add_cols" 
-            or command_type == "fill_na"):
-            print_time(changed_df, "add_rows")
-            begin_time = round(start_time, 0)
-            end_time = round(time.time(), 0)
-            duration = end_time - begin_time
-            if prompts_output is not None and len(prompts_output) > 0:
-                output_table = prompts_output[0]['output_table']\
-                    .to_csv(sep=table_orig.format_type[1])
-            else:
-                output_table = None
-            command_dict = {'type': command_type,
-                            'prompt': prompts_input[0],
-                            'start time' : str(dt.datetime.fromtimestamp(
-                                begin_time)),
-                            'complete time': str(dt.datetime.fromtimestamp(
-                                end_time)),
-                            'duration (seconds)': int(duration),
-                            'params': params,
-                            'output_table': output_table,
-                            'preamble': preamble,
-                            'postamble': postamble,
-                            'changed': changed_df.to_dict()}
-        else:
-            command_dict = {'type': command_type,
-                            'params': params,
-                            'changed': changed_df.to_dict()}
+                command_dict = {'type': command_type,
+                                'params': params,
+                                'changed': changed_df.to_dict()}
     
         new_table(cache, table_orig, self.tables_version_delimiter, new_df, 
                   command_dict, new_version)
@@ -586,53 +548,7 @@ class GenAITableExec:
         
     def main(self, args):
         
-        # print_time(None, "Starting globally...")
-        
-        # parser = argparse.ArgumentParser(
-        #     description=('Auto-generates versions of base file using '
-        #                  + 'generative AI'))
-        # parser.add_argument(
-        #     '-d', '--debug', dest='debug', action='store_true',default=False,
-        #     help='Turns on debug logging to stdout. Default is off.')
-        # parser.add_argument(
-        #     '-f', '--fake', dest='fake_model', action='store_true', 
-        #     default=False,
-        #     help=('Tests code with fake responses without using the '
-        #           + 'generative AI. Default uses real interaction.'))
-        # parser.add_argument(
-        #     '-s', '--sep', dest='orig_delim', type=str, default=',',
-        #     help=('Column separator of the original file. Only used before '
-        #           + 'versions have been generated. Default is comma'))
-        # parser.add_argument(
-        #     '-l', '--lineage', dest='lineage', type=str, default="sequence",
-        #     help=('Type of lineage for versions created: '
-        #           + '"sequence" (default) | "random"'))
-        # parser.add_argument(
-        #     '-g', '--gpu', dest='device_map', type=str, default='cuda',
-        #     help='Type of GPU: "cuda" (default) | "mps"')
-        # parser.add_argument(
-        #     '-n', '--numver', dest='num_ver', type=int, default=10,
-        #     help=('Number of versions to create. Default is 10. '
-        #           + 'Unsuccessful attempts do not count'))
-        # parser.add_argument(
-        #     '-i', '--maxiter', dest='max_iter', type=int, default=20,
-        #     help='Maximum number of table create attempts. Default is 20.')
-        # parser.add_argument(
-        #     '-m', '--model', dest='model_type', type=str, default='nnsight',
-        #     help=('Model framework type: nnsight | transformers. Default is '
-        #           + 'nnsight'))
-        # parser.add_argument('name', type=str,
-        #     help=('Filename of the table without extension '
-        #           + '(only .csv extension is supported)'))
-        # parser.add_argument(
-        #     'tablesdir', type=str, default=".",
-        #     help=('Directory locaton of the tables. ' 
-        #           + 'Default is the current working directory.'))
-        
-        # self.args = parser.parse_args()
         self.args = args
-
-        # self.build_model_and_cache()
 
         numver = 0
         for _ in range(self.args.max_iter):
@@ -674,8 +590,6 @@ def get_params_list(params_dict):
     combinations = list(itertools.product(*vals))
     return [dict(zip(keys, combination)) for combination in combinations]
 
-# def new_table(cache, orig_table, version_delimiter, preamble, new_df, 
-#               postamble, command_dict, new_version):
 def new_table(cache, orig_table, version_delimiter, new_df, command_dict, 
               new_version):
     """
@@ -1455,11 +1369,6 @@ def main():
     
 if __name__ == '__main__':
     main()
-    # model, tokenizer = build_model(args.framework, MODEL_SPEC)
-    # v_cache = VerTableCache(args.tablesdir, supported_formats=[FORMAT_TYPE[0]],
-    #                         debug=args.debug, new_format_type=FORMAT_TYPE)
-    # genaitable_exec = GenAITableExec(v_cache, model, tokenizer)
-    # genaitable_exec.main(args)
     
 """
 End script
