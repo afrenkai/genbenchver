@@ -292,9 +292,9 @@ class GenAITableExec:
         
         new_version = cache.get_next_ver_for_table(table_name)
         self.print_debug(new_version, None)
-        if LINEAGE == "random":
+        if self.args.lineage == "random":
             table_orig = cache.get_table_random_from_cache(table_name)
-        else: # LINEAGE == "sequence"
+        else: # "sequence"
             table_orig = cache.get(table_name, 
                                    cache.get_high_ver_for_table(table_name))
         self.print_debug(table_orig.version, None)
@@ -638,10 +638,13 @@ def new_table(cache, orig_table, version_delimiter, new_df, command_dict,
     print_time(lineage, "E")
     if lineage is None:
         lineage = []
-    if orig_table.version > 0:
-        if len(lineage) > 0:
-            assert(lineage[-1] != orig_table.version)
-        lineage.append(orig_table.version)
+    # if orig_table.version > 0:
+    #     if len(lineage) > 0:
+    #         assert(lineage[-1] != orig_table.version)
+    #     lineage.append(orig_table.version)
+    if len(lineage) > 0:
+        assert(lineage[-1] != orig_table.version)
+    lineage.append(orig_table.version)
     print_time(lineage, "A")
     info = {'description': orig_table.description,
             'lineage': lineage,
