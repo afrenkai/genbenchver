@@ -59,17 +59,30 @@ COMMANDS = [
     ]
 
 CMD_PLAN = [
-    # 5, # update_val
-#     4, # fill_na
-#     4, # fill_na
-#     0, # add_row
-#     2, # add_col
-#     3, # del_col
-#     1, # del_row
-#     4, # fill_na
-#     2, # add_col
-#     1, # del_row
-#     0, # add_row
+    0, # add_row
+    2, # add_col
+    5, # update_val
+    3, # del_col
+    1, # del_row
+    2, # add_col
+    0, # add_row
+    5, # update_val
+    0, # add_row
+    2, # add_col
+    5, # update_val
+    3, # del_col
+    1, # del_row
+    2, # add_col
+    0, # add_row
+    5, # update_val
+    0, # add_row
+    2, # add_col
+    5, # update_val
+    3, # del_col
+    1, # del_row
+    2, # add_col
+    0, # add_row
+    5, # update_val
     ]
 
 TIME_START = time.time()
@@ -849,7 +862,8 @@ class GenAITableExec:
         self.print_debug(na_loc, "update_val setting to N/A")
         new_df, command_dict = self.fill_na(table_orig, params)
         table_orig.table = old_table.copy()
-        command_dict['type'] = 'update_val'
+        if command_dict is not None:
+            command_dict['type'] = 'update_val'
         
         return new_df, command_dict
     
@@ -1108,7 +1122,7 @@ class GenAITableExec:
             if idx < len(CMD_PLAN):
                 command_idx = CMD_PLAN[idx]
             else:
-                command_idx = random.randrange(len(COMMANDS))
+                command_idx = CMD_PLAN[random.randrange(len(CMD_PLAN))]
             if self.command_exec(command_idx):
                 numver += 1
             if numver >= self.args.num_ver:
