@@ -742,9 +742,6 @@ class GenAITableExec:
         rsp =  self.parse_table_responses(
             table_orig, responses, min(table_orig.table.shape[0], 3)) 
     
-        if was_none:
-            table_orig.purge()
-            
         return genai_prompts.prompts, rsp
     
     def find_all_na(self, df):
