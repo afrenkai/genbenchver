@@ -165,6 +165,9 @@ class GenAITableExec:
         print_time(f"--- starting at {start}", None)
         prompts_output = []
         
+        for prompt in genai_prompts.prompts:
+            self.print_debug(prompt, "Send prompt to Generative AI:")
+        
         if self.args.framework == 'nnsight':
             with self.model.generate(max_new_tokens=genai_prompts.max_new_tokens, 
                                      remote=False) as generator:
@@ -458,7 +461,7 @@ class GenAITableExec:
     
         """
         ncols = params['num_entries']
-        genai_prompts = GenAITablePrompts(self.cache, table_orig, 50000)
+        genai_prompts = GenAITablePrompts(self.cache, table_orig, 100000)
         genai_prompts.add_prompt('add_cols', ncols=ncols)
         
         if self.args.framework == 'fake':
@@ -660,7 +663,7 @@ class GenAITableExec:
     
         na_loc = params['na_loc']
                 
-        genai_prompts = GenAITablePrompts(self.cache, table_orig, 50000)
+        genai_prompts = GenAITablePrompts(self.cache, table_orig, 100000)
         genai_prompts.add_prompt('fill_na', na_loc=na_loc)
         
         if self.args.framework == 'fake':
