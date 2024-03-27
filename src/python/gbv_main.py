@@ -41,10 +41,10 @@ SUPPORTED_FORMATS = [FORMAT_CSV]
 
 COMMANDS = [
     {'type': 'add_rows',
-     'params': {'num_entries' : [1, 2, 3, 4, 5],
+     'params': {'num_entries' : [1, 2, 3],
                 'location' : ['top', 'bottom', 'random']}},
     {'type': 'del_rows',
-     'params': {'num_entries' : [1, 2, 3],
+     'params': {'num_entries' : [1],
                 'location' : ['random']}},
     {'type': 'add_cols',
      'params': {'num_entries' : [1, 2, 3], # [1, 2, 3, 4, 5],
@@ -173,7 +173,7 @@ class GenAITableExec:
                 for prompt in genai_prompts.prompts:
                     with generator.invoke("[INST] " + prompt + " /[INST]"):
                         pass
-                    print_time("finished with prompt", None)
+                    self.print_debug("finished with prompt", None)
                     print_time("--- %s seconds ---" % (time.time() - start_time), 
                                None)
             print_time("--- %s seconds ---" % (time.time() - start_time), None)
@@ -300,7 +300,7 @@ class GenAITableExec:
             location = random.randrange(nrows)
         params['location'] = location
         
-        genai_prompts = GenAITablePrompts(self.cache, table_orig, 50000)
+        genai_prompts = GenAITablePrompts(self.cache, table_orig, 100000)
         genai_prompts.add_prompt('add_rows', nrows=num_entries)
         
         if self.args.framework == 'fake':
@@ -948,6 +948,9 @@ class GenAITableExec:
             else:
                 break
             
+        self.print_debug(hdridx, None)
+        self.print_debug(rowidx, None)
+            
         for i in rowidx:
             if i > 0:
                 j = i-1
@@ -974,7 +977,11 @@ class GenAITableExec:
             valid = True
             hdrlen = len(lines[i].split(sep))
             for line_idx in range(i, i+nrows_expected+1):
+                if line_idx >= len(lines):
+                    valid = False
+                    break
                 fieldslen = len(lines[line_idx].split(sep))
+                self.print_debug(fieldslen, None)
                 if fieldslen < len(cols_expected):
                     valid = False
                     break
