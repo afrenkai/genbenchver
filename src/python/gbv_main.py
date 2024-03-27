@@ -59,30 +59,29 @@ COMMANDS = [
     ]
 
 CMD_PLAN = [
-    # 0, # add_row
-    # 2, # add_col
-    # 5, # update_val
-    # 3, # del_col
-    # 1, # del_row
-    # 2, # add_col
-    # 0, # add_row
-    # 5, # update_val
-    # 0, # add_row
-    # 2, # add_col
-    # 5, # update_val
-    # 3, # del_col
-    # 1, # del_row
-    # 2, # add_col
-    # 0, # add_row
-    # 5, # update_val
-    # 0, # add_row
-    # 2, # add_col
-    # 5, # update_val
-    # 3, # del_col
-    # 1, # del_row
-    # 2, # add_col
-    # 0, # add_row
+    0, # add_row
+    2, # add_col
     5, # update_val
+    3, # del_col
+    1, # del_row
+    2, # add_col
+    0, # add_row
+    5, # update_val
+    0, # add_row
+    2, # add_col
+    5, # update_val
+    3, # del_col
+    1, # del_row
+    2, # add_col
+    0, # add_row
+    5, # update_val
+    0, # add_row
+    2, # add_col
+    5, # update_val
+    3, # del_col
+    1, # del_row
+    2, # add_col
+    0, # add_row
     ]
 
 TIME_START = time.time()
