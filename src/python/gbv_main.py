@@ -802,9 +802,11 @@ class GenAITableExec:
 
         new_df = table_orig.table.copy()
         if na_loc[2] not in table_df:
-            new_df.at[na_loc[1], na_loc[2]] = \
-                table_df.at[table_df.index[0], 
-                            new_df.columns.get_loc(na_loc[2])]
+            print_time(na_loc[2], f"Column {na_loc[2]} not found in response!")
+            return None, None
+            # new_df.at[na_loc[1], na_loc[2]] = \
+            #     table_df.at[table_df.index[0], 
+            #                 new_df.columns.get_loc(na_loc[2])]
         else:
             new_df.at[na_loc[1], na_loc[2]] = table_df.at[table_df.index[0], 
                                                           na_loc[2]]
@@ -1060,7 +1062,7 @@ class GenAITableExec:
                 
         return(table_responses)
     
-    def command_exec(self, cmd_id):
+    def command_exec(self, command):
         # start_time = time.time()
         
         cache = self.cache
@@ -1083,7 +1085,7 @@ class GenAITableExec:
             was_none = False
         # prompts_input = None
         # prompts_output = None
-        command = COMMANDS[cmd_id]
+        # command = COMMANDS[cmd_id]
         self.print_debug(table_orig.semantic_key, None)
         command_type = command['type']
         params = command['params']
@@ -1122,14 +1124,24 @@ class GenAITableExec:
     def main(self, args):
         
         self.args = args
-
+        
         numver = 0
         for idx in range(self.args.max_iter):
-            if idx < len(CMD_PLAN):
-                command_idx = CMD_PLAN[idx]
-            else:
-                command_idx = CMD_PLAN[random.randrange(len(CMD_PLAN))]
-            if self.command_exec(command_idx):
+            command_idx = None
+            if (self.args.cmd is not None and self.args.max_iter == 1
+                and self.args.num_ver == 1):
+                for i, cmd in enumerate(COMMANDS):
+                    if self.args.cmd == cmd['type']:
+                        command_idx = i
+                        break
+            if command_idx is None:
+                if idx < len(CMD_PLAN):
+                    command_idx = CMD_PLAN[idx]
+                else:
+                    command_idx = CMD_PLAN[random.randrange(len(CMD_PLAN))]
+                    
+            command = COMMANDS[command_idx]
+            if self.command_exec(command):
                 numver += 1
             if numver >= self.args.num_ver:
                 break
@@ -1229,6 +1241,11 @@ def main():
         '-d', '--datatype', dest='dtype', type=str, default=None,
         help=('Data type for model. Use "float16" to reduce footprint. '
               + ' Default is None'))
+    parser.add_argument(
+        '-c', '--command', dest='cmd', type=str, default=None,
+        help=('Specific command to run. Can only be used when -n is set to 1, '
+              + 'and -i is set to 1. Default is None, which means to '
+              + 'use a hard-coded script.'))
     parser.add_argument('name', type=str,
         help=('Filename of the table without extension '
               + '(only .csv extension is supported)'))
