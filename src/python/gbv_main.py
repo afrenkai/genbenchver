@@ -347,7 +347,9 @@ class GenAITableExec:
         else:
             responses = self.execute_prompts(genai_prompts)
 
-        rsp =  self.parse_table_responses(table_orig, responses, num_entries) 
+        rsp =  self.parse_table_responses(
+            table_orig, responses, num_entries,
+            table_orig.table.shape[0] + num_entries) 
 
         return genai_prompts.prompts, rsp
 
@@ -527,7 +529,8 @@ class GenAITableExec:
             #                                    genai_prompts)
 
         rsp =  self.parse_table_responses(
-            table_orig, responses, table_orig.table.shape[0]) 
+            table_orig, responses, table_orig.table.shape[0], 
+            table_orig.table.shape[0]) 
     
         return genai_prompts.prompts, rsp
     
@@ -661,11 +664,6 @@ class GenAITableExec:
         genai_prompts.add_prompt('fill_na', na_loc=na_loc)
         
         if self.args.framework == 'fake':
-            was_none = False
-            was_none = False
-            if table_orig.table is None:
-                was_none = True
-                table_orig.read()
             resp_table = table_orig.table.copy()
             sem_key = table_orig.semantic_key
             sem_val = []
@@ -673,6 +671,8 @@ class GenAITableExec:
             for col in sem_key:
                 sem_val.append(table_orig.table.at[na_loc[1], col])
             num_rows = min(table_orig.table.shape[0], 3)
+            num_rows = random.randrange(1, num_rows+1)
+            num_rows = 1 # special for debugging
             if num_rows == 3:
                 if na_loc[0] == 0:
                     rows = [na_loc[0], 1, 2]
@@ -751,8 +751,10 @@ class GenAITableExec:
                 
             responses = self.execute_prompts(genai_prompts)
             
-        rsp =  self.parse_table_responses(
-            table_orig, responses, min(table_orig.table.shape[0], 3)) 
+        nrows_max = min(table_orig.table.shape[0], 3)
+        if nrows_max == 0:
+            nrows_max = 1
+        rsp =  self.parse_table_responses(table_orig, responses, 1, nrows_max) 
     
         return genai_prompts.prompts, rsp
     
@@ -845,14 +847,21 @@ class GenAITableExec:
         if num_cols_eligible <= 0:
             return None, None
         rand_col = random.randrange(num_cols_eligible)
+        self.print_debug(rand_col, None)
         i = 0
         use_col = None
         for col in table_orig.table:
+            self.print_debug(col, None)
             if col not in table_orig.semantic_key:
+                self.print_debug(i, None)
                 if rand_col == i:
                     use_col = col
+                    self.print_debug(use_col, None)
                     break
             i += 1
+
+        if use_col is None:
+            return None, None
         
         old_table = table_orig.table.copy()
         row_index = table_orig.table.index[rand_row]
@@ -922,20 +931,109 @@ class GenAITableExec:
                              debug=self.args.debug)
         self.cache.add(new_table)
         
-    def find_valid_csv_tables(self, table_orig, text, nrows_expected):
+    # def find_valid_csv_tables(self, table_orig, text, nrows_expected):
+    #     valid_tables = []
+    #     cols_expected = table_orig.semantic_key
+    #     sep = table_orig.format_type[1]
+        
+    #     lines = text.split("\n")
+    #     if len(lines) < nrows_expected:
+    #         return valid_tables
+    #     hdridx = []
+    #     rowidx = []
+    #     for i in range(len(lines)):
+    #         remain = len(lines) - i
+    #         if remain >= nrows_expected:
+    #             found_cols = True
+    #             for col in cols_expected:
+    #                 if col not in lines[i]:
+    #                     found_cols = False
+    #                     break
+    #             if found_cols:
+    #                 hdridx.append(i)
+    #             else:
+    #                 row = lines[i].split(sep)
+    #                 if len(row) >= len(cols_expected):
+    #                     rowidx.append(i)
+    #         else:
+    #             break
+            
+    #     self.print_debug(hdridx, None)
+    #     self.print_debug(rowidx, None)
+            
+    #     for i in rowidx:
+    #         if i > 0:
+    #             j = i-1
+    #             if j in hdridx:
+    #                 continue
+    #         valid = True
+    #         for j in range(i, i+nrows_expected):
+    #             if j not in rowidx:
+    #                 valid = False
+    #         if valid:        
+    #             table_text = "\n".join(lines[i:i+nrows_expected])
+    #             self.print_debug(table_text, None)
+    #             try:
+    #                 df = pd.read_csv(io.StringIO(table_text), sep=sep, header=None,
+    #                                  names=list(table_orig.table.columns))
+    #                 prologue_text = "\n".join(lines[0:i])
+    #                 epilogue_text = "\n".join(lines[i+nrows_expected:])
+    #                 valid_table = (prologue_text, df.copy(), epilogue_text)
+    #                 valid_tables.append(valid_table)
+    #             except:
+    #                 continue
+            
+    #     for i in hdridx:
+    #         valid = True
+    #         hdrlen = len(lines[i].split(sep))
+    #         for line_idx in range(i, i+nrows_expected+1):
+    #             if line_idx >= len(lines):
+    #                 valid = False
+    #                 break
+    #             fieldslen = len(lines[line_idx].split(sep))
+    #             self.print_debug(fieldslen, None)
+    #             if fieldslen < len(cols_expected):
+    #                 valid = False
+    #                 break
+    #             elif fieldslen > hdrlen:
+    #                 fields = lines[line_idx].split(sep)
+    #                 lines[line_idx] = ';'.join(fields[:hdrlen])
+            
+    #         if valid:
+    #             for j in range(len(lines)):
+    #                 self.print_debug(lines[j], None)
+    #                 lines[j] = lines[j].strip()
+    #                 self.print_debug(lines[j], None)
+    #             table_text = "\n".join(lines[i:i+nrows_expected+1])
+    #             self.print_debug(table_text, None)
+    #             try:
+    #                 df = pd.read_csv(io.StringIO(table_text), sep=sep)
+    #                 prologue_text = "\n".join(lines[0:i])
+    #                 epilogue_text = "\n".join(lines[i+nrows_expected+1:])
+    #                 valid_table = (prologue_text, df.copy(), epilogue_text)
+    #                 valid_tables.append(valid_table)
+    #             except:
+    #                 continue
+    
+    #     return valid_tables
+
+    def find_valid_csv_tables(self, table_orig, text, nrows_min, nrows_max):
         valid_tables = []
         cols_expected = table_orig.semantic_key
         sep = table_orig.format_type[1]
         
         lines = text.split("\n")
-        if len(lines) < nrows_expected:
+        if len(lines) < nrows_min:
             return valid_tables
         hdridx = []
         rowidx = []
         for i in range(len(lines)):
             remain = len(lines) - i
-            if remain >= nrows_expected:
+            if remain >= nrows_max:
                 found_cols = True
+                if len(cols_expected) > len(lines[i].split(sep)):
+                    found_cols = False
+                    continue
                 for col in cols_expected:
                     if col not in lines[i]:
                         found_cols = False
@@ -958,17 +1056,23 @@ class GenAITableExec:
                 if j in hdridx:
                     continue
             valid = True
-            for j in range(i, i+nrows_expected):
-                if j not in rowidx:
-                    valid = False
-            if valid:        
-                table_text = "\n".join(lines[i:i+nrows_expected])
+            nrows = 0
+            for j in range(i, len(lines)):
+                if j in rowidx:
+                    nrows += 1
+                else:
+                    break
+            if (nrows < nrows_min or (nrows_max is not None 
+                                      and nrows > nrows_max)):
+                valid = False
+            if valid:
+                table_text = "\n".join(lines[i:i+nrows])
                 self.print_debug(table_text, None)
                 try:
                     df = pd.read_csv(io.StringIO(table_text), sep=sep, header=None,
                                      names=list(table_orig.table.columns))
                     prologue_text = "\n".join(lines[0:i])
-                    epilogue_text = "\n".join(lines[i+nrows_expected:])
+                    epilogue_text = "\n".join(lines[i+nrows:])
                     valid_table = (prologue_text, df.copy(), epilogue_text)
                     valid_tables.append(valid_table)
                 except:
@@ -977,30 +1081,37 @@ class GenAITableExec:
         for i in hdridx:
             valid = True
             hdrlen = len(lines[i].split(sep))
-            for line_idx in range(i, i+nrows_expected+1):
-                if line_idx >= len(lines):
-                    valid = False
+            nrows = 0
+            for line_idx in range(i+1, len(lines)):
+                if line_idx in rowidx:
+                    fieldslen = len(lines[line_idx].split(sep))
+                    self.print_debug(fieldslen, None)
+                # if fieldslen < len(cols_expected):
+                #     valid = False
+                #     break
+                # elif fieldslen > hdrlen:
+                    if fieldslen > hdrlen:
+                        fields = lines[line_idx].split(sep)
+                        lines[line_idx] = ';'.join(fields[:hdrlen])
+                    nrows += 1
+                else:
                     break
-                fieldslen = len(lines[line_idx].split(sep))
-                self.print_debug(fieldslen, None)
-                if fieldslen < len(cols_expected):
-                    valid = False
-                    break
-                elif fieldslen > hdrlen:
-                    fields = lines[line_idx].split(sep)
-                    lines[line_idx] = ';'.join(fields[:hdrlen])
-            
+                
+            if (nrows < nrows_min or (nrows_max is not None 
+                                      and nrows > nrows_max)):
+                valid = False
+
             if valid:
                 for j in range(len(lines)):
                     self.print_debug(lines[j], None)
                     lines[j] = lines[j].strip()
                     self.print_debug(lines[j], None)
-                table_text = "\n".join(lines[i:i+nrows_expected+1])
+                table_text = "\n".join(lines[i:i+nrows+1])
                 self.print_debug(table_text, None)
                 try:
                     df = pd.read_csv(io.StringIO(table_text), sep=sep)
                     prologue_text = "\n".join(lines[0:i])
-                    epilogue_text = "\n".join(lines[i+nrows_expected+1:])
+                    epilogue_text = "\n".join(lines[i+nrows+1:])
                     valid_table = (prologue_text, df.copy(), epilogue_text)
                     valid_tables.append(valid_table)
                 except:
@@ -1008,7 +1119,7 @@ class GenAITableExec:
     
         return valid_tables
     
-    def parse_table_responses(self, table, responses, nrows_expected):
+    def parse_table_responses(self, table, responses, nrows_min, nrows_max):
         """
         
     
@@ -1026,7 +1137,8 @@ class GenAITableExec:
         """
         # only supports one response for now
         table_responses = []
-        self.print_debug(nrows_expected, None)
+        self.print_debug(nrows_min, None)
+        self.print_debug(nrows_max, None)
         for response in responses:
             
             self.print_debug(response, None)
@@ -1043,7 +1155,7 @@ class GenAITableExec:
             #      of the table being within the epilogue
     
             valid_csv_tables = self.find_valid_csv_tables(table, response,
-                                                          nrows_expected)
+                                                          nrows_min, nrows_max)
             self.print_debug(valid_csv_tables, None)
     
             # loop through valid tables
