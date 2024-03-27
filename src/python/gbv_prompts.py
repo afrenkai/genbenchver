@@ -64,7 +64,7 @@ class GenAITablePrompts:
                                                       index=False)
     
         prompt = f"For {description}, retrieve a missing value of real data "\
-            + "(not fictional) from extrnally available resources, "\
+            + "(not fictional) from externally available resources, "\
             + "corresponding to the first row and attribute "\
             + f"named {attribute}, with a dtype of {col_dtype}, "\
             + f"within the following table:\n\n{small_table}\n\n"\

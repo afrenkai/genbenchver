@@ -123,9 +123,9 @@ class VerTable:
             DESCRIPTION.
         description : TYPE
             DESCRIPTION.
-        preamble : TYPE
+        prologue : TYPE
             DESCRIPTION.
-        postamble : TYPE
+        epilogue : TYPE
             DESCRIPTION.
         semantic_key : TYPE
             DESCRIPTION.
@@ -201,10 +201,10 @@ class VerTable:
                     #         self.semantic_key = ["Model, Make, Year"]
                     # else:
                     self.semantic_key = json_dict['semantic_key']
-                    # if 'preamble' in json_dict:
-                    #     self.preamble = json_dict['preamble']
-                    # if 'postamble' in json_dict:
-                    #     self.postamble = json_dict['postamble']
+                    # if 'prologue' in json_dict:
+                    #     self.prologue = json_dict['prologue']
+                    # if 'epilogue' in json_dict:
+                    #     self.epilogue = json_dict['epilogue']
                     self.format_type = (json_dict['file_ext'], 
                                         json_dict['field_delim'],
                                         json_dict['file_ext_name'])

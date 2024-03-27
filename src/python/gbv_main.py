@@ -55,33 +55,33 @@ COMMANDS = [
     {'type': 'fill_na',
     'params': {'location' : ['first', 'random']}},
     {'type': 'update_val',
-    'params': {'location' : ['first', 'random']}}
+    'params': {}}
     ]
 
 CMD_PLAN = [
-    0, # add_row
-    2, # add_col
-    5, # update_val
-    3, # del_col
-    1, # del_row
-    2, # add_col
-    0, # add_row
-    5, # update_val
-    0, # add_row
-    2, # add_col
-    5, # update_val
-    3, # del_col
-    1, # del_row
-    2, # add_col
-    0, # add_row
-    5, # update_val
-    0, # add_row
-    2, # add_col
-    5, # update_val
-    3, # del_col
-    1, # del_row
-    2, # add_col
-    0, # add_row
+    # 0, # add_row
+    # 2, # add_col
+    # 5, # update_val
+    # 3, # del_col
+    # 1, # del_row
+    # 2, # add_col
+    # 0, # add_row
+    # 5, # update_val
+    # 0, # add_row
+    # 2, # add_col
+    # 5, # update_val
+    # 3, # del_col
+    # 1, # del_row
+    # 2, # add_col
+    # 0, # add_row
+    # 5, # update_val
+    # 0, # add_row
+    # 2, # add_col
+    # 5, # update_val
+    # 3, # del_col
+    # 1, # del_row
+    # 2, # add_col
+    # 0, # add_row
     5, # update_val
     ]
 
@@ -202,12 +202,12 @@ class GenAITableExec:
         return(prompts_output)
     
     def get_text_from_output(self, prompt_output, sep):
-        preamble = prompt_output['preamble']
+        prologue = prompt_output['prologue']
         table_df = prompt_output['output_table']
         output_table = table_df.to_csv(sep=sep, index=False)
-        postamble = prompt_output['postamble']
+        epilogue = prompt_output['epilogue']
         
-        return table_df, preamble, output_table, postamble
+        return table_df, prologue, output_table, epilogue
 
     def add_table(self, table_orig, table_df, location, axis):
         self.print_debug(table_df, None)
@@ -337,10 +337,10 @@ class GenAITableExec:
             head_nrows = resp_table.head(num_entries).to_csv(sep=table_orig.format_type[1],
                                                        index=False)
             responses.append(
-                f"Preamble\n\n{head_nrows}\n\nPostamble\n"
+                f"prologue\n\n{head_nrows}\n\nepilogue\n"
                 )
             responses.append(
-                f"{head_nrows}\nPreamble\n\n{head_nrows}\n\nPostamble\n"
+                f"{head_nrows}\nprologue\n\n{head_nrows}\n\nepilogue\n"
                 )
             idx = random.randrange(len(responses))
             responses = responses[idx:idx+1]
@@ -363,7 +363,7 @@ class GenAITableExec:
             time.sleep(10)
             return None, None
 
-        table_df, preamble, output_table, postamble = \
+        table_df, prologue, output_table, epilogue = \
             self.get_text_from_output(prompts_output[0], 
                                       table_orig.format_type[1])
         if output_table == "":
@@ -400,8 +400,8 @@ class GenAITableExec:
                         'duration (seconds)': int(duration),
                         'params': params,
                         'output_table': output_table,
-                        'preamble': preamble,
-                        'postamble': postamble,
+                        'prologue': prologue,
+                        'epilogue': epilogue,
                         'changed': changed_df.to_dict()}
         
         return new_df, command_dict
@@ -512,10 +512,10 @@ class GenAITableExec:
                         
             table_str = resp_table.to_csv(sep=table_orig.format_type[1], index=False)
             responses.append(
-                f"Preamble\n\n{table_str}\n\nPostamble\n"
+                f"prologue\n\n{table_str}\n\nepilogue\n"
                 )
             responses.append(
-                f"{table_str}\nPreamble\n\n{table_str}\n\nPostamble\n"
+                f"{table_str}\nprologue\n\n{table_str}\n\nepilogue\n"
                 
                 )
             idx = random.randrange(len(responses))
@@ -551,7 +551,7 @@ class GenAITableExec:
             print_time(None, "add_col: Table not found!")
             time.sleep(10)
             return None, None
-        table_df, preamble, output_table, postamble = \
+        table_df, prologue, output_table, epilogue = \
             self.get_text_from_output(prompts_output[0], 
                                       table_orig.format_type[1])
         if output_table == "":
@@ -583,8 +583,8 @@ class GenAITableExec:
                         'duration (seconds)': int(duration),
                         'params': params,
                         'output_table': output_table,
-                        'preamble': preamble,
-                        'postamble': postamble,
+                        'prologue': prologue,
+                        'epilogue': epilogue,
                         'changed': changed_df.to_dict()}
         
         return new_df, command_dict
@@ -718,22 +718,22 @@ class GenAITableExec:
                 + f"The missing {na_loc[2]} value of {dummy_val} was retrieved "\
                 + "from the official website.")
             responses.append(
-                f"Preamble\n\n{small_table}\n\nPostamble\n"
+                f"prologue\n\n{small_table}\n\nepilogue\n"
                 )
             responses.append(
-                f"{small_table}\nPreamble\n\n{small_table}\n\nPostamble\n"
+                f"{small_table}\nprologue\n\n{small_table}\n\nepilogue\n"
                 
                 )
             no_head_small_table = resp_table.iloc[rows,:].to_csv(
                 sep=table_orig.format_type[1], index=False, header=None)
             responses.append(
-                f"Preamble\n\n{no_head_small_table}\n\nPostamble\n"
+                f"prologue\n\n{no_head_small_table}\n\nepilogue\n"
                 )
             responses.append(
-                f"{no_head_small_table}\nPreamble\n\n{no_head_small_table}\n\nPostamble\n"
+                f"{no_head_small_table}\nprologue\n\n{no_head_small_table}\n\nepilogue\n"
                 )
             responses.append(
-                f"{small_table}\nPreamble\n\n{no_head_small_table}\n\nPostamble\n"
+                f"{small_table}\nprologue\n\n{no_head_small_table}\n\nepilogue\n"
                 )
             small_lines = small_table.split('\n')
             if len(small_lines) > 3:
@@ -741,7 +741,7 @@ class GenAITableExec:
                 small_lines[3] += ";;;;;;;;;;;;"
             x_table = '\n'.join(small_lines)
             responses.append(
-                f"{x_table}\nPreamble\n\n{x_table}\n\nPostamble\n"
+                f"{x_table}\nprologue\n\n{x_table}\n\nepilogue\n"
                 
                 )
             idx = random.randrange(len(responses))
@@ -793,7 +793,7 @@ class GenAITableExec:
             time.sleep(10)
             return None, None
         
-        table_df, preamble, output_table, postamble = \
+        table_df, prologue, output_table, epilogue = \
             self.get_text_from_output(prompts_output[0], 
                                       table_orig.format_type[1])
         if len(output_table) == 0:
@@ -831,8 +831,8 @@ class GenAITableExec:
                         'duration (seconds)': int(duration),
                         'params': params,
                         'output_table': output_table,
-                        'preamble': preamble,
-                        'postamble': postamble,
+                        'prologue': prologue,
+                        'epilogue': epilogue,
                         'changed': changed_df.to_dict()}
         
         return new_df, command_dict
@@ -850,8 +850,8 @@ class GenAITableExec:
             if col not in table_orig.semantic_key:
                 if rand_col == i:
                     use_col = col
-                else:
-                    i += 1
+                    break
+            i += 1
         
         old_table = table_orig.table.copy()
         row_index = table_orig.table.index[rand_row]
@@ -878,11 +878,11 @@ class GenAITableExec:
             DESCRIPTION.
         table_orig : TYPE
             DESCRIPTION.
-        preamble : TYPE
+        prologue : TYPE
             DESCRIPTION.
         new_df : TYPE
             DESCRIPTION.
-        postamble : TYPE
+        epilogue : TYPE
             DESCRIPTION.
         command_dict : TYPE
             DESCRIPTION.
@@ -966,9 +966,9 @@ class GenAITableExec:
                 try:
                     df = pd.read_csv(io.StringIO(table_text), sep=sep, header=None,
                                      names=list(table_orig.table.columns))
-                    preamble_text = "\n".join(lines[0:i])
-                    postamble_text = "\n".join(lines[i+nrows_expected:])
-                    valid_table = (preamble_text, df.copy(), postamble_text)
+                    prologue_text = "\n".join(lines[0:i])
+                    epilogue_text = "\n".join(lines[i+nrows_expected:])
+                    valid_table = (prologue_text, df.copy(), epilogue_text)
                     valid_tables.append(valid_table)
                 except:
                     continue
@@ -998,9 +998,9 @@ class GenAITableExec:
                 self.print_debug(table_text, None)
                 try:
                     df = pd.read_csv(io.StringIO(table_text), sep=sep)
-                    preamble_text = "\n".join(lines[0:i])
-                    postamble_text = "\n".join(lines[i+nrows_expected+1:])
-                    valid_table = (preamble_text, df.copy(), postamble_text)
+                    prologue_text = "\n".join(lines[0:i])
+                    epilogue_text = "\n".join(lines[i+nrows_expected+1:])
+                    valid_table = (prologue_text, df.copy(), epilogue_text)
                     valid_tables.append(valid_table)
                 except:
                     continue
@@ -1052,9 +1052,9 @@ class GenAITableExec:
                 
             if col_valid_csv_table is not None:
                 table_response = {
-                    'preamble': col_valid_csv_table[0],
+                    'prologue': col_valid_csv_table[0],
                     'output_table': col_valid_csv_table[1].copy(),
-                    'postamble': col_valid_csv_table[2]
+                    'epilogue': col_valid_csv_table[2]
                     }
                 self.print_debug(table_response, None)
                 table_responses.append(table_response)
