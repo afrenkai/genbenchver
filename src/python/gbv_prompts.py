@@ -237,5 +237,5 @@ class GenAITablePrompts:
         elif op == 'add_cols' and ncols > 0:
             self.prompts.append(self.get_add_cols_prompt(ncols))
             
-        self.prompts.append("If you have not finished displaying the previous"\
-                            + " response, do so now.")
+        # self.prompts.append("If you have not finished displaying the previous"\
+        #                     + " response, do so now.")
