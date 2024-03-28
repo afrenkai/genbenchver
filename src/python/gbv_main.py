@@ -344,15 +344,31 @@ class GenAITableExec:
             responses.append(
                 f"{head_nrows}\nprologue\n\n{head_nrows}\n\nepilogue\n"
                 )
-            idx = random.randrange(len(responses))
-            responses = responses[idx:idx+1]
+            if num_entries >= 2:
+                trunc_rows = resp_table.head(2).to_csv(sep=table_orig.format_type[1],
+                                                       index=False)
+                lines = trunc_rows.split('\n')
+                trunc_len = math.floor((len(lines[0]) + len(lines[1]) + len(lines[2]) / 2))
+                trunc_rows_rsp = trunc_rows[:trunc_len]
+                trunc_rows_rsp_end = trunc_rows[trunc_len:]
+                responses.append(
+                    f"prologue\n\n{trunc_rows_rsp}\n\nepilogue\n"
+                    )
+                responses.append(
+                    f"prologue\n\n{trunc_rows_rsp}"
+                    )
+                responses.append(f"{trunc_rows_rsp_end}")
+            idx = random.randrange(len(responses)-1)
+            if idx == (len(responses) - 2):
+                responses = responses[idx:idx+2]
+            else:
+                responses = responses[idx:idx+1]
             self.print_debug(responses, None)
         else:
             responses = self.execute_prompts(genai_prompts)
 
         rsp =  self.parse_table_responses(
-            table_orig, responses, num_entries,
-            table_orig.table.shape[0] + num_entries) 
+            table_orig, responses, 1, table_orig.table.shape[0] + num_entries) 
 
         return genai_prompts.prompts, rsp
 
@@ -675,7 +691,6 @@ class GenAITableExec:
                 sem_val.append(table_orig.table.at[na_loc[1], col])
             num_rows = min(table_orig.table.shape[0], 3)
             num_rows = random.randrange(1, num_rows+1)
-            num_rows = 1 # special for debugging
             if num_rows == 3:
                 if na_loc[0] == 0:
                     rows = [na_loc[0], 1, 2]
@@ -1025,6 +1040,10 @@ class GenAITableExec:
         cols_expected = table_orig.semantic_key
         sep = table_orig.format_type[1]
         
+        self.print_debug(text, None)
+        self.print_debug(nrows_min, None)
+        self.print_debug(nrows_max, None)
+        
         lines = text.split("\n")
         if len(lines) < nrows_min:
             return valid_tables
@@ -1032,7 +1051,7 @@ class GenAITableExec:
         rowidx = []
         for i in range(len(lines)):
             remain = len(lines) - i
-            if remain >= nrows_max:
+            if remain >= nrows_min:
                 found_cols = True
                 if len(cols_expected) > len(lines[i].split(sep)):
                     found_cols = False
@@ -1096,7 +1115,8 @@ class GenAITableExec:
                     if fieldslen > hdrlen:
                         fields = lines[line_idx].split(sep)
                         lines[line_idx] = ';'.join(fields[:hdrlen])
-                    nrows += 1
+                    elif fieldslen == hdrlen:
+                        nrows += 1
                 else:
                     break
                 
@@ -1138,42 +1158,47 @@ class GenAITableExec:
         None.
     
         """
+        
         # only supports one response for now
         table_responses = []
         self.print_debug(nrows_min, None)
         self.print_debug(nrows_max, None)
+        rsp = ""
         for response in responses:
+            rsp = rsp + response
+
+        # Note: indent the following if you're really executing multiple
+        # prompts            
+        self.print_debug(rsp, None)
+        # time.sleep(10)
+        
+        # BEGIN SEARCH FOR TABLE WITHIN RESPONSE        
+        # The first thing we need to do is locate our table within the
+        # prompt response.
+        # We have to make some assumptions here.
+        #   1. Search for a table that conforms to what we asked for.
+        #   2. If there's more than one, *assume it's the final table output.*
+        #      This is a reasonable assumption. The chances of the table
+        #      being within the prologue are far higher than the chances
+        #      of the table being within the epilogue
+
+        valid_csv_tables = self.find_valid_csv_tables(table, rsp,
+                                                      nrows_min, nrows_max)
+        self.print_debug(valid_csv_tables, None)
+
+        # loop through valid tables
+        col_valid_csv_table = None
+        for csv_table in valid_csv_tables:
+            col_valid_csv_table = csv_table # look for the final table
             
-            self.print_debug(response, None)
-            # time.sleep(10)
-            
-            # BEGIN SEARCH FOR TABLE WITHIN RESPONSE        
-            # The first thing we need to do is locate our table within the
-            # prompt response.
-            # We have to make some assumptions here.
-            #   1. Search for a table that conforms to what we asked for.
-            #   2. If there's more than one, *assume it's the final table output.*
-            #      This is a reasonable assumption. The chances of the table
-            #      being within the prologue are far higher than the chances
-            #      of the table being within the epilogue
-    
-            valid_csv_tables = self.find_valid_csv_tables(table, response,
-                                                          nrows_min, nrows_max)
-            self.print_debug(valid_csv_tables, None)
-    
-            # loop through valid tables
-            col_valid_csv_table = None
-            for csv_table in valid_csv_tables:
-                col_valid_csv_table = csv_table # look for the final table
-                
-            if col_valid_csv_table is not None:
-                table_response = {
-                    'prologue': col_valid_csv_table[0],
-                    'output_table': col_valid_csv_table[1].copy(),
-                    'epilogue': col_valid_csv_table[2]
-                    }
-                self.print_debug(table_response, None)
-                table_responses.append(table_response)
+        if col_valid_csv_table is not None:
+            table_response = {
+                'prologue': col_valid_csv_table[0],
+                'output_table': col_valid_csv_table[1].copy(),
+                'epilogue': col_valid_csv_table[2]
+                }
+            self.print_debug(table_response, None)
+            table_responses.append(table_response)
                 
         return(table_responses)
     
@@ -1241,10 +1266,10 @@ class GenAITableExec:
         self.args = args
         
         numver = 0
+        command_idx = None
+        num_attempts = 0
         for idx in range(self.args.max_iter):
-            command_idx = None
-            if (self.args.cmd is not None and self.args.max_iter == 1
-                and self.args.num_ver == 1):
+            if self.args.cmd is not None:
                 for i, cmd in enumerate(COMMANDS):
                     if self.args.cmd == cmd['type']:
                         command_idx = i
@@ -1258,6 +1283,16 @@ class GenAITableExec:
             command = COMMANDS[command_idx]
             if self.command_exec(command):
                 numver += 1
+                command_idx = None
+            else:
+                num_attempts += 1
+                print_time(None, "command failed")
+                time.sleep(3)
+                if num_attempts >= self.args.max_attempts:
+                    command_idx = None
+                else:
+                    print_time(None, "attempting again")
+                    time.sleep(3)
             if numver >= self.args.num_ver:
                 break
 
@@ -1347,7 +1382,7 @@ def main():
               + 'Unsuccessful attempts do not count'))
     parser.add_argument(
         '-i', '--maxiter', dest='max_iter', type=int, default=20,
-        help='Maximum number of table create attempts. Default is 20.')
+        help='Maximum number of table modification attempts. Default is 20.')
     parser.add_argument(
         '-f', '--framework', dest='framework', type=str, default='nnsight',
         help=('Model framework type: nnsight | transformers | fake. '
@@ -1358,9 +1393,11 @@ def main():
               + ' Default is None'))
     parser.add_argument(
         '-c', '--command', dest='cmd', type=str, default=None,
-        help=('Specific command to run. Can only be used when -n is set to 1, '
-              + 'and -i is set to 1. Default is None, which means to '
-              + 'use a hard-coded script.'))
+        help=('Specific command to run exlusively. Default is None, which '
+              + 'means to use a hard-coded script.'))
+    parser.add_argument(
+        '-a', '--maxattempts', dest='max_attempts', type=int, default=3,
+        help='Maximum number of attempts for each command. Default is 3.')
     parser.add_argument('name', type=str,
         help=('Filename of the table without extension '
               + '(only .csv extension is supported)'))
