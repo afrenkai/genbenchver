@@ -174,7 +174,7 @@ class GenAITablePrompts:
         semantic_key = self.table.semantic_key
     
         if ncols == 1:
-            prompt = "Generate one new attributes for a table of "\
+            prompt = "Generate one new attribute for a table of "\
                 + f"{description}. "\
                 + f"The {delimiter}-separated header of attributes to not "\
                 + f"generate is:\n{header}\n"\
@@ -183,7 +183,7 @@ class GenAITablePrompts:
                 + f"by semantic key only:\n{table_key_only}\n"\
                 + "Generate values of real data for all existing rows of the "\
                 + "table. "\
-                + "Generate and output a new table (include the table header) "\
+                + "Generate and output a new table, including the header, "\
                 + "with only the attributes "
             if len(semantic_key) > 0:
                 for i in range(len(semantic_key)):
@@ -204,7 +204,7 @@ class GenAITablePrompts:
                 + f"by semantic key only:\n{table_key_only}\n"\
                 + "Generate values of real data for all existing rows of the "\
                 + "table. "\
-                + "Generate and output a new table (include the table header) "\
+                + "Generate and output a new table, include the table header, "\
                 + "with only the attributes "
             if len(semantic_key) > 0:
                 for i in range(len(semantic_key)):

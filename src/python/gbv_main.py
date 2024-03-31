@@ -169,7 +169,8 @@ class GenAITableExec:
             self.print_debug(prompt, "Send prompt to Generative AI:")
         
         if self.args.framework == 'nnsight':
-            with self.model.generate(max_new_tokens=genai_prompts.max_new_tokens, 
+            with self.model.generate(max_new_tokens=genai_prompts.max_new_tokens,
+                                     do_sample=True, temperature=0.1,
                                      remote=False) as generator:
                 print_time("--- %s seconds ---" % (time.time() - start_time), None)
                 for prompt in genai_prompts.prompts:
@@ -192,7 +193,8 @@ class GenAITableExec:
                                     return_tensors="pt").to(self.args.device_map)
             
             outputs = self.model.generate(
-                **inputs, max_new_tokens=genai_prompts.max_new_tokens)
+                **inputs, max_new_tokens=genai_prompts.max_new_tokens, 
+                do_sample=True, temperature=0.1)
             for output in outputs:
                 print_time("--- %s seconds ---" % (time.time() - start_time), None)
                 model_response = self.tokenizer.decode(output,
