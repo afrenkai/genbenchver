@@ -69,7 +69,8 @@ class VerTableCache:
     def get(self, name, version):
         if name in self.this:
             if version in self.this[name]:
-                return self.this[name][version]['table']
+                if 'table' in self.this[name][version]:
+                    return self.this[name][version]['table']
         return None
 
     def get_high_ver_for_table(self, name):
@@ -85,16 +86,16 @@ class VerTableCache:
     def get_next_ver_for_table(self, name):
         return self.get_high_ver_for_table(name) + 1
     
-    def get_table_random_from_cache(self, name):
-        if name in self.this:
-            r = random.randrange(len(self.this[name]))
-            for i, version in enumerate(self.this[name]):
-                if i == r:
-                    table = self.this[name][version]['table']
-                    if table is not None:
-                        return table
-        return self.get_next_ver_for_table(name)
-                                
+    def get_prev_table_random_from_cache(self, name, new_version):
+        assert name in self.this
+        rand_ver_list = list(range(new_version))
+        random.shuffle(rand_ver_list)
+        for r in rand_ver_list:
+            if r in self.this[name] and 'table' in self.this[name][r]:
+                table = self.this[name][r]['table']
+                if table is not None:
+                    return table
+        return None
     
     def read_table_from_cache(self, name, version):
         table = self.get(name, version)

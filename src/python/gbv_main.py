@@ -59,29 +59,29 @@ COMMANDS = [
     ]
 
 CMD_PLAN = [
+    # 0, # add_row
+    # 2, # add_col
+    # 5, # update_val
+    # 3, # del_col
+    # 1, # del_row
+    # 2, # add_col
+    # 0, # add_row
+    # 5, # update_val
     0, # add_row
     2, # add_col
-    5, # update_val
-    3, # del_col
-    1, # del_row
-    2, # add_col
-    0, # add_row
-    5, # update_val
-    0, # add_row
-    2, # add_col
-    5, # update_val
-    3, # del_col
-    1, # del_row
-    2, # add_col
-    0, # add_row
-    5, # update_val
-    0, # add_row
-    2, # add_col
-    5, # update_val
-    3, # del_col
-    1, # del_row
-    2, # add_col
-    0, # add_row
+    # 5, # update_val
+    # 3, # del_col
+    # 1, # del_row
+    # 2, # add_col
+    # 0, # add_row
+    # 5, # update_val
+    # 0, # add_row
+    # 2, # add_col
+    # 5, # update_val
+    # 3, # del_col
+    # 1, # del_row
+    # 2, # add_col
+    # 0, # add_row
     ]
 
 TIME_START = time.time()
@@ -1257,10 +1257,11 @@ Here is the updated table in semi-colon-delimited .csv format:
         new_version = cache.get_missing_ver_for_table(table_name)
         self.print_debug(new_version, None)
         if self.args.lineage == "random":
-            table_orig = cache.get_table_random_from_cache(table_name)
+            table_orig = cache.get_prev_table_random_from_cache(table_name,
+                                                                new_version)
         else: # "sequence"
-            table_orig = cache.get(table_name, 
-                                   cache.get_high_ver_for_table(table_name))
+            table_orig = cache.get(table_name, new_version - 1)
+        assert table_orig is not None
         self.print_debug(table_orig.version, None)
         self.print_debug(table_orig.semantic_key, None)
         assert(len(table_orig.semantic_key) > 0)
