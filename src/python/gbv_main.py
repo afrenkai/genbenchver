@@ -382,7 +382,7 @@ class GenAITableExec:
             self.add_rows_exec(table_orig, params)
 
         if prompts_output is None or len(prompts_output) == 0:
-            print_time(None, "add_rows A : Table not found!")
+            print_time(None, "add_rows: Table not found!")
             time.sleep(10)
             return None, None
 
@@ -390,7 +390,7 @@ class GenAITableExec:
             self.get_text_from_output(prompts_output[0], 
                                       table_orig.format_type[1])
         if output_table == "":
-            print_time(None, "Table not found!")
+            print_time(None, "add_rows: Table not found!")
             time.sleep(10)
             return None, None # we did not find a table in the response, do nothing
             
@@ -700,7 +700,7 @@ class GenAITableExec:
         
         if self.args.framework == 'fake':
             resp_table = table_orig.table.copy()
-            print_time(resp_table, None)
+            self.print_debug(resp_table, None)
             sem_key = table_orig.semantic_key
             sem_val = []
     
@@ -735,11 +735,27 @@ class GenAITableExec:
             resp_table.at[na_loc[1], na_loc[2]] = dummy_val
             small_table = resp_table.iloc[rows,:].to_csv(
                 sep=table_orig.format_type[1], index=False)
-            print_time(resp_table, None)
-            print_time(small_table, None)
+            self.print_debug(resp_table, None)
+            self.print_debug(small_table, None)
             attribute = na_loc[2]
             col_dtype = str(resp_table[attribute].dtype)
             responses = []
+            responses.append(
+f"""
+I have retrieved the missing value for the "{na_loc}" 
+attribute for the row with Author=Shakespeare and 
+            Title=As You Like It from the website "Performance Database" 
+            (<https://www.performingartsdatabase.org/>). The value is 
+            "{dummy_val}". Here is the updated table:
+
+{small_table}
+
+Here is the updated table in semi-colon-delimited .csv format:
+
+{small_table}
+
+                """
+                )
             responses.append(
                 f"The missing {na_loc[2]} value for {sem_key} = {sem_val}"\
                 + "in the table can be found on the official website. "\
@@ -762,7 +778,7 @@ class GenAITableExec:
                 )
             no_head_small_table = resp_table.iloc[rows,:].to_csv(
                 sep=table_orig.format_type[1], index=False, header=None)
-            print_time(no_head_small_table, None)
+            self.print_debug(no_head_small_table, None)
             responses.append(
                 f"prologue\n\n{no_head_small_table}\n\nepilogue\n"
                 )
@@ -782,9 +798,9 @@ class GenAITableExec:
                 
                 )
             idx = random.randrange(len(responses))
-            # idx = 4 # for testing
+            # idx = 0 # for testing
             responses = responses[idx:idx+1]
-            print_time(responses, None)
+            self.print_debug(responses, None)
             time.sleep(3)
             
         else:
@@ -826,7 +842,7 @@ class GenAITableExec:
             params['na_loc'] = na_loc
         else:
             na_loc = params['na_loc']
-        
+            
         prompts_input, prompts_output = self.fill_na_exec(table_orig, params)
 
         if (prompts_input is None or len(prompts_input) == 0 or
@@ -839,7 +855,7 @@ class GenAITableExec:
             self.get_text_from_output(prompts_output[0], 
                                       table_orig.format_type[1])
         if len(output_table) == 0:
-            print_time(None, "Table not found!")
+            print_time(None, "fill_na: Table not found!")
             time.sleep(10)
             return None, None # we did not find a table in the response, do nothing
 
@@ -972,11 +988,11 @@ class GenAITableExec:
                              debug=self.args.debug)
         self.cache.add(new_table)
         
-    def parse_header_or_row(table_orig, line):
+    def parse_header_or_row(self, table_orig, line):
         
         sep = table_orig.format_type[1]
         
-        print_time(line, None)
+        self.print_debug(line, None)
         try:
             df = pd.read_csv(io.StringIO(line), sep=sep)
         except:
@@ -999,15 +1015,15 @@ class GenAITableExec:
         
         # is it a row without a header? 
         # only if the number of fields matches the original table
-        print_time(df.shape[1], None)
-        print_time(table_orig.table.shape[1], None)
+        self.print_debug(df.shape[1], None)
+        self.print_debug(table_orig.table.shape[1], None)
         if df.shape[1] == table_orig.table.shape[1]:
-            print_time(stripped_field_list, None)
+            self.print_debug(stripped_field_list, None)
             return None, None, sep.join(stripped_field_list)
         
         return None, None, None
 
-    def parse_table(table_orig, lines):
+    def parse_table(self, table_orig, lines):
         
         if len(lines) == 0:
             return None, False
@@ -1015,15 +1031,15 @@ class GenAITableExec:
         sep = table_orig.format_type[1]
         
         hdr_line, hdr_line_no_idx, row_line = \
-            GenAITableExec.parse_header_or_row(table_orig, lines[0])
+            self.parse_header_or_row(table_orig, lines[0])
             
-        print_time(row_line, "row_line")
+        self.print_debug(row_line, "row_line")
 
         if hdr_line is None and hdr_line_no_idx is None and row_line is None:
             return None, False
         
         header_list = list(table_orig.table.columns)
-        print_time(header_list, "header_list")
+        self.print_debug(header_list, "header_list")
         
         our_df = None
         if len(lines) == 1 or len(lines[1]) == 0:
@@ -1038,13 +1054,13 @@ class GenAITableExec:
         if hdr_line is not None:
             dfi = pd.read_csv(io.StringIO(hdr_line), sep=sep)
             our_df = dfi
-            # print_time(dfi, None)
-            # print_time(dfi.shape, None)
+            self.print_debug(dfi, None)
+            self.print_debug(dfi.shape, None)
         if hdr_line_no_idx is not None:
             dfh = pd.read_csv(io.StringIO(hdr_line_no_idx), sep=sep)
             our_df = dfh
-            # print_time(dfh, None)
-            # print_time(dfh.shape, None)
+            self.print_debug(dfh, None)
+            self.print_debug(dfh.shape, None)
         if row_line is not None:
             dfr = pd.read_csv(io.StringIO(row_line), sep=sep, header=None,
                               names=list(table_orig.table.columns))
@@ -1059,11 +1075,11 @@ class GenAITableExec:
                     dfl = pd.read_csv(io.StringIO(lines[num_lines-1]), 
                                       header=None, sep=sep,
                                       names=header_list)
-                    print_time(dfl, None)
+                    self.print_debug(dfl, None)
                     if dfl is None:
                         return our_df, False
-                    print_time(dfl.shape, None)
-                    print_time(dfr.shape, None)
+                    self.print_debug(dfl.shape, None)
+                    self.print_debug(dfr.shape, None)
                     if dfl.shape[1] != dfr.shape[1]:
                         return our_df, False
                 except:
@@ -1076,7 +1092,7 @@ class GenAITableExec:
                     df = pd.read_csv(io.StringIO(table_text), sep=sep,
                                      header=None,
                                      names=header_list)
-                    print_time(df, None)
+                    self.print_debug(df, None)
                     if df is not None:
                         our_df = df
                 except:
@@ -1084,27 +1100,27 @@ class GenAITableExec:
             return our_df, False
         
         if hdr_line_no_idx is not None and df1.shape[1] == dfh.shape[1]:
-            # print_time(None, "Shapes are equal")
+            self.print_debug(None, "Shapes are equal")
             # we match the header without the index
             for num_lines in range(2, len(lines)):
                 try:
                     dfl = pd.read_csv(io.StringIO(lines[num_lines-1]), sep=sep)
-                    # print_time(dfl, None)
+                    self.print_debug(dfl, None)
                     if dfl is None:
                         return our_df, True
-                    # print_time(dfl.shape, None)
-                    # print_time(dfr.shape, None)
+                    self.print_debug(dfl.shape, None)
+                    self.print_debug(dfh.shape, None)
                     if dfl.shape[1] != dfh.shape[1]:
                         return our_df, True
                 except:
                     return our_df, True
                 
                 table_lines = [hdr_line_no_idx]
-                table_lines.extend(lines[1:num_lines+1])
+                table_lines.extend(lines[1:num_lines]) # should be not +1
                 table_text = "\n".join(table_lines)
                 try:
                     df = pd.read_csv(io.StringIO(table_text), sep=sep)
-                    # print_time(df, None)
+                    self.print_debug(df, None)
                     if df is not None:
                         our_df = df
                 except:
@@ -1115,11 +1131,13 @@ class GenAITableExec:
             # we match the header with the index
             for num_lines in range(2, len(lines)):
                 try:
-                    df = pd.read_csv(io.StringIO(lines[num_lines-1]), sep=sep)
-                    # print_time(df, "first df")
-                    if df is None:
+                    dfl = pd.read_csv(io.StringIO(lines[num_lines-1]), sep=sep)
+                    self.print_debug(df, "first df")
+                    if dfl is None:
                         return our_df, True
-                    if df.shape[1] != dfi.shape[1]:
+                    self.print_debug(dfl.shape, None)
+                    self.print_debug(dfi.shape, None)
+                    if dfl.shape[1] != dfi.shape[1]:
                         return our_df, True
                 except:
                     return our_df, True
@@ -1129,8 +1147,8 @@ class GenAITableExec:
                 table_text = "\n".join(table_lines)
                 try:
                     df = pd.read_csv(io.StringIO(table_text), sep=sep)
-                    # print_time(df, "second df")
-                    # print_time(df, None)
+                    self.print_debug(df, "second df")
+                    self.print_debug(df, None)
                     if df is not None:
                         our_df = df
                 except:
@@ -1146,8 +1164,7 @@ class GenAITableExec:
         lines = text.split("\n")
         line_num = 0
         while line_num < len(lines):
-            df, has_header = GenAITableExec.parse_table(table_orig, 
-                                                        lines[line_num:])
+            df, has_header = self.parse_table(table_orig, lines[line_num:])
             if df is not None:
                 if line_num > 0:
                     prologue_text = "\n".join(lines[:line_num-1])
@@ -1237,7 +1254,7 @@ class GenAITableExec:
         cache = self.cache
         table_name = self.args.name
         
-        new_version = cache.get_next_ver_for_table(table_name)
+        new_version = cache.get_missing_ver_for_table(table_name)
         self.print_debug(new_version, None)
         if self.args.lineage == "random":
             table_orig = cache.get_table_random_from_cache(table_name)

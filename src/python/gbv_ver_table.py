@@ -75,6 +75,13 @@ class VerTableCache:
     def get_high_ver_for_table(self, name):
         return max(list(self.this[name].keys())) 
     
+    def get_missing_ver_for_table(self, name):
+        ver_list = list(self.this[name].keys())
+        for i in range(max(ver_list)):
+            if i not in self.this[name]:
+                return i
+        return max(ver_list) + 1
+    
     def get_next_ver_for_table(self, name):
         return self.get_high_ver_for_table(name) + 1
     
