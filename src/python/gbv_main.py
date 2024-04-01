@@ -233,6 +233,23 @@ class GenAITableExec:
                     df[col] = np.nan
             self.print_debug(old_table, "row")
             self.print_debug(df, "row")
+            
+            # if row in new table matches semantic key of old table
+            # replace the old row, do not add a new one
+            for cur_index, cur_row in old_table.iterrows():
+                for new_index, new_row in df.iterrows():
+                    matches = True
+                    for key in table_orig.semantic_key:
+                        if cur_row[key] != new_row[key]:
+                            matches = False
+                            break
+                    if matches:
+                        for col in old_table:
+                            old_table.at[cur_index, col]\
+                                = df.at[new_index, col]
+            # some rows of df may not have been in old_table, so we still
+            # concatenate the tables together. We finish by dropping
+            # duplicates.
             if location == 0:
                 new_df = pd.concat([df, old_table], axis=axis)
             elif location == (n_entries-1):
@@ -283,12 +300,15 @@ class GenAITableExec:
             new_df = new_df[cols_new]
             
         new_df.reset_index(drop=True, inplace=True)            
+        if not self.args.framework == 'fake':
+            # if we're testing, we need the rows to grow, and we're using
+            # other rows in the table to be the new row
+            new_df = new_df.drop_duplicates()
         self.print_debug(new_df, None)
         if new_df is None:
             print_time(None, "Bad csv format of output")
             time.sleep(10)
             return None
-        new_df = new_df.drop_duplicates()
         return new_df
             
     def add_rows_exec(self, table_orig, params):
@@ -340,6 +360,13 @@ class GenAITableExec:
                 resp_table = pd.concat([resp_table, resp_table], axis=0)
             head_nrows = resp_table.head(num_entries).to_csv(sep=table_orig.format_type[1],
                                                        index=False)
+            responses.append(
+                f"""
+{head_nrows}
+The second row is generated from the first example you provided, "Shakespeare;Hamlet". I took the liberty of looking up the additional details for this well-known work of classical literature.
+
+The first row is generated from my knowledge of classical literature. Euripides was an ancient Greek playwright, and Medea is one of his surviving tragedies. The characters, themes, and style are based on my understanding of the work.
+                """)
             responses.append(
                 f"prologue\n\n{head_nrows}\n\nepilogue\n"
                 )
@@ -557,7 +584,6 @@ class GenAITableExec:
                 
                 )
             idx = random.randrange(len(responses))
-            idx = len(responses) - 1 # for testing
             responses = responses[idx:idx+1]
         else:
                 
@@ -1072,9 +1098,10 @@ Here is the updated table in semi-colon-delimited .csv format:
             # we are a headerless table
             for num_lines in range(2, len(lines)):
                 try:
-                    dfl = pd.read_csv(io.StringIO(lines[num_lines-1]), 
-                                      header=None, sep=sep,
-                                      names=header_list)
+                    # dfl = pd.read_csv(io.StringIO(lines[num_lines-1]), 
+                    #                   header=None, sep=sep,
+                    #                   names=header_list)
+                    dfl = pd.read_csv(io.StringIO(lines[num_lines-1]), sep=sep)
                     self.print_debug(dfl, None)
                     if dfl is None:
                         return our_df, False
