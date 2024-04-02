@@ -52,6 +52,8 @@ COMMANDS = [
     {'type': 'del_cols',
      'params': {'num_entries' : [1],
                 'location' : ['random']}},
+    # {'type': 'fill_na',
+    # 'params': {'location' : ['first', 'random']}},
     {'type': 'fill_na',
     'params': {'location' : ['first', 'random']}},
     {'type': 'update_val',
@@ -1316,8 +1318,8 @@ Here is the updated table in semi-colon-delimited .csv format:
             new_df, command_dict = self.add_cols(table_orig, params)
         elif command_type == "del_cols":
             new_df, command_dict = self.del_cols(table_orig, params)
-        elif command_type == "fill_na":
-            new_df, command_dict = self.fill_na(table_orig, params)
+        # elif command_type == "fill_na":
+        #     new_df, command_dict = self.fill_na(table_orig, params)
         elif command_type == "update_val":
             new_df, command_dict = self.update_val(table_orig, params)
     
