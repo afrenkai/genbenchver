@@ -65,7 +65,7 @@ COMMANDS = [
 CMD_PLAN = [
     # 0, # add_row
     # 2, # add_col
-    # 5, # update_val
+    # 4, # update_val
     # 3, # del_col
     # 1, # del_row
     # 2, # add_col
@@ -169,9 +169,6 @@ class GenAITableExec:
         print_time(f"--- starting at {start}", None)
         prompts_output = []
         
-        for prompt in genai_prompts.prompts:
-            self.print_debug(prompt, "Send prompt to Generative AI:")
-        
         if self.args.framework == 'nnsight':
             with self.model.generate(max_new_tokens=genai_prompts.max_new_tokens,
                                      do_sample=True, temperature=0.1,
@@ -207,6 +204,7 @@ class GenAITableExec:
                                       .split("/[INST]")[-1])
     
         print_time("--- %s seconds ---" % (time.time() - start_time), None)
+        
         return(prompts_output)
     
     def get_text_from_output(self, prompt_output, sep):
@@ -304,10 +302,7 @@ class GenAITableExec:
             new_df = new_df[cols_new]
             
         new_df.reset_index(drop=True, inplace=True)            
-        if not self.args.framework == 'fake':
-            # if we're testing, we need the rows to grow, and we're using
-            # other rows in the table to be the new row
-            new_df = new_df.drop_duplicates()
+        new_df = new_df.drop_duplicates()
         self.print_debug(new_df, None)
         if new_df is None:
             print_time(None, "Bad csv format of output")
@@ -330,6 +325,11 @@ class GenAITableExec:
         
         genai_prompts = GenAITablePrompts(self.cache, table_orig, 100000)
         genai_prompts.add_prompt('add_rows', nrows=num_entries)
+
+        print_time(None, None)
+        print("Send prompt to Generative AI:")
+        print(genai_prompts.prompts[0])
+        time.sleep(3)
         
         if self.args.framework == 'fake':
             responses = []
@@ -396,9 +396,15 @@ The first row is generated from my knowledge of classical literature. Euripides 
                 responses = responses[idx:idx+2]
             else:
                 responses = responses[idx:idx+1]
-            self.print_debug(responses, None)
+            
         else:
             responses = self.execute_prompts(genai_prompts)
+
+        print_time(None, None)
+        print("Received response from Generative AI:")
+        print(responses[0], None)
+        time.sleep(3)
+
 
         rsp =  self.parse_table_responses(
             table_orig, responses, False, 1, 
@@ -513,6 +519,11 @@ The first row is generated from my knowledge of classical literature. Euripides 
         ncols = params['num_entries']
         genai_prompts = GenAITablePrompts(self.cache, table_orig, 100000)
         genai_prompts.add_prompt('add_cols', ncols=ncols)
+
+        print_time(None, None)
+        print("Send prompt to Generative AI:")
+        print(genai_prompts.prompts)
+        time.sleep(3)
         
         if self.args.framework == 'fake':
             old_table = table_orig.table.copy()
@@ -537,10 +548,7 @@ The first row is generated from my knowledge of classical literature. Euripides 
                 for col in old_columns:
                     colnew = col + "_NEW"
                     if not col.endswith("_NEW") and not colnew in old_columns:
-                        self.print_debug(old_table, None)
-                        self.print_debug(col, None)
                         resp_table[colnew] = old_table[col]
-                        self.print_debug(resp_table, None)
                         col_count += 1
                         if col_count >= ncols:
                             break
@@ -550,7 +558,6 @@ The first row is generated from my knowledge of classical literature. Euripides 
                     colnew = col + "_NEW"
                     if not colnew in old_columns:
                         resp_table[colnew] = old_table[col]
-                        self.print_debug(resp_table, None)
                         col_count += 1
                         if col_count >= ncols:
                             break
@@ -558,13 +565,13 @@ The first row is generated from my knowledge of classical literature. Euripides 
                     continue
                 for col in old_columns:
                     resp_table[col + "_NEW"] = old_table[col]
-                    self.print_debug(resp_table, None)
                     col_count += 1
                     if col_count >= ncols:
                         break
                     
                         
-            table_str = resp_table.to_csv(sep=table_orig.format_type[1], index=False)
+            table_str = resp_table.to_csv(sep=table_orig.format_type[1], 
+                                          index=False)
             responses.append(
                 f"prologue\n\n{table_str}\n\nepilogue\n"
                 )
@@ -592,6 +599,11 @@ The first row is generated from my knowledge of classical literature. Euripides 
         else:
                 
             responses = self.execute_prompts(genai_prompts)
+
+        print_time(None, None)
+        print("Received response from Generative AI:")
+        print(responses, None)
+        time.sleep(3)
 
         rsp =  self.parse_table_responses(
             table_orig, responses, True, table_orig.table.shape[0], 
@@ -727,6 +739,12 @@ The first row is generated from my knowledge of classical literature. Euripides 
                 
         genai_prompts = GenAITablePrompts(self.cache, table_orig, 100000)
         genai_prompts.add_prompt('fill_na', na_loc=na_loc)
+
+        print_time(None, None)
+        print("Send prompt to Generative AI:")
+        print(genai_prompts.prompts[0])
+        time.sleep(3)
+        
         
         if self.args.framework == 'fake':
             resp_table = table_orig.table.copy()
@@ -837,6 +855,11 @@ Here is the updated table in semi-colon-delimited .csv format:
                 
             responses = self.execute_prompts(genai_prompts)
             
+        print_time(None, None)
+        print("Received response from Generative AI:")
+        print(responses[0], None)
+        time.sleep(3)
+
         nrows_max = min(table_orig.table.shape[0], 3)
         if nrows_max == 0:
             nrows_max = 1
