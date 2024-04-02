@@ -58,6 +58,10 @@ COMMANDS = [
     'params': {}}
     ]
 
+# fill this out if you want a script to follow
+# once the script, if any, is exhausted
+# then a command is selected at random
+
 CMD_PLAN = [
     # 0, # add_row
     # 2, # add_col
@@ -67,8 +71,8 @@ CMD_PLAN = [
     # 2, # add_col
     # 0, # add_row
     # 5, # update_val
-    0, # add_row
-    2, # add_col
+    # 0, # add_row
+    # 2, # add_col
     # 5, # update_val
     # 3, # del_col
     # 1, # del_row
@@ -83,6 +87,7 @@ CMD_PLAN = [
     # 2, # add_col
     # 0, # add_row
     ]
+
 
 TIME_START = time.time()
 DATETIME_START = dt.datetime.now()
@@ -1340,6 +1345,7 @@ Here is the updated table in semi-colon-delimited .csv format:
         numver = 0
         command_idx = None
         num_attempts = 0
+        cmd_plan_pos = 0
         for idx in range(self.args.max_iter):
             if self.args.cmd is not None:
                 for i, cmd in enumerate(COMMANDS):
@@ -1347,20 +1353,22 @@ Here is the updated table in semi-colon-delimited .csv format:
                         command_idx = i
                         break
             if command_idx is None:
-                if idx < len(CMD_PLAN):
-                    command_idx = CMD_PLAN[idx]
+                if cmd_plan_pos < len(CMD_PLAN):
+                    command_idx = CMD_PLAN[cmd_plan_pos]
                 else:
-                    command_idx = CMD_PLAN[random.randrange(len(CMD_PLAN))]
+                    command_idx = random.randrange(len(COMMANDS))
                     
             command = COMMANDS[command_idx]
             if self.command_exec(command):
                 numver += 1
+                cmd_plan_pos += 1
                 command_idx = None
             else:
                 num_attempts += 1
                 print_time(None, "command failed")
                 time.sleep(10)
                 if num_attempts >= self.args.max_attempts:
+                    cmd_plan_pos += 1
                     command_idx = None
                 else:
                     print_time(None, "attempting again")
