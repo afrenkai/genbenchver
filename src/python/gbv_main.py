@@ -54,8 +54,6 @@ COMMANDS = [
                 'location' : ['random']}},
     # {'type': 'fill_na',
     # 'params': {'location' : ['first', 'random']}},
-    {'type': 'fill_na',
-    'params': {'location' : ['first', 'random']}},
     {'type': 'update_val',
     'params': {}}
     ]
