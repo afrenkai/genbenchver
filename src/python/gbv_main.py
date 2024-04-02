@@ -88,7 +88,6 @@ CMD_PLAN = [
     # 0, # add_row
     ]
 
-
 TIME_START = time.time()
 DATETIME_START = dt.datetime.now()
 
@@ -1041,7 +1040,7 @@ Here is the updated table in semi-colon-delimited .csv format:
             if "Unnamed" in stripped_field_list[0]:
                 hdr_line_no_idx = sep.join(stripped_field_list[1:])
             else:
-                hdr_line_no_idx = None
+                hdr_line_no_idx = hdr_line
             return hdr_line, hdr_line_no_idx, None
         
         # is it a row without a header? 
@@ -1063,6 +1062,9 @@ Here is the updated table in semi-colon-delimited .csv format:
         
         hdr_line, hdr_line_no_idx, row_line = \
             self.parse_header_or_row(table_orig, lines[0])
+        self.print_debug(hdr_line, "hdr_line")
+        self.print_debug(hdr_line_no_idx, "hdr_line_no_idx")
+        self.print_debug(row_line, "row_line")
             
         self.print_debug(row_line, "row_line")
 
@@ -1094,9 +1096,11 @@ Here is the updated table in semi-colon-delimited .csv format:
             self.print_debug(dfh.shape, None)
         if row_line is not None:
             dfr = pd.read_csv(io.StringIO(row_line), sep=sep, header=None,
-                              names=list(table_orig.table.columns))
+                              names=header_list)
             our_df = dfr
         df1 = pd.read_csv(io.StringIO(lines[1]), sep=sep)
+        self.print_debug(df1, None)
+        self.print_debug(df1.shape, None)
         
 
         if row_line is not None:
@@ -1131,6 +1135,9 @@ Here is the updated table in semi-colon-delimited .csv format:
                     return our_df, False
             return our_df, False
         
+        self.print_debug(df1.shape, None)
+        self.print_debug(dfh.shape, None)
+        self.print_debug(hdr_line_no_idx, None)
         if hdr_line_no_idx is not None and df1.shape[1] == dfh.shape[1]:
             self.print_debug(None, "Shapes are equal")
             # we match the header without the index
