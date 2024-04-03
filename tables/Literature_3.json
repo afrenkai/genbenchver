@@ -1,0 +1,67 @@
+{
+    "description": "information about works of classical literature",
+    "lineage": [
+        0,
+        1,
+        2
+    ],
+    "semantic_key": [
+        "Author",
+        "Title"
+    ],
+    "file_ext": ".csv",
+    "field_delim": ";",
+    "file_ext_name": "semi-colon",
+    "command": {
+        "type": "add_rows",
+        "prompt": "Generate 2 rows for a table of information about works of classical literature. The semi-colon-separated header of attributes for the table is:\nCharacters;Locations;Author;Title;Year;Rating;Style;Genre;Poem;Element;Length;Theme\n\nDo not generate fictional rows. Generate the rows from real known data. Here is a list of semi-colon-separated rows not to generate by semantic key only:\nAuthor;Title\nAusten;Pride and Prejudice\nDickens;Great Expectations\nGarcia-Marquez;One Hundred Years of Solitude\nHardy;Tess of the d'Urbervilles\nHerrick;To the Virgins\nHomer;The Iliad\nJoyce;Ulysses\nPlath;Ariel\nShakespeare;As You Like It\nShelley;Ozymandias\nVonnegut;Slaughterhouse-Five\n\nOutput the rows in the format of a semi-colon-separated .csv file with a column header. Then explain the source of the new data.",
+        "start time": "2024-04-01 02:44:37",
+        "complete time": "2024-04-01 02:49:30",
+        "duration (seconds)": 293,
+        "params": {
+            "num_entries": 2,
+            "location": 0
+        },
+        "output_table": "Characters;Locations;Author;Title;Year;Rating;Style;Genre;Poem;Element;Length;Theme\nCharacters: Dante Alighieri, Virgil;Locations: Hell, Purgatory, Heaven;Author: Dante Alighieri;Title: The Divine Comedy;Year: 1320;Rating: 5/5;Style: Poetic Narrative;Genre: Italian Literature, Poetry, Fantasy;Poem: Yes;Element: Fire;Length: Long;Theme: Morality, Spirituality, Journey\n",
+        "prologue": " Characters: Telemachus, Penelope, Odysseus; Locations: Ithaca, Mediterranean; Author: Homer; Title: The Odyssey; Year: 800 BC; Rating: 5/5; Style: Epic Poetry; Genre: Greek Literature, Fantasy, Adventure; Poem: Yes; Element: Water; Length: Long; Theme: Return, Heroism, Cunning",
+        "epilogue": "\nThe data for the second row is sourced from 'The Divine Comedy', an epic poem by Dante Alighieri, an Italian poet from the Middle Ages. The narrative follows Dante as he travels through Hell, Purgatory, and Heaven, guided by the Roman poet Virgil.",
+        "changed": {
+            "Characters": {
+                "0": "Characters: Dante Alighieri, Virgil"
+            },
+            "Locations": {
+                "0": "Locations: Hell, Purgatory, Heaven"
+            },
+            "Author": {
+                "0": "Author: Dante Alighieri"
+            },
+            "Title": {
+                "0": "Title: The Divine Comedy"
+            },
+            "Year": {
+                "0": "Year: 1320"
+            },
+            "Rating": {
+                "0": "Rating: 5/5"
+            },
+            "Style": {
+                "0": "Style: Poetic Narrative"
+            },
+            "Genre": {
+                "0": "Genre: Italian Literature, Poetry, Fantasy"
+            },
+            "Poem": {
+                "0": "Poem: Yes"
+            },
+            "Element": {
+                "0": "Element: Fire"
+            },
+            "Length": {
+                "0": "Length: Long"
+            },
+            "Theme": {
+                "0": "Theme: Morality, Spirituality, Journey"
+            }
+        }
+    }
+}

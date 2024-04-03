@@ -1,0 +1,39 @@
+{
+    "description": "information about works of classical literature",
+    "lineage": [
+        0,
+        1,
+        2
+    ],
+    "semantic_key": [
+        "Author",
+        "Title"
+    ],
+    "file_ext": ".csv",
+    "field_delim": ";",
+    "file_ext_name": "semi-colon",
+    "command": {
+        "type": "del_cols",
+        "params": {
+            "num_entries": 1,
+            "location": [
+                0
+            ]
+        },
+        "changed": {
+            "Characters": {
+                "0": " Elizabeth Bennet, Mr. Darcy, Mr. Collins, Lady Catherine de Bourgh",
+                "1": " Pip, Estella, Miss Havisham, Abel Magwitch",
+                "2": " Macondo inhabitants",
+                "3": " Tess Durbeyfield, Alec d'Urberville, Angel Clare",
+                "4": " Virgins",
+                "5": " Achilles, Hector, Patroclus, Odysseus, Zeus, Athena",
+                "6": " Leopold Bloom, Stephen Dedalus, Molly Bloom",
+                "7": " No significant characters",
+                "8": " Rosalind, Orlando, Celia, Jaques",
+                "9": " Traveler, King of Kings",
+                "10": " Billy Pilgrim, Roland Weary, Valencia Merble, Eliot Rosewater"
+            }
+        }
+    }
+}

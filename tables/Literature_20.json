@@ -1,0 +1,68 @@
+{
+    "description": "information about works of classical literature",
+    "lineage": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+    ],
+    "semantic_key": [
+        "Author",
+        "Title"
+    ],
+    "file_ext": ".csv",
+    "field_delim": ";",
+    "file_ext_name": "semi-colon",
+    "command": {
+        "type": "del_rows",
+        "params": {
+            "num_entries": 1,
+            "location": "random"
+        },
+        "changed": {
+            "Characters": {
+                "3": " Tess Durbeyfield, Alec d'Urberville, Angel Clare"
+            },
+            "Author": {
+                "3": "Hardy"
+            },
+            "Title": {
+                "3": "Tess of the d'Urbervilles"
+            },
+            "Year": {
+                "3": "1891"
+            },
+            "Rating": {
+                "3": "4.0"
+            },
+            "Style": {
+                "3": "Realistic"
+            },
+            "Genre": {
+                "3": "Novel"
+            },
+            "Poem": {
+                "3": "No"
+            },
+            "Element": {
+                "3": "Symbolism"
+            },
+            "Length": {
+                "3": "500 pp."
+            },
+            "Original Language": {
+                "3": "English"
+            },
+            "Number of Pages": {
+                "3": 448
+            },
+            "Theme": {
+                "3": "Innocence"
+            }
+        }
+    }
+}

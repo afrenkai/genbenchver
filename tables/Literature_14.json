@@ -1,0 +1,54 @@
+{
+    "description": "information about works of classical literature",
+    "lineage": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        13
+    ],
+    "semantic_key": [
+        "Author",
+        "Title"
+    ],
+    "file_ext": ".csv",
+    "field_delim": ";",
+    "file_ext_name": "semi-colon",
+    "command": {
+        "type": "add_cols",
+        "prompt": "Generate one new attribute for a table of information about works of classical literature. The semi-colon-separated header of attributes to not generate is:\nCharacters;Author;Title;Year;Rating;Style;Genre;Poem;Element;Length;Original Language;Number of Pages;Theme\n\nGenerate a real attribute. Do not generate a fictional one. Here is the semi-colon-separated table by semantic key only:\nAuthor;Title\nShakespeare;Hamlet\nHomer;The Odyssey\nAusten;Pride and Prejudice\nDickens;Great Expectations\nGarcia-Marquez;One Hundred Years of Solitude\nHardy;Tess of the d'Urbervilles\nHerrick;To the Virgins\nHomer;The Iliad\nJoyce;Ulysses\nPlath;Ariel\nShakespeare;As You Like It\nShelley;Ozymandias\nVonnegut;Slaughterhouse-Five\nEuripides;Medea\n\nGenerate values of real data for all existing rows of the table. Generate and output a new table, including the header, with only the attributes Author, Title, and the new attribute in the format of a semi-colon-separated .csv file. Then explain the source of the new data.",
+        "start time": "2024-04-02 10:32:13",
+        "complete time": "2024-04-02 11:36:50",
+        "duration (seconds)": 3877,
+        "params": {
+            "num_entries": 1,
+            "location": "right"
+        },
+        "output_table": "Author;Title;Number of Acts/Parts\nShakespeare;Hamlet;5\nHomer;The Odyssey;24\nAusten;Pride and Prejudice;6\nDickens;Great Expectations;3\nGarcia-Marquez;One Hundred Years of Solitude;6\nHardy;Tess of the d'Urbervilles;1\nHerrick;To the Virgins;1\nHomer;The Iliad;24\nJoyce;Ulysses;18\nPlath;Ariel;1\nShakespeare;As You Like It;2\nShelley;Ozymandias;1\nVonnegut;Slaughterhouse-Five;5\nEuripides;Medea;2\n",
+        "prologue": " New attribute: Number of Acts/Parts",
+        "epilogue": "The new attribute, \"Number of Acts/Parts\", indicates the number of distinct sections in each work. For prose works, this refers to the number of parts or books. For dramatic works, this refers to the number of acts. For poetic works, this refers to the number of distinct poems in a collected work. The values for this attribute are based on existing literary analysis and are intended to provide a general sense of the structure of each work.",
+        "changed": {
+            "Number of Acts/Parts": {
+                "0": 5,
+                "1": 24,
+                "2": 6,
+                "3": 3,
+                "4": 6,
+                "5": 1,
+                "6": 1,
+                "7": 24,
+                "8": 18,
+                "9": 1,
+                "10": 2,
+                "11": 1,
+                "12": 5,
+                "13": 2
+            }
+        }
+    }
+}

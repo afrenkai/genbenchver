@@ -1,0 +1,60 @@
+{
+    "description": "information about works of classical literature",
+    "lineage": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+    ],
+    "semantic_key": [
+        "Author",
+        "Title"
+    ],
+    "file_ext": ".csv",
+    "field_delim": ";",
+    "file_ext_name": "semi-colon",
+    "command": {
+        "type": "del_rows",
+        "params": {
+            "num_entries": 1,
+            "location": "random"
+        },
+        "changed": {
+            "Characters": {
+                "0": "Characters: Dante Alighieri, Virgil"
+            },
+            "Author": {
+                "0": "Author: Dante Alighieri"
+            },
+            "Title": {
+                "0": "Title: The Divine Comedy"
+            },
+            "Year": {
+                "0": "Year: 1320"
+            },
+            "Rating": {
+                "0": "Rating: 5/5"
+            },
+            "Style": {
+                "0": "Style: Poetic Narrative"
+            },
+            "Genre": {
+                "0": "Genre: Italian Literature, Poetry, Fantasy"
+            },
+            "Poem": {
+                "0": "Poem: Yes"
+            },
+            "Element": {
+                "0": "Element: Fire"
+            },
+            "Length": {
+                "0": "Length: Long"
+            },
+            "Theme": {
+                "0": "Theme: Morality, Spirituality, Journey"
+            }
+        }
+    }
+}

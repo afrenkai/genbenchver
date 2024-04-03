@@ -1,0 +1,42 @@
+{
+    "description": "information about works of classical literature",
+    "lineage": [
+        0,
+        1,
+        2,
+        3,
+        4
+    ],
+    "semantic_key": [
+        "Author",
+        "Title"
+    ],
+    "file_ext": ".csv",
+    "field_delim": ";",
+    "file_ext_name": "semi-colon",
+    "command": {
+        "type": "del_cols",
+        "params": {
+            "num_entries": 1,
+            "location": [
+                1
+            ]
+        },
+        "changed": {
+            "Locations": {
+                "0": "Locations: Hell, Purgatory, Heaven",
+                "1": " Hertfordshire, London, Pemberley",
+                "2": " London, Kent, Satis House",
+                "3": " Macondo",
+                "4": " Wessex",
+                "5": " No significant locations",
+                "6": " Troy, Olympus, River Xanthus, Thetis' cave",
+                "7": " Dublin",
+                "8": " No significant locations",
+                "9": " Forest of Arden",
+                "10": "Desert",
+                "11": " Dresden, Tralfamadore, Ilium, New York"
+            }
+        }
+    }
+}

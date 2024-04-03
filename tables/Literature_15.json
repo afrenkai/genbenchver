@@ -1,0 +1,52 @@
+{
+    "description": "information about works of classical literature",
+    "lineage": [
+        0
+    ],
+    "semantic_key": [
+        "Author",
+        "Title"
+    ],
+    "file_ext": ".csv",
+    "field_delim": ";",
+    "file_ext_name": "semi-colon",
+    "command": {
+        "type": "del_rows",
+        "params": {
+            "num_entries": 1,
+            "location": "random"
+        },
+        "changed": {
+            "Author": {
+                "4": "Dickens"
+            },
+            "Title": {
+                "4": "Great Expectations"
+            },
+            "Year": {
+                "4": 1861
+            },
+            "Rating": {
+                "4": 4.7
+            },
+            "Style": {
+                "4": "Victorian"
+            },
+            "Genre": {
+                "4": "Novel"
+            },
+            "Poem": {
+                "4": "No"
+            },
+            "Element": {
+                "4": "Irony"
+            },
+            "Length": {
+                "4": "500 pp."
+            },
+            "Theme": {
+                "4": "Self-Deception"
+            }
+        }
+    }
+}

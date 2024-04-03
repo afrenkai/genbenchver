@@ -1,0 +1,57 @@
+{
+    "description": "information about works of classical literature",
+    "lineage": [
+        0,
+        1,
+        2
+    ],
+    "semantic_key": [
+        "Author",
+        "Title"
+    ],
+    "file_ext": ".csv",
+    "field_delim": ";",
+    "file_ext_name": "semi-colon",
+    "command": {
+        "type": "add_cols",
+        "prompt": "Generate 3 new attributes for a table of information about works of classical literature. The semi-colon-separated header of attributes to not generate is:\nCharacters;Locations;Author;Title;Year;Rating;Style;Genre;Poem;Element;Length;Theme\n\nGenerate real attributes. Do not generate fictional ones. Here are the semi-colon-separated rows of the table by semantic key only:\nAuthor;Title\nAusten;Pride and Prejudice\nDickens;Great Expectations\nGarcia-Marquez;One Hundred Years of Solitude\nHardy;Tess of the d'Urbervilles\nHerrick;To the Virgins\nHomer;The Iliad\nJoyce;Ulysses\nPlath;Ariel\nShakespeare;As You Like It\nShelley;Ozymandias\nVonnegut;Slaughterhouse-Five\n\nGenerate values of real data for all existing rows of the table. Generate and output a new table, include the table header, with only the attributes Author, Title, and the new attributes in the format of a semi-colon-separated .csv file. Then explain the source of the new data.",
+        "start time": "2024-04-01 04:01:30",
+        "complete time": "2024-04-01 04:12:38",
+        "duration (seconds)": 668,
+        "params": {
+            "num_entries": 3,
+            "location": "right"
+        },
+        "output_table": "Author;Title;Original Language;Initial Publication Language\nAusten;Pride and Prejudice;English;English\nDickens;Great Expectations;English;English\nGarcia-Marquez;One Hundred Years of Solitude;Spanish;Spanish\nHardy;Tess of the d'Urbervilles;English;English\nHerrick;To the Virgins;English;English\nHomer;The Iliad;Ancient Greek;Ancient Greek\nJoyce;Ulysses;English;English\nPlath;Ariel;English;English\nShakespeare;As You Like It;English;Early Modern English\nShelley;Ozymandias;English;English\nVonnegut;Slaughterhouse-Five;English;English\n",
+        "prologue": "",
+        "epilogue": "The new attributes are \"Original Language\" and \"Initial Publication Language\". \"Original Language\" refers to the language in which the work was first written. For most of these works, this will be the same as the \"Initial Publication Language\", which is the language in which the work was first published. However, some works have been translated from their original language, so for those works, \"Original Language\" and \"Initial Publication Language\" may be different.\n\n\"Original Language\" for these works is as follows:\nAusten's \"Pride and Prejudice\" was originally written in English.\nDickens' \"Great Expectations\" was originally written in English.\nGarcia-Marquez's \"One Hundred Years of Solitude\" was originally written in Spanish.\nHardy's \"Tess of the d'Urbervilles\" was originally written in English.\nHerrick's \"To the Virgins\" was originally written in English.\nHomer's \"The Iliad\" was originally written in Ancient Greek.\nJoyce's \"Ulysses\" was originally written in English.\nPlath's \"Ariel\" was originally written in English.\nShakespeare's \"As You Like It\" was originally written in Early Modern English.\nShelley's \"Ozymandias\" was originally written in English.\nVonnegut's \"Slaughterhouse-Five\" was originally written in English.\n\n\"Initial Publication Language\" for these works is as follows:\nAusten's \"Pride and Prejudice\" was first published in English.\nDickens' \"Great Expectations\" was first published in English.\nGarcia-Marquez's \"One Hundred Years of Solitude\" was first published in Spanish.\nHardy's \"Tess of the d'Urbervilles\" was first published in English.\nHerrick's \"To the Virgins\" was first published in English.\nHomer's \"The Iliad\" was first published in Ancient Greek.\nJoyce's \"Ulysses\" was first published in English.\nPlath's \"Ariel\" was first published in English.\nShakespeare's \"As You Like It\" was first published in Early Modern English.\nShelley's \"Ozymandias\" was first published in English.\nVonnegut's \"Slaughterhouse-Five\" was first published in English.",
+        "changed": {
+            "Original Language": {
+                "0": "English",
+                "1": "English",
+                "2": "Spanish",
+                "3": "English",
+                "4": "English",
+                "5": "Ancient Greek",
+                "6": "English",
+                "7": "English",
+                "8": "English",
+                "9": "English",
+                "10": "English"
+            },
+            "Initial Publication Language": {
+                "0": "English",
+                "1": "English",
+                "2": "Spanish",
+                "3": "English",
+                "4": "English",
+                "5": "Ancient Greek",
+                "6": "English",
+                "7": "English",
+                "8": "Early Modern English",
+                "9": "English",
+                "10": "English"
+            }
+        }
+    }
+}

@@ -1,0 +1,59 @@
+{
+    "description": "information about works of classical literature",
+    "lineage": [
+        0
+    ],
+    "semantic_key": [
+        "Author",
+        "Title"
+    ],
+    "file_ext": ".csv",
+    "field_delim": ";",
+    "file_ext_name": "semi-colon",
+    "command": {
+        "type": "add_rows",
+        "prompt": "Generate one row for a table of information about works of classical literature. The semi-colon-separated header of attributes for the table is:\nAuthor;Title;Year;Rating;Style;Genre;Poem;Element;Length;Theme\n\nDo not generate fictional rows. Generate the rows from real known data. Here is a list of semi-colon-separated rows not to generate by semantic key only:\nAuthor;Title\nJoyce;Ulysses\nHardy;Tess of the d'Urbervilles\nShakespeare;As You Like It\nPlath;Ariel\nDickens;Great Expectations\nGarcia-Marquez;One Hundred Years of Solitude\nShelley;Ozymandias\nAusten;Pride and Prejudice\nHerrick;To the Virgins\nVonnegut;Slaughterhouse-Five\n\nOutput the row in the format of a semi-colon-separated .csv file with a column header. Then explain the source of the new data.",
+        "start time": "2024-03-31 13:48:25",
+        "complete time": "2024-03-31 14:37:14",
+        "duration (seconds)": 2929,
+        "params": {
+            "num_entries": 1,
+            "location": 9
+        },
+        "output_table": "Author;Title;Year;Rating;Style;Genre;Poem;Element;Length;Theme\nHomer;The Iliad;800 BC;10/10;Epic Poetry;Ancient Greek Literature,War;Yes;Heroism,Fate;Long;Human Nature,War\n",
+        "prologue": "",
+        "epilogue": "\nSource: The Iliad is an epic poem by the ancient Greek poet Homer, which is considered one of the greatest works of literature of all time. The poem is set during the Trojan War and focuses on the wrath of Achilles, a Greek hero. It was written in the 8th century BC and is characterized by its grand themes of human nature, fate, and heroism, as well as its elaborate poetic style. The Iliad is a long work, and its elements include vivid characterizations, intricate plotlines, and poetic language. The poem has had a profound influence on Western literature and culture.",
+        "changed": {
+            "Author": {
+                "0": "Homer"
+            },
+            "Title": {
+                "0": "The Iliad"
+            },
+            "Year": {
+                "0": "800 BC"
+            },
+            "Rating": {
+                "0": "10/10"
+            },
+            "Style": {
+                "0": "Epic Poetry"
+            },
+            "Genre": {
+                "0": "Ancient Greek Literature,War"
+            },
+            "Poem": {
+                "0": "Yes"
+            },
+            "Element": {
+                "0": "Heroism,Fate"
+            },
+            "Length": {
+                "0": "Long"
+            },
+            "Theme": {
+                "0": "Human Nature,War"
+            }
+        }
+    }
+}
