@@ -1,0 +1,107 @@
+{
+    "description": "information about plants that are food",
+    "lineage": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+    ],
+    "semantic_key": [
+        "Plant",
+        "Variety"
+    ],
+    "file_ext": ".csv",
+    "field_delim": ";",
+    "file_ext_name": "semi-colon",
+    "command": {
+        "type": "add_rows",
+        "prompt": "Generate 3 rows for a table of information about plants that are food. The semi-colon-separated header of attributes for the table is:\nPlant;Variety;Color;Fruit;Soil;Water;Temperature;Light;Pruning;Fertilizer;Pest;Taste;Days to Maturity;Nutrition Facts (per 100g)\n\nDo not generate fictional rows. Generate the rows from real known data. Here is a list of semi-colon-separated rows not to generate by semantic key only:\nPlant;Variety\nApple;Granny Smith\nAsparagus;Jersey Knight\nBasil, Sweet;Summer\nBroccoli;Spring\nCabbage;Fall\nCherry;Rainier\nCucumber;Lemon\nEggplant;Neon\nGrape;Concord\nLettuce;Romaine\nPeach;August Pride\nPear;Bartlett\nRadish;Cherry Belle\nRaspberry;Bountiful\nSpinach;Space\nSquash;Acorn\nStrawberry;Temptation\nTomato;Beefsteak\nWatermelon;Crimson Sweet\nCarrot, Daucus carota;Danvers 126\nCelery, Apium graveolens;Ventura\nCorn, Zea mays;Sweet Corn Incredible\n\nOutput the rows in the format of a semi-colon-separated .csv file with a column header. Then explain the source of the new data.",
+        "start time": "2024-04-03 20:57:46",
+        "complete time": "2024-04-03 23:50:32",
+        "duration (seconds)": 10366,
+        "params": {
+            "num_entries": 3,
+            "location": 21
+        },
+        "output_table": "Plant;Variety;Color;Fruit;Soil;Water;Temperature;Light;Pruning;Fertilizer;Pest;Taste;Days to Maturity;Nutrition Facts (per 100g)\nBasil, Thai;Dark Opal;Purple;Herb;Well-drained;Moist;21-27\u00b0C;Partial Shade;Pinch back;Balanced Fertilizer;Aphids, Whiteflies;Spicy, Sweet;30-45 days;17 kcal, 3.15g Carb, 2.97g Protein, 1.1g Fat, 1.6g Fiber, 87.95g Water, 4.12mg Vit K, 13.8mg Calcium, 3.17mg Iron, 62mg Magnesium, 36mg Phosphorus, 361mg Potassium, 29mg Sodium, 1mg Zinc, 0.1mg Copper, 0.2mg Manganese\nCilantro;Leisure;Green;Herb;Well-drained;Moist;15-24\u00b0C;Partial Shade;Pinch back;Balanced Fertilizer;Aphids, Downy Mildew;Citrus, Herbal;30-45 days;3.6 kcal, 0.7g Carb, 0.4g Protein, 0.2g Fat, 2.8g Fiber, 93.9g Water, 144\u03bcg Vit A, 2.5mg Vit C, 0.6mg Vit E, 25\u03bcg Folate, 32mg Calcium, 1.2mg Iron, 20mg Magnesium, 39mg Phosphorus, 258mg Potassium, 109mg Sodium, 0.4mg Zinc, 0.2mg Copper, 0.2mg Manganese\nDill;Bouquet;Green;Herb;Well-drained;Moist;15-24\u00b0C;Partial Shade;Pinch back;Balanced Fertilizer;Aphids, Downy Mildew;Sweet, Aromatic;40-60 days;9 kcal, 1.7g Carb, 0.6g Protein, 0.3g Fat, 1.9g Fiber, 86.5g Water, 101\u03bcg Vit A, 5.8mg Vit C, 0.5mg Vit E, 13\u03bcg Folate, 40mg Calcium, 1.1mg Iron, 28mg Magnesium, 59mg Phosphorus, 258mg Potassium, 109mg Sodium, 0.5mg Zinc, 0.2mg Copper, 0.3mg Manganese\n",
+        "prologue": "",
+        "epilogue": "The source of the new data is the \"Back to the Roots\" company, which specializes in indoor gardening and hydroponic systems. They provide growing guides for various herbs, including Thai Basil, Cilantro, and Dill, on their website (https://backtotheroots.com/). The provided information is a combination of the data presented in these growing guides and general knowledge about the nutritional facts of these herbs.",
+        "changed": {
+            "Plant": {
+                "0": "Basil, Thai",
+                "1": "Cilantro",
+                "2": "Dill"
+            },
+            "Variety": {
+                "0": "Dark Opal",
+                "1": "Leisure",
+                "2": "Bouquet"
+            },
+            "Color": {
+                "0": "Purple",
+                "1": "Green",
+                "2": "Green"
+            },
+            "Fruit": {
+                "0": "Herb",
+                "1": "Herb",
+                "2": "Herb"
+            },
+            "Soil": {
+                "0": "Well-drained",
+                "1": "Well-drained",
+                "2": "Well-drained"
+            },
+            "Water": {
+                "0": "Moist",
+                "1": "Moist",
+                "2": "Moist"
+            },
+            "Temperature": {
+                "0": "21-27\u00b0C",
+                "1": "15-24\u00b0C",
+                "2": "15-24\u00b0C"
+            },
+            "Light": {
+                "0": "Partial Shade",
+                "1": "Partial Shade",
+                "2": "Partial Shade"
+            },
+            "Pruning": {
+                "0": "Pinch back",
+                "1": "Pinch back",
+                "2": "Pinch back"
+            },
+            "Fertilizer": {
+                "0": "Balanced Fertilizer",
+                "1": "Balanced Fertilizer",
+                "2": "Balanced Fertilizer"
+            },
+            "Pest": {
+                "0": "Aphids, Whiteflies",
+                "1": "Aphids, Downy Mildew",
+                "2": "Aphids, Downy Mildew"
+            },
+            "Taste": {
+                "0": "Spicy, Sweet",
+                "1": "Citrus, Herbal",
+                "2": "Sweet, Aromatic"
+            },
+            "Days to Maturity": {
+                "0": "30-45 days",
+                "1": "30-45 days",
+                "2": "40-60 days"
+            },
+            "Nutrition Facts (per 100g)": {
+                "0": "17 kcal, 3.15g Carb, 2.97g Protein, 1.1g Fat, 1.6g Fiber, 87.95g Water, 4.12mg Vit K, 13.8mg Calcium, 3.17mg Iron, 62mg Magnesium, 36mg Phosphorus, 361mg Potassium, 29mg Sodium, 1mg Zinc, 0.1mg Copper, 0.2mg Manganese",
+                "1": "3.6 kcal, 0.7g Carb, 0.4g Protein, 0.2g Fat, 2.8g Fiber, 93.9g Water, 144\u03bcg Vit A, 2.5mg Vit C, 0.6mg Vit E, 25\u03bcg Folate, 32mg Calcium, 1.2mg Iron, 20mg Magnesium, 39mg Phosphorus, 258mg Potassium, 109mg Sodium, 0.4mg Zinc, 0.2mg Copper, 0.2mg Manganese",
+                "2": "9 kcal, 1.7g Carb, 0.6g Protein, 0.3g Fat, 1.9g Fiber, 86.5g Water, 101\u03bcg Vit A, 5.8mg Vit C, 0.5mg Vit E, 13\u03bcg Folate, 40mg Calcium, 1.1mg Iron, 28mg Magnesium, 59mg Phosphorus, 258mg Potassium, 109mg Sodium, 0.5mg Zinc, 0.2mg Copper, 0.3mg Manganese"
+            }
+        }
+    }
+}

@@ -1,0 +1,91 @@
+{
+    "description": "information about plants that are food",
+    "lineage": [
+        0,
+        1,
+        2
+    ],
+    "semantic_key": [
+        "Plant",
+        "Variety"
+    ],
+    "file_ext": ".csv",
+    "field_delim": ";",
+    "file_ext_name": "semi-colon",
+    "command": {
+        "type": "add_rows",
+        "prompt": "Generate 3 rows for a table of information about plants that are food. The semi-colon-separated header of attributes for the table is:\nPlant;Variety;Season;Color;Fruit;Soil;Water;Temperature;Light;Pruning;Fertilizer;Pest\n\nDo not generate fictional rows. Generate the rows from real known data. Here is a list of semi-colon-separated rows not to generate by semantic key only:\nPlant;Variety\nApple;Granny Smith\nBasil, Sweet;Summer\nBroccoli;Spring\nCabbage;Fall\nPear;Bartlett\nCherry;Rainier\nRaspberry;Bountiful\nPeach;August Pride\nWatermelon;Crimson Sweet\nGrape;Concord\nStrawberry;Temptation\nCarrot;Nantes\nRadish;Cherry Belle\nEggplant;Neon\nAvocado;Hass\nCucumber;Lemon\nSquash;Acorn\nAsparagus;Jersey Knight\n\nOutput the rows in the format of a semi-colon-separated .csv file with a column header. Then explain the source of the new data.",
+        "start time": "2024-04-03 13:59:18",
+        "complete time": "2024-04-03 14:57:16",
+        "duration (seconds)": 3478,
+        "params": {
+            "num_entries": 3,
+            "location": 17
+        },
+        "output_table": "Plant;Variety;Season;Color;Fruit;Soil;Water;Temperature;Light;Pruning;Fertilizer;Pest\nTomato;Beefsteak;Warm;Red;Fruit;Loamy;Medium;65-85\u00b0F;Full Sun;Light;Monthly;White Flies, Spider Mites, Fusarium Wilt\nLettuce;Romaine;Cool;Green;Leaf;Well-drained;Medium;45-75\u00b0F;Partial Shade;;Weekly;Aphids, Downy Mildew\nSpinach;Space;Cool;Green;Leaf;Rich, Loamy;Medium;45-75\u00b0F;Partial Shade;;Weekly;Leaf Miners, Spinach Blight\n",
+        "prologue": "",
+        "epilogue": "The data for these rows comes from various online gardening resources, such as the Old Farmer's Almanac, the National Gardening Association, and various university extension programs. These specific varieties were chosen for their popularity and wide availability, and the growing conditions and common pests were selected based on general guidelines for these plants.",
+        "changed": {
+            "Plant": {
+                "0": "Tomato",
+                "1": "Lettuce",
+                "2": "Spinach"
+            },
+            "Variety": {
+                "0": "Beefsteak",
+                "1": "Romaine",
+                "2": "Space"
+            },
+            "Season": {
+                "0": "Warm",
+                "1": "Cool",
+                "2": "Cool"
+            },
+            "Color": {
+                "0": "Red",
+                "1": "Green",
+                "2": "Green"
+            },
+            "Fruit": {
+                "0": "Fruit",
+                "1": "Leaf",
+                "2": "Leaf"
+            },
+            "Soil": {
+                "0": "Loamy",
+                "1": "Well-drained",
+                "2": "Rich, Loamy"
+            },
+            "Water": {
+                "0": "Medium",
+                "1": "Medium",
+                "2": "Medium"
+            },
+            "Temperature": {
+                "0": "65-85\u00b0F",
+                "1": "45-75\u00b0F",
+                "2": "45-75\u00b0F"
+            },
+            "Light": {
+                "0": "Full Sun",
+                "1": "Partial Shade",
+                "2": "Partial Shade"
+            },
+            "Pruning": {
+                "0": "Light",
+                "1": NaN,
+                "2": NaN
+            },
+            "Fertilizer": {
+                "0": "Monthly",
+                "1": "Weekly",
+                "2": "Weekly"
+            },
+            "Pest": {
+                "0": "White Flies, Spider Mites, Fusarium Wilt",
+                "1": "Aphids, Downy Mildew",
+                "2": "Leaf Miners, Spinach Blight"
+            }
+        }
+    }
+}

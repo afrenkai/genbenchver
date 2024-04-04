@@ -1,0 +1,69 @@
+{
+    "description": "information about plants that are food",
+    "lineage": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        13
+    ],
+    "semantic_key": [
+        "Plant",
+        "Variety"
+    ],
+    "file_ext": ".csv",
+    "field_delim": ";",
+    "file_ext_name": "semi-colon",
+    "command": {
+        "type": "add_rows",
+        "prompt": "Generate one row for a table of information about plants that are food. The semi-colon-separated header of attributes for the table is:\nPlant;Variety;Color;Fruit;Soil;Water;Temperature;Light;Pruning;Fertilizer;Pest\n\nDo not generate fictional rows. Generate the rows from real known data. Here is a list of semi-colon-separated rows not to generate by semantic key only:\nPlant;Variety\nApple;Granny Smith\nBasil, Sweet;Summer\nBroccoli;Spring\nCabbage;Fall\nPear;Bartlett\nCherry;Rainier\nRaspberry;Bountiful\nPeach;August Pride\nWatermelon;Crimson Sweet\nGrape;Concord\nStrawberry;Temptation\nRadish;Cherry Belle\nEggplant;Neon\nCucumber;Lemon\nSquash;Acorn\nAsparagus;Jersey Knight\nTomato;Beefsteak\nLettuce;Romaine\nSpinach;Space\nBlueberry;Northcountry\nCarrot;Danvers 126\nCorn;Silver Queen\n\nOutput the row in the format of a semi-colon-separated .csv file with a column header. Then explain the source of the new data.",
+        "start time": "2024-04-04 13:37:55",
+        "complete time": "2024-04-04 14:59:01",
+        "duration (seconds)": 4866,
+        "params": {
+            "num_entries": 1,
+            "location": 18
+        },
+        "output_table": "Plant;Variety;Color;Fruit;Soil;Water;Temperature;Light;Pruning;Fertilizer;Pest\nKale, Lacinato;Dark Green;Leafy Green;Fall;Well-Drained;Frequent;Cool;Partial Shade;Light;Compost;Aphids, Whiteflies\n",
+        "prologue": "",
+        "epilogue": "The new data is from the Lacinato variety of the Kale plant. Kale is a leafy green vegetable that can be grown in the fall. It prefers well-drained soil and requires frequent watering. The ideal temperature for growing Kale is cool. It can be grown in partial shade and benefits from light pruning. Compost is a good fertilizer for Kale. Common pests for Kale include aphids and whiteflies.\n\nSources:\n1. \"How to Grow Kale.\" The Spruce, www.thespruce.com/how-to-grow-kale-2539861.\n2. \"Kale, Lacinato.\" Rozendals Farm, www.rozendalsfarm.com/plants/kale-lacinato/.\n3. \"Lacinato Kale.\" Burpee, www.burpee.com/vegetables/kale/lacinato-kale-seeds-p52430025.\n4. \"Kale, Lacinato.\" Johnny's Selected Seeds, www.johnnyseeds.com/vegetables/kale/kale-lacinato-1115.html.",
+        "changed": {
+            "Plant": {
+                "0": "Kale, Lacinato"
+            },
+            "Variety": {
+                "0": "Dark Green"
+            },
+            "Color": {
+                "0": "Leafy Green"
+            },
+            "Fruit": {
+                "0": "Fall"
+            },
+            "Soil": {
+                "0": "Well-Drained"
+            },
+            "Water": {
+                "0": "Frequent"
+            },
+            "Temperature": {
+                "0": "Cool"
+            },
+            "Light": {
+                "0": "Partial Shade"
+            },
+            "Pruning": {
+                "0": "Light"
+            },
+            "Fertilizer": {
+                "0": "Compost"
+            },
+            "Pest": {
+                "0": "Aphids, Whiteflies"
+            }
+        }
+    }
+}

@@ -1,0 +1,60 @@
+{
+    "description": "information about plants that are food",
+    "lineage": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+    ],
+    "semantic_key": [
+        "Plant",
+        "Variety"
+    ],
+    "file_ext": ".csv",
+    "field_delim": ";",
+    "file_ext_name": "semi-colon",
+    "command": {
+        "type": "del_rows",
+        "params": {
+            "num_entries": 1,
+            "location": "random"
+        },
+        "changed": {
+            "Plant": {
+                "13": "Avocado"
+            },
+            "Variety": {
+                "13": "Hass"
+            },
+            "Color": {
+                "13": "Dark Green"
+            },
+            "Fruit": {
+                "13": "Yes"
+            },
+            "Soil": {
+                "13": "Alkaline"
+            },
+            "Water": {
+                "13": "Average"
+            },
+            "Temperature": {
+                "13": "Mild"
+            },
+            "Light": {
+                "13": "Bright"
+            },
+            "Pruning": {
+                "13": "Minimally"
+            },
+            "Fertilizer": {
+                "13": "Vermicompost"
+            },
+            "Pest": {
+                "13": "Scale"
+            }
+        }
+    }
+}

@@ -1,0 +1,50 @@
+{
+    "description": "information about plants that are food",
+    "lineage": [
+        0,
+        1,
+        2,
+        3
+    ],
+    "semantic_key": [
+        "Plant",
+        "Variety"
+    ],
+    "file_ext": ".csv",
+    "field_delim": ";",
+    "file_ext_name": "semi-colon",
+    "command": {
+        "type": "del_cols",
+        "params": {
+            "num_entries": 1,
+            "location": [
+                2
+            ]
+        },
+        "changed": {
+            "Season": {
+                "0": "Spring",
+                "1": "Green",
+                "2": "Green",
+                "3": "Purple",
+                "4": "Summer",
+                "5": "Fall",
+                "6": "Winter",
+                "7": "Spring",
+                "8": "Fall",
+                "9": "Winter",
+                "10": "Spring",
+                "11": "Summer",
+                "12": "Fall",
+                "13": "Winter",
+                "14": "Spring",
+                "15": "Summer",
+                "16": "Fall",
+                "17": "Winter",
+                "18": "Warm",
+                "19": "Cool",
+                "20": "Cool"
+            }
+        }
+    }
+}

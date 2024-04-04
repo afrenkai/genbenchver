@@ -1,0 +1,90 @@
+{
+    "description": "information about plants that are food",
+    "lineage": [
+        0,
+        1
+    ],
+    "semantic_key": [
+        "Plant",
+        "Variety"
+    ],
+    "file_ext": ".csv",
+    "field_delim": ";",
+    "file_ext_name": "semi-colon",
+    "command": {
+        "type": "add_rows",
+        "prompt": "Generate 3 rows for a table of information about plants that are food. The semi-colon-separated header of attributes for the table is:\nPlant;Variety;Season;Color;Fruit;Soil;Water;Temperature;Light;Pruning;Fertilizer;Pest\n\nDo not generate fictional rows. Generate the rows from real known data. Here is a list of semi-colon-separated rows not to generate by semantic key only:\nPlant;Variety\nApple;Granny Smith\nPear;Bartlett\nCherry;Rainier\nRaspberry;Bountiful\nPeach;August Pride\nWatermelon;Crimson Sweet\nGrape;Concord\nStrawberry;Temptation\nCarrot;Nantes\nRadish;Cherry Belle\nEggplant;Neon\nAvocado;Hass\nCucumber;Lemon\nSquash;Acorn\nAsparagus;Jersey Knight\n\nOutput the rows in the format of a semi-colon-separated .csv file with a column header. Then explain the source of the new data.",
+        "start time": "2024-04-03 12:03:30",
+        "complete time": "2024-04-03 13:59:15",
+        "duration (seconds)": 6945,
+        "params": {
+            "num_entries": 3,
+            "location": 1
+        },
+        "output_table": "Plant;Variety;Season;Color;Fruit;Soil;Water;Temperature;Light;Pruning;Fertilizer;Pest\nBasil, Sweet;Summer;Green;Herb;Leaves;Well-drained;Moist;70-80\u00b0F;Full Sun;Pinch back;Balanced Fertilizer;Aphids, Fusarium Wilt\nBroccoli;Spring;Green;Vegetable;Head;Loamy;Moderate;60-70\u00b0F;Full Sun;Do not cut florets;Nitrogen-rich Fertilizer;Cabbage Worms, Downy Mildew\nCabbage;Fall;Purple;Vegetable;Head;Loamy;Moderate;60-70\u00b0F;Full Sun;Do not cut core;Nitrogen-rich Fertilizer;Imported Cabbageworm, Black Rot\n",
+        "prologue": "",
+        "epilogue": "The data for these rows comes from various resources, including agricultural extension websites, gardening books, and personal gardening experience. The information provided is general guidance and may vary depending on specific growing conditions.\n\nSweet Basil is a popular herb grown during the summer months. It prefers well-drained soil and moist conditions, with a temperature range of 70-80\u00b0F and full sun exposure. Pinch back the plant to encourage bushiness and use a balanced fertilizer. Common pests include aphids and Fusarium Wilt.\n\nBroccoli is a cool-season vegetable, typically planted in spring. It requires loamy soil and moderate watering, with a temperature range of 60-70\u00b0F and full sun exposure. Do not cut the florets to encourage further growth. Use a nitrogen-rich fertilizer and be aware of pests such as Cabbage Worms and Downy Mildew.\n\nCabbage is a cool-season vegetable, typically planted in the fall. It can have purple varieties and requires loamy soil and moderate watering, with a temperature range of 60-70\u00b0F and full sun exposure. Do not cut the core to encourage further growth. Use a nitrogen-rich fertilizer and be aware of pests such as Imported Cabbageworm and Black Rot.",
+        "changed": {
+            "Plant": {
+                "0": "Basil, Sweet",
+                "1": "Broccoli",
+                "2": "Cabbage"
+            },
+            "Variety": {
+                "0": "Summer",
+                "1": "Spring",
+                "2": "Fall"
+            },
+            "Season": {
+                "0": "Green",
+                "1": "Green",
+                "2": "Purple"
+            },
+            "Color": {
+                "0": "Herb",
+                "1": "Vegetable",
+                "2": "Vegetable"
+            },
+            "Fruit": {
+                "0": "Leaves",
+                "1": "Head",
+                "2": "Head"
+            },
+            "Soil": {
+                "0": "Well-drained",
+                "1": "Loamy",
+                "2": "Loamy"
+            },
+            "Water": {
+                "0": "Moist",
+                "1": "Moderate",
+                "2": "Moderate"
+            },
+            "Temperature": {
+                "0": "70-80\u00b0F",
+                "1": "60-70\u00b0F",
+                "2": "60-70\u00b0F"
+            },
+            "Light": {
+                "0": "Full Sun",
+                "1": "Full Sun",
+                "2": "Full Sun"
+            },
+            "Pruning": {
+                "0": "Pinch back",
+                "1": "Do not cut florets",
+                "2": "Do not cut core"
+            },
+            "Fertilizer": {
+                "0": "Balanced Fertilizer",
+                "1": "Nitrogen-rich Fertilizer",
+                "2": "Nitrogen-rich Fertilizer"
+            },
+            "Pest": {
+                "0": "Aphids, Fusarium Wilt",
+                "1": "Cabbage Worms, Downy Mildew",
+                "2": "Imported Cabbageworm, Black Rot"
+            }
+        }
+    }
+}

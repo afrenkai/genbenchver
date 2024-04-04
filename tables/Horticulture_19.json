@@ -1,0 +1,68 @@
+{
+    "description": "information about plants that are food",
+    "lineage": [
+        0,
+        1,
+        2,
+        3
+    ],
+    "semantic_key": [
+        "Plant",
+        "Variety"
+    ],
+    "file_ext": ".csv",
+    "field_delim": ";",
+    "file_ext_name": "semi-colon",
+    "command": {
+        "type": "add_rows",
+        "prompt": "Generate one row for a table of information about plants that are food. The semi-colon-separated header of attributes for the table is:\nPlant;Variety;Season;Color;Fruit;Soil;Water;Temperature;Light;Pruning;Fertilizer;Pest\n\nDo not generate fictional rows. Generate the rows from real known data. Here is a list of semi-colon-separated rows not to generate by semantic key only:\nPlant;Variety\nApple;Granny Smith\nBasil, Sweet;Summer\nBroccoli;Spring\nCabbage;Fall\nPear;Bartlett\nCherry;Rainier\nRaspberry;Bountiful\nPeach;August Pride\nWatermelon;Crimson Sweet\nGrape;Concord\nStrawberry;Temptation\nCarrot;Nantes\nRadish;Cherry Belle\nEggplant;Neon\nAvocado;Hass\nCucumber;Lemon\nSquash;Acorn\nAsparagus;Jersey Knight\nTomato;Beefsteak\nLettuce;Romaine\nSpinach;Space\n\nOutput the row in the format of a semi-colon-separated .csv file with a column header. Then explain the source of the new data.",
+        "start time": "2024-04-04 16:23:52",
+        "complete time": "2024-04-04 17:35:16",
+        "duration (seconds)": 4284,
+        "params": {
+            "num_entries": 1,
+            "location": 18
+        },
+        "output_table": "Plant;Variety;Season;Color;Fruit;Soil;Water;Temperature;Light;Pruning;Fertilizer;Pest\nBlueberry;Bluecrop;Spring,Summer,Fall;Blue;Berry;Moist, Acidic;Medium;60-70\u00b0F;Full Sun;Moderate;Acidic Fertilizer;Birds\n",
+        "prologue": "",
+        "epilogue": "Bluecrop is a variety of blueberry that is known to produce fruit in the spring, summer, and fall seasons. The berries are blue in color. Blueberries prefer moist, acidic soil and require medium water intake. They thrive in temperatures between 60-70\u00b0F and full sun exposure. Blueberries require moderate pruning and acidic fertilizer. The main pest for blueberries are birds.\n\nSources:\n1. \"Bluecrop.\" Missouri Botanical Garden, www.missouribotanicalgarden.org/PlantFinder/PlantFinderDetails.aspx?kempercode=b630.\n2. \"Blueberry, Highbush.\" Alabama Cooperative Extension System, www.aces.edu/pubs/docs/A/ANR-1367/ANR-1367.pdf.\n3. \"How to Grow Blueberries.\" The Spruce, www.thespruce.com/how-to-grow-blueberries-2132423.",
+        "changed": {
+            "Plant": {
+                "0": "Blueberry"
+            },
+            "Variety": {
+                "0": "Bluecrop"
+            },
+            "Season": {
+                "0": "Spring,Summer,Fall"
+            },
+            "Color": {
+                "0": "Blue"
+            },
+            "Fruit": {
+                "0": "Berry"
+            },
+            "Soil": {
+                "0": "Moist, Acidic"
+            },
+            "Water": {
+                "0": "Medium"
+            },
+            "Temperature": {
+                "0": "60-70\u00b0F"
+            },
+            "Light": {
+                "0": "Full Sun"
+            },
+            "Pruning": {
+                "0": "Moderate"
+            },
+            "Fertilizer": {
+                "0": "Acidic Fertilizer"
+            },
+            "Pest": {
+                "0": "Birds"
+            }
+        }
+    }
+}

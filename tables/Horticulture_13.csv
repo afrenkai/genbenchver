@@ -1,0 +1,23 @@
+Plant;Variety;Color;Fruit;Soil;Water;Temperature;Light;Pruning;Fertilizer;Pest
+Apple;Granny Smith;Green;Yes;Loamy;Slight;Mild;Bright;Limited;Compost;Aphids
+Basil, Sweet;Summer;Herb;Leaves;Well-drained;Moist;70-80°F;Full Sun;Pinch back;Balanced Fertilizer;Aphids, Fusarium Wilt
+Broccoli;Spring;Vegetable;Head;Loamy;Moderate;60-70°F;Full Sun;Do not cut florets;Nitrogen-rich Fertilizer;Cabbage Worms, Downy Mildew
+Cabbage;Fall;Vegetable;Head;Loamy;Moderate;60-70°F;Full Sun;Do not cut core;Nitrogen-rich Fertilizer;Imported Cabbageworm, Black Rot
+Pear;Bartlett;Brown;Yes;Clay;Average;Hot;Moderate;Frequent;Manure;Weevils
+Cherry;Rainier;Red;Yes;Sandy;Heavy;Cool;Low;;Seaweed;Caterpillars
+Raspberry;Bountiful;Magenta;Yes;Arid;Slight;Cold;High;Sparingly;Lime;Mites
+Peach;August Pride;Pale Orange;Yes;Sandy Loam;Heavy;Mild;Bright;Regularly;Fish Emulsion;Worms
+Watermelon;Crimson Sweet;Scarlet;Yes;Alluvial;Average;Cool;Low;Lightly;Dolomite Lime;Sawfly
+Grape;Concord;Crimson;Yes;Peat;Heavy;Cold;High;Prudently;Steamed Bone;Leafhopper
+Strawberry;Temptation;Ruby;Yes;Humus;Slight;Mild;Bright;Heavily;Fish Meal;Thrips
+Radish;Cherry Belle;White;No;Gravelly;Heavy;Cool;Low;Tenderly;Manure Pellets;Grasshopper
+Eggplant;Neon;Purple;No;Loamy;Slight;Cold;High;Gently;Seaweed Extract;Cutworms
+Cucumber;Lemon;Yellow;No;Salty;Heavy;Hot;Moderate;Judiciously;BAT Guano;Aphids
+Squash;Acorn;Tan;Yes;Heavy;Slight;Cool;Low;Sparingly;Blood Meal;Mites
+Asparagus;Jersey Knight;Chartreuse;Yes;Sandy;Average;Cold;High;Barely;Compost Tea;Snails
+Tomato;Beefsteak;Red;Fruit;Loamy;Medium;65-85°F;Full Sun;Light;Monthly;White Flies, Spider Mites, Fusarium Wilt
+Lettuce;Romaine;Green;Leaf;Well-drained;Medium;45-75°F;Partial Shade;;Weekly;Aphids, Downy Mildew
+Spinach;Space;Green;Leaf;Rich, Loamy;Medium;45-75°F;Partial Shade;;Weekly;Leaf Miners, Spinach Blight
+Blueberry;Northcountry;Blue;Blueberry;Moist, well-drained;Medium;Cold to moderate;Partial sun;Prune after fruiting;Acidic fertilizer;Fungi, birds
+Carrot;Danvers 126;Orange;Carrot;Deep, loose;Medium;Cool;Partial shade;Top when 1/3 grown;Nitrogen-rich fertilizer;Carrot rust fly, aphids
+Corn;Silver Queen;Yellow;Ear of corn;Fertile, well-drained;High;Warm;Full sun;After tasseling;Nitrogen-rich fertilizer;Corn earworm, European corn borer

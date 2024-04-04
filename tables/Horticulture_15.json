@@ -1,0 +1,78 @@
+{
+    "description": "information about plants that are food",
+    "lineage": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+    ],
+    "semantic_key": [
+        "Plant",
+        "Variety"
+    ],
+    "file_ext": ".csv",
+    "field_delim": ";",
+    "file_ext_name": "semi-colon",
+    "command": {
+        "type": "add_rows",
+        "prompt": "Generate one row for a table of information about plants that are food. The semi-colon-separated header of attributes for the table is:\nPlant;Variety;Color;Fruit;Soil;Water;Temperature;Light;Pruning;Fertilizer;Pest;Taste;Days to Maturity;Nutrition Facts (per 100g)\n\nDo not generate fictional rows. Generate the rows from real known data. Here is a list of semi-colon-separated rows not to generate by semantic key only:\nPlant;Variety\nApple;Granny Smith\nAsparagus;Jersey Knight\nBasil, Sweet;Summer\nBroccoli;Spring\nCabbage;Fall\nCherry;Rainier\nCucumber;Lemon\nEggplant;Neon\nGrape;Concord\nLettuce;Romaine\nPeach;August Pride\nPear;Bartlett\nRadish;Cherry Belle\nRaspberry;Bountiful\nSpinach;Space\nSquash;Acorn\nStrawberry;Temptation\nTomato;Beefsteak\nWatermelon;Crimson Sweet\n\nOutput the row in the format of a semi-colon-separated .csv file with a column header. Then explain the source of the new data.",
+        "start time": "2024-04-04 10:33:07",
+        "complete time": "2024-04-04 11:15:40",
+        "duration (seconds)": 2553,
+        "params": {
+            "num_entries": 1,
+            "location": 18
+        },
+        "output_table": "Plant;Variety;Color;Fruit;Soil;Water;Temperature;Light;Pruning;Fertilizer;Pest;Taste;Days to Maturity;Nutrition Facts (per 100g)\nCarrot;Nantes;Orange;Root;Loamy, well-drained;Medium;15-20\u00b0C;Partial shade;No pruning required;Rich in organic matter;Carrot fly, Aphids;Sweet, crunchy;70-80 days;Vitamin A, Dietary fiber, Potassium, Biotin\n",
+        "prologue": "",
+        "epilogue": "Source: The information for the Carrot 'Nantes' variety was obtained from the following website - <https://www.gardenersworld.com/plants/carrot/nantes-carrot/>. The nutritional facts were obtained from the USDA FoodData Central database - <https://fdc.nal.usda.gov/fdc-app.html#/food-details/168447/nutrients>. The pests were obtained from the Royal Horticultural Society website - <https://www.rhs.org.uk/advice/profile?pid=267>.",
+        "changed": {
+            "Plant": {
+                "0": "Carrot"
+            },
+            "Variety": {
+                "0": "Nantes"
+            },
+            "Color": {
+                "0": "Orange"
+            },
+            "Fruit": {
+                "0": "Root"
+            },
+            "Soil": {
+                "0": "Loamy, well-drained"
+            },
+            "Water": {
+                "0": "Medium"
+            },
+            "Temperature": {
+                "0": "15-20\u00b0C"
+            },
+            "Light": {
+                "0": "Partial shade"
+            },
+            "Pruning": {
+                "0": "No pruning required"
+            },
+            "Fertilizer": {
+                "0": "Rich in organic matter"
+            },
+            "Pest": {
+                "0": "Carrot fly, Aphids"
+            },
+            "Taste": {
+                "0": "Sweet, crunchy"
+            },
+            "Days to Maturity": {
+                "0": "70-80 days"
+            },
+            "Nutrition Facts (per 100g)": {
+                "0": "Vitamin A, Dietary fiber, Potassium, Biotin"
+            }
+        }
+    }
+}

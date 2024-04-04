@@ -1,0 +1,11 @@
+{
+    "description": "information about plants that are food",
+    "lineage": [],
+    "semantic_key": [
+        "Plant",
+        "Variety"
+    ],
+    "file_ext": ".csv",
+    "field_delim": ";",
+    "file_ext_name": "semi-colon"
+}

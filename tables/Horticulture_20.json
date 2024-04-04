@@ -1,0 +1,68 @@
+{
+    "description": "information about plants that are food",
+    "lineage": [
+        0,
+        1,
+        2,
+        3
+    ],
+    "semantic_key": [
+        "Plant",
+        "Variety"
+    ],
+    "file_ext": ".csv",
+    "field_delim": ";",
+    "file_ext_name": "semi-colon",
+    "command": {
+        "type": "add_rows",
+        "prompt": "Generate one row for a table of information about plants that are food. The semi-colon-separated header of attributes for the table is:\nPlant;Variety;Season;Color;Fruit;Soil;Water;Temperature;Light;Pruning;Fertilizer;Pest\n\nDo not generate fictional rows. Generate the rows from real known data. Here is a list of semi-colon-separated rows not to generate by semantic key only:\nPlant;Variety\nApple;Granny Smith\nBasil, Sweet;Summer\nBroccoli;Spring\nCabbage;Fall\nPear;Bartlett\nCherry;Rainier\nRaspberry;Bountiful\nPeach;August Pride\nWatermelon;Crimson Sweet\nGrape;Concord\nStrawberry;Temptation\nCarrot;Nantes\nRadish;Cherry Belle\nEggplant;Neon\nAvocado;Hass\nCucumber;Lemon\nSquash;Acorn\nAsparagus;Jersey Knight\nTomato;Beefsteak\nLettuce;Romaine\nSpinach;Space\n\nOutput the row in the format of a semi-colon-separated .csv file with a column header. Then explain the source of the new data.",
+        "start time": "2024-04-04 17:35:29",
+        "complete time": "2024-04-04 18:53:50",
+        "duration (seconds)": 4701,
+        "params": {
+            "num_entries": 1,
+            "location": 18
+        },
+        "output_table": "Plant;Variety;Season;Color;Fruit;Soil;Water;Temperature;Light;Pruning;Fertilizer;Pest\nBlueberry;Bluecrop;Spring,Summer,Fall;Blue;Berry;Moist, Acidic;Medium;60-70\u00b0F;Full Sun;Moderate;Acidic Fertilizer;Birds\n",
+        "prologue": "",
+        "epilogue": "Bluecrop is a variety of blueberry that is known for its firm, light blue fruit. It is a versatile plant that can produce fruit throughout the spring, summer, and fall seasons, making it a great choice for home gardeners who want a long-lasting blueberry crop. Bluecrop blueberries prefer moist, acidic soil and thrive in full sun with moderate pruning. They require regular watering and should be fertilized with an acidic fertilizer to maintain the correct soil pH. The main pest that affects blueberry plants is birds, who can damage the fruit and foliage. To protect blueberry plants from birds, it is recommended to use netting or other bird deterrents.\n\nSource:\nhttps://www.gardeningknowhow.com/edible/fruits/blueberries/bluecrop-blueberry-plants.htm\nhttps://www.burpee.com/vegetables/fruits/highbush-blueberry-plants/prod10001.html\nhttps://www.starkbros.com/growing-guide/plant-care/articles/how-to-grow-blueberries",
+        "changed": {
+            "Plant": {
+                "0": "Blueberry"
+            },
+            "Variety": {
+                "0": "Bluecrop"
+            },
+            "Season": {
+                "0": "Spring,Summer,Fall"
+            },
+            "Color": {
+                "0": "Blue"
+            },
+            "Fruit": {
+                "0": "Berry"
+            },
+            "Soil": {
+                "0": "Moist, Acidic"
+            },
+            "Water": {
+                "0": "Medium"
+            },
+            "Temperature": {
+                "0": "60-70\u00b0F"
+            },
+            "Light": {
+                "0": "Full Sun"
+            },
+            "Pruning": {
+                "0": "Moderate"
+            },
+            "Fertilizer": {
+                "0": "Acidic Fertilizer"
+            },
+            "Pest": {
+                "0": "Birds"
+            }
+        }
+    }
+}

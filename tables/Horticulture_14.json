@@ -1,0 +1,80 @@
+{
+    "description": "information about plants that are food",
+    "lineage": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+    ],
+    "semantic_key": [
+        "Plant",
+        "Variety"
+    ],
+    "file_ext": ".csv",
+    "field_delim": ";",
+    "file_ext_name": "semi-colon",
+    "command": {
+        "type": "add_rows",
+        "prompt": "Generate 2 rows for a table of information about plants that are food. The semi-colon-separated header of attributes for the table is:\nPlant;Variety;Color;Fruit;Soil;Water;Temperature;Light;Pruning;Fertilizer;Pest;Taste;Days to Maturity;Nutrition Facts (per 100g)\n\nDo not generate fictional rows. Generate the rows from real known data. Here is a list of semi-colon-separated rows not to generate by semantic key only:\nPlant;Variety\nApple;Granny Smith\nAsparagus;Jersey Knight\nBasil, Sweet;Summer\nBroccoli;Spring\nCabbage;Fall\nCherry;Rainier\nCucumber;Lemon\nEggplant;Neon\nGrape;Concord\nLettuce;Romaine\nPeach;August Pride\nPear;Bartlett\nRadish;Cherry Belle\nRaspberry;Bountiful\nSpinach;Space\nSquash;Acorn\nStrawberry;Temptation\nTomato;Beefsteak\nWatermelon;Crimson Sweet\nCarrot, Daucus carota;Danvers 126\nCelery, Apium graveolens;Ventura\nCorn, Zea mays;Sweet Corn Incredible\nBasil, Thai;Dark Opal\nCilantro;Leisure\nDill;Bouquet\n\nOutput the rows in the format of a semi-colon-separated .csv file with a column header. Then explain the source of the new data.",
+        "start time": "2024-04-04 09:28:44",
+        "complete time": "2024-04-04 10:33:04",
+        "duration (seconds)": 3860,
+        "params": {
+            "num_entries": 2,
+            "location": 24
+        },
+        "output_table": "Plant;Variety;Color;Fruit;Soil;Water;Temperature;Light;Pruning;Fertilizer;Pest;Taste;Days to Maturity;Nutrition Facts (per 100g)\nStrawberry;Temptation;Red;Fruit;Sandy;Medium;20-25\u00b0C;Full Sun;Minimal pruning;Balanced fertilizer;Mites, Aphids, Fungal diseases;Sweet;30-60 days;34 kJ, 0.7 g protein, 0.3 g fat, 7.7 g carbs, 2 g fiber, 59 mg vitamin C, 4 mg vitamin K, 2 mg sodium, 159 mg potassium, 22 mg calcium, 25 mg phosphorus, 18 mg magnesium\n",
+        "prologue": " Plant;Variety;Color;Fruit;Soil;Water;Temperature;Light;Pruning;Fertilizer;Pest;Taste;Days to Maturity;Nutrition Facts (per 100g)\nCucumber;Lemon;Green;Vegetable;Loamy;Medium;20-25\u00b0C;Full Sun;No pruning required;Balanced fertilizer;Cucumber beetles, Powdery mildew;Mildly bitter;45-55 days;9 kJ, 1.9 g protein, 0.2 g fat, 3.6 g carbs, 1.1 g fiber, 14 mg vitamin C, 17 mg vitamin K, 11 mg sodium, 111 mg potassium, 29 mg calcium, 36 mg phosphorus, 11 mg magnesium",
+        "epilogue": "",
+        "changed": {
+            "Plant": {
+                "0": "Strawberry"
+            },
+            "Variety": {
+                "0": "Temptation"
+            },
+            "Color": {
+                "0": "Red"
+            },
+            "Fruit": {
+                "0": "Fruit"
+            },
+            "Soil": {
+                "0": "Sandy"
+            },
+            "Water": {
+                "0": "Medium"
+            },
+            "Temperature": {
+                "0": "20-25\u00b0C"
+            },
+            "Light": {
+                "0": "Full Sun"
+            },
+            "Pruning": {
+                "0": "Minimal pruning"
+            },
+            "Fertilizer": {
+                "0": "Balanced fertilizer"
+            },
+            "Pest": {
+                "0": "Mites, Aphids, Fungal diseases"
+            },
+            "Taste": {
+                "0": "Sweet"
+            },
+            "Days to Maturity": {
+                "0": "30-60 days"
+            },
+            "Nutrition Facts (per 100g)": {
+                "0": "34 kJ, 0.7 g protein, 0.3 g fat, 7.7 g carbs, 2 g fiber, 59 mg vitamin C, 4 mg vitamin K, 2 mg sodium, 159 mg potassium, 22 mg calcium, 25 mg phosphorus, 18 mg magnesium"
+            }
+        }
+    }
+}

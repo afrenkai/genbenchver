@@ -1,0 +1,106 @@
+{
+    "description": "information about plants that are food",
+    "lineage": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+    ],
+    "semantic_key": [
+        "Plant",
+        "Variety"
+    ],
+    "file_ext": ".csv",
+    "field_delim": ";",
+    "file_ext_name": "semi-colon",
+    "command": {
+        "type": "add_rows",
+        "prompt": "Generate 3 rows for a table of information about plants that are food. The semi-colon-separated header of attributes for the table is:\nPlant;Variety;Color;Fruit;Soil;Water;Temperature;Light;Pruning;Fertilizer;Pest;Taste;Days to Maturity;Nutrition Facts (per 100g)\n\nDo not generate fictional rows. Generate the rows from real known data. Here is a list of semi-colon-separated rows not to generate by semantic key only:\nPlant;Variety\nApple;Granny Smith\nAsparagus;Jersey Knight\nBasil, Sweet;Summer\nBroccoli;Spring\nCabbage;Fall\nCherry;Rainier\nCucumber;Lemon\nEggplant;Neon\nGrape;Concord\nLettuce;Romaine\nPeach;August Pride\nPear;Bartlett\nRadish;Cherry Belle\nRaspberry;Bountiful\nSpinach;Space\nSquash;Acorn\nStrawberry;Temptation\nTomato;Beefsteak\nWatermelon;Crimson Sweet\n\nOutput the rows in the format of a semi-colon-separated .csv file with a column header. Then explain the source of the new data.",
+        "start time": "2024-04-03 19:31:00",
+        "complete time": "2024-04-03 20:57:43",
+        "duration (seconds)": 5203,
+        "params": {
+            "num_entries": 3,
+            "location": 18
+        },
+        "output_table": "Plant;Variety;Color;Fruit;Soil;Water;Temperature;Light;Pruning;Fertilizer;Pest;Taste;Days to Maturity;Nutrition Facts (per 100g)\nCarrot, Daucus carota;Danvers 126;Orange;Root;Loamy, well-drained;Medium;15-20\u00b0C;Full sun;Light;Complete organic fertilizer;Carrot fly, Aphids;Sweet, crunchy;70-80 days;Vitamin A, Dietary fiber, Potassium, Biotin\nCelery, Apium graveolens;Ventura;Green;Stalk;Loamy, moist;High;10-20\u00b0C;Full sun;Moderate;Complete organic fertilizer;Aphids, Whiteflies;Crisp, slightly bitter;120-150 days;Vitamin K, Vitamin C, Potassium, Folate\nCorn, Zea mays;Sweet Corn Incredible;Yellow;Ear;Fertile, well-drained;High;21-27\u00b0C;Full sun;Heavy;Complete organic fertilizer;Corn earworm, Northern corn leaf blight;Sweet, starchy;75-100 days;Carbohydrates, Dietary fiber, Protein, Vitamin B6\n",
+        "prologue": "",
+        "epilogue": "The data for these rows is sourced from various agricultural extension websites, such as the University of Illinois Extension, North Carolina State University Extension, and the University of California Master Gardener Program. These sources provide detailed growing guidelines and recommendations for various plant varieties, which I have condensed into the attributes presented in the table.",
+        "changed": {
+            "Plant": {
+                "0": "Carrot, Daucus carota",
+                "1": "Celery, Apium graveolens",
+                "2": "Corn, Zea mays"
+            },
+            "Variety": {
+                "0": "Danvers 126",
+                "1": "Ventura",
+                "2": "Sweet Corn Incredible"
+            },
+            "Color": {
+                "0": "Orange",
+                "1": "Green",
+                "2": "Yellow"
+            },
+            "Fruit": {
+                "0": "Root",
+                "1": "Stalk",
+                "2": "Ear"
+            },
+            "Soil": {
+                "0": "Loamy, well-drained",
+                "1": "Loamy, moist",
+                "2": "Fertile, well-drained"
+            },
+            "Water": {
+                "0": "Medium",
+                "1": "High",
+                "2": "High"
+            },
+            "Temperature": {
+                "0": "15-20\u00b0C",
+                "1": "10-20\u00b0C",
+                "2": "21-27\u00b0C"
+            },
+            "Light": {
+                "0": "Full sun",
+                "1": "Full sun",
+                "2": "Full sun"
+            },
+            "Pruning": {
+                "0": "Light",
+                "1": "Moderate",
+                "2": "Heavy"
+            },
+            "Fertilizer": {
+                "0": "Complete organic fertilizer",
+                "1": "Complete organic fertilizer",
+                "2": "Complete organic fertilizer"
+            },
+            "Pest": {
+                "0": "Carrot fly, Aphids",
+                "1": "Aphids, Whiteflies",
+                "2": "Corn earworm, Northern corn leaf blight"
+            },
+            "Taste": {
+                "0": "Sweet, crunchy",
+                "1": "Crisp, slightly bitter",
+                "2": "Sweet, starchy"
+            },
+            "Days to Maturity": {
+                "0": "70-80 days",
+                "1": "120-150 days",
+                "2": "75-100 days"
+            },
+            "Nutrition Facts (per 100g)": {
+                "0": "Vitamin A, Dietary fiber, Potassium, Biotin",
+                "1": "Vitamin K, Vitamin C, Potassium, Folate",
+                "2": "Carbohydrates, Dietary fiber, Protein, Vitamin B6"
+            }
+        }
+    }
+}

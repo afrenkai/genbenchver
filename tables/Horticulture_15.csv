@@ -1,0 +1,21 @@
+Plant;Variety;Color;Fruit;Soil;Water;Temperature;Light;Pruning;Fertilizer;Pest;Taste;Days to Maturity;Nutrition Facts (per 100g)
+Apple;Granny Smith;Green;Yes;Loamy;Slight;Mild;Bright;Limited;Compost;Aphids;Tart, Tangy;80-100 days;52 kcal, 14g carbs, 2.4g fiber, 10mg vit C
+Asparagus;Jersey Knight;Chartreuse;Yes;Sandy;Average;Cold;High;Barely;Compost Tea;Snails;Grassy, Tender;80-100 days;20 kcal, 3.9g carbs, 2.1g fiber, 5.2mg vit C
+Basil, Sweet;Summer;Herb;Leaves;Well-drained;Moist;70-80°F;Full Sun;Pinch back;Balanced Fertilizer;Aphids, Fusarium Wilt;Sweet, Peppery;30-40 days;2.6 kcal, 0.5g carbs, 0.3g fiber, 3.2mg vit K
+Broccoli;Spring;Vegetable;Head;Loamy;Moderate;60-70°F;Full Sun;Do not cut florets;Nitrogen-rich Fertilizer;Cabbage Worms, Downy Mildew;Mild, Crisp;70-100 days;34 kcal, 6g carbs, 2.6g fiber, 89mg vit C
+Cabbage;Fall;Vegetable;Head;Loamy;Moderate;60-70°F;Full Sun;Do not cut core;Nitrogen-rich Fertilizer;Imported Cabbageworm, Black Rot;Sweet, Crunchy;70-90 days;25 kcal, 5.8g carbs, 2.5g fiber, 74mg vit C
+Cherry;Rainier;Red;Yes;Sandy;Heavy;Cool;Low;;Seaweed;Caterpillars;Sweet, Mild;60-80 days;50 kcal, 12g carbs, 1.6g fiber, 9mg vit C
+Cucumber;Lemon;Yellow;No;Salty;Heavy;Hot;Moderate;Judiciously;BAT Guano;Aphids;Mild, Crisp;50-70 days;16 kcal, 3.6g carbs, 0.5g fiber, 11mg vit K
+Eggplant;Neon;Purple;No;Loamy;Slight;Cold;High;Gently;Seaweed Extract;Cutworms;Mild, Smoky;60-80 days;25 kcal, 5.8g carbs, 3g fiber, 1.5mg vit K
+Grape;Concord;Crimson;Yes;Peat;Heavy;Cold;High;Prudently;Steamed Bone;Leafhopper;Sweet, Tart;100-120 days;67 kcal, 18.1g carbs, 0.9g fiber, 1.8mg vit C, 10µg vit K
+Lettuce;Romaine;Green;Leaf;Well-drained;Medium;45-75°F;Partial Shade;;Weekly;Aphids, Downy Mildew;Mild, Crisp;30-50 days;10 kcal, 2g carbs, 1.3g fiber, 1.3mg vit K
+Peach;August Pride;Pale Orange;Yes;Sandy Loam;Heavy;Mild;Bright;Regularly;Fish Emulsion;Worms;Sweet, Juicy;70-90 days;39 kcal, 9.5g carbs, 1.4g fiber, 6.6mg vit C
+Pear;Bartlett;Brown;Yes;Clay;Average;Hot;Moderate;Frequent;Manure;Weevils;Sweet, Juicy;100-120 days;58 kcal, 15g carbs, 3.1g fiber, 4mg vit C
+Radish;Cherry Belle;White;No;Gravelly;Heavy;Cool;Low;Tenderly;Manure Pellets;Grasshopper;Peppery, Crisp;22-30 days;16 kcal, 3.4g carbs, 1.6g fiber, 29mg vit C
+Raspberry;Bountiful;Magenta;Yes;Arid;Slight;Cold;High;Sparingly;Lime;Mites;Sweet, Tart;60-80 days;52 kcal, 11.9g carbs, 6.5g fiber, 26.2mg vit C
+Spinach;Space;Green;Leaf;Rich, Loamy;Medium;45-75°F;Partial Shade;;Weekly;Leaf Miners, Spinach Blight;Slightly Sweet, Earthy;45-55 days;23 kcal, 3.9g carbs, 2.2g fiber, 281mg vit A, 5.4mg vit C, 870µg vit K
+Squash;Acorn;Tan;Yes;Heavy;Slight;Cool;Low;Sparingly;Blood Meal;Mites;Sweet, Nutty;45-60 days;32 kcal, 7g carbs, 1.5g fiber, 295mg vit A
+Strawberry;Temptation;Ruby;Yes;Humus;Slight;Mild;Bright;Heavily;Fish Meal;Thrips;Sweet, Tangy;30-50 days;33 kcal, 7.7g carbs, 2g fiber, 58.8mg vit C
+Tomato;Beefsteak;Red;Fruit;Loamy;Medium;65-85°F;Full Sun;Light;Monthly;White Flies, Spider Mites, Fusarium Wilt;Sweet, Tangy;70-90 days;18 kcal, 3.9g carbs, 1.2g fiber, 13.8mg vit C, 901µg vit A
+Watermelon;Crimson Sweet;Scarlet;Yes;Alluvial;Average;Cool;Low;Lightly;Dolomite Lime;Sawfly;Sweet, Juicy;70-90 days;30 kcal, 7.55g carbs, 0.4g fiber, 112µg vit A
+Carrot;Nantes;Orange;Root;Loamy, well-drained;Medium;15-20°C;Partial shade;No pruning required;Rich in organic matter;Carrot fly, Aphids;Sweet, crunchy;70-80 days;Vitamin A, Dietary fiber, Potassium, Biotin

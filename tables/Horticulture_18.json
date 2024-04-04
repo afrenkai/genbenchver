@@ -1,0 +1,81 @@
+{
+    "description": "information about plants that are food",
+    "lineage": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        14
+    ],
+    "semantic_key": [
+        "Plant",
+        "Variety"
+    ],
+    "file_ext": ".csv",
+    "field_delim": ";",
+    "file_ext_name": "semi-colon",
+    "command": {
+        "type": "add_rows",
+        "prompt": "Generate one row for a table of information about plants that are food. The semi-colon-separated header of attributes for the table is:\nPlant;Variety;Color;Fruit;Soil;Water;Temperature;Light;Pruning;Fertilizer;Pest;Taste;Days to Maturity;Nutrition Facts (per 100g)\n\nDo not generate fictional rows. Generate the rows from real known data. Here is a list of semi-colon-separated rows not to generate by semantic key only:\nPlant;Variety\nApple;Granny Smith\nAsparagus;Jersey Knight\nBasil, Sweet;Summer\nBroccoli;Spring\nCabbage;Fall\nCherry;Rainier\nCucumber;Lemon\nEggplant;Neon\nGrape;Concord\nLettuce;Romaine\nPeach;August Pride\nPear;Bartlett\nRadish;Cherry Belle\nRaspberry;Bountiful\nSpinach;Space\nSquash;Acorn\nStrawberry;Temptation\nTomato;Beefsteak\nWatermelon;Crimson Sweet\nCarrot, Daucus carota;Danvers 126\nCelery, Apium graveolens;Ventura\nCorn, Zea mays;Sweet Corn Incredible\nBasil, Thai;Dark Opal\nCilantro;Leisure\nDill;Bouquet\n\nOutput the row in the format of a semi-colon-separated .csv file with a column header. Then explain the source of the new data.",
+        "start time": "2024-04-04 14:59:14",
+        "complete time": "2024-04-04 16:23:39",
+        "duration (seconds)": 5065,
+        "params": {
+            "num_entries": 1,
+            "location": 18
+        },
+        "output_table": "Plant;Variety;Color;Fruit;Soil;Water;Temperature;Light;Pruning;Fertilizer;Pest;Taste;Days to Maturity;Nutrition Facts (per 100g)\nCucumber;Lemon;Green;Vegetable;Well-drained, loose;Medium;64-75\u00b0F (18-24\u00b0C);Full sun;Not necessary;Balanced vegetable fertilizer;Cucumber beetles, powdery mildew;Mildly bitter;35-55 days;18 kcal, 0.9 g protein, 3.6 g carbs, 0.3 g fat, 1.9 g fiber, 11 mg vitamin C, 17 \u00b5g vitamin K, 29 mg folate, 168 mg potassium, 13 mg magnesium, 11 mg phosphorus, 11 mg calcium, 0.3 mg iron, 0.1 mg zinc, 0.1 mg copper, 0.1 mg manganese\n",
+        "prologue": "",
+        "epilogue": "The provided data is a combination of information from various sources, including the Missouri Botanical Garden's Kemper Center for Home Gardening (<https://www.missouribotanicalgarden.org/>) and the USDA's National Nutrient Database (<https://ndb.nal.usda.gov/>). The specific cucumber variety, 'Lemon', was chosen for its unique yellow color and rounded shape. The growing information is based on general cucumber cultivation guidelines, while the nutrition facts are specific to raw, unpeeled cucumber.",
+        "changed": {
+            "Plant": {
+                "0": "Cucumber"
+            },
+            "Variety": {
+                "0": "Lemon"
+            },
+            "Color": {
+                "0": "Green"
+            },
+            "Fruit": {
+                "0": "Vegetable"
+            },
+            "Soil": {
+                "0": "Well-drained, loose"
+            },
+            "Water": {
+                "0": "Medium"
+            },
+            "Temperature": {
+                "0": "64-75\u00b0F (18-24\u00b0C)"
+            },
+            "Light": {
+                "0": "Full sun"
+            },
+            "Pruning": {
+                "0": "Not necessary"
+            },
+            "Fertilizer": {
+                "0": "Balanced vegetable fertilizer"
+            },
+            "Pest": {
+                "0": "Cucumber beetles, powdery mildew"
+            },
+            "Taste": {
+                "0": "Mildly bitter"
+            },
+            "Days to Maturity": {
+                "0": "35-55 days"
+            },
+            "Nutrition Facts (per 100g)": {
+                "0": "18 kcal, 0.9 g protein, 3.6 g carbs, 0.3 g fat, 1.9 g fiber, 11 mg vitamin C, 17 \u00b5g vitamin K, 29 mg folate, 168 mg potassium, 13 mg magnesium, 11 mg phosphorus, 11 mg calcium, 0.3 mg iron, 0.1 mg zinc, 0.1 mg copper, 0.1 mg manganese"
+            }
+        }
+    }
+}

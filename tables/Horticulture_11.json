@@ -1,0 +1,93 @@
+{
+    "description": "information about plants that are food",
+    "lineage": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+    ],
+    "semantic_key": [
+        "Plant",
+        "Variety"
+    ],
+    "file_ext": ".csv",
+    "field_delim": ";",
+    "file_ext_name": "semi-colon",
+    "command": {
+        "type": "add_rows",
+        "prompt": "Generate 2 rows for a table of information about plants that are food. The semi-colon-separated header of attributes for the table is:\nPlant;Variety;Color;Fruit;Soil;Water;Temperature;Light;Pruning;Fertilizer;Pest;Taste;Days to Maturity;Nutrition Facts (per 100g)\n\nDo not generate fictional rows. Generate the rows from real known data. Here is a list of semi-colon-separated rows not to generate by semantic key only:\nPlant;Variety\nApple;Granny Smith\nAsparagus;Jersey Knight\nBasil, Sweet;Summer\nBroccoli;Spring\nCabbage;Fall\nCherry;Rainier\nCucumber;Lemon\nEggplant;Neon\nGrape;Concord\nLettuce;Romaine\nPeach;August Pride\nPear;Bartlett\nRadish;Cherry Belle\nRaspberry;Bountiful\nSpinach;Space\nSquash;Acorn\nStrawberry;Temptation\nTomato;Beefsteak\nWatermelon;Crimson Sweet\nCarrot, Daucus carota;Danvers 126\nCelery, Apium graveolens;Ventura\nCorn, Zea mays;Sweet Corn Incredible\n\nOutput the rows in the format of a semi-colon-separated .csv file with a column header. Then explain the source of the new data.",
+        "start time": "2024-04-04 05:27:04",
+        "complete time": "2024-04-04 07:05:16",
+        "duration (seconds)": 5892,
+        "params": {
+            "num_entries": 2,
+            "location": 12
+        },
+        "output_table": "Plant;Variety;Color;Fruit;Soil;Water;Temperature;Light;Pruning;Fertilizer;Pest;Taste;Days to Maturity;Nutrition Facts (per 100g)\nBasil, Sweet;Genovese;Green;Herb;Well-drained;Moist;15-23\u00b0C;Full Sun;Pinch back;Balanced;Fusarium wilt, Gray mold;Slightly sweet, pungent;30-50 days;43 kcal, 2.04 g protein, 3.1 g fat, 3.1 g carbs, 1.7 g fiber, 105 mg vit K, 5.6 mg iron, 67 mg calcium, 36 mg magnesium\nCelery, Apium graveolens;Pascal;Green;Vegetable;Moist, rich;Plentiful;7-24\u00b0C;Partial shade;Blanch;Balanced;Bacterial leaf spot, Black heart;Mildly salty, crisp;100-140 days;18 kcal, 1.1 g protein, 0.2 g fat, 3.5 g carbs, 1.6 g fiber, 134 mcg vit K, 260 mg sodium, 40 mg calcium, 32 mg magnesium\n",
+        "prologue": "",
+        "epilogue": "The data for Basil, Sweet Genovese and Celery, Apium graveolens Pascal comes from the following sources:\n\nBasil, Sweet Genovese:\n- General information, taste, pruning, and days to maturity: The Old Farmer's Almanac, \"Basil\" (<https://www.almanac.com/plant/basil>)\n- Soil, water, temperature, light, fertilizer, pests: Missouri Botanical Garden, \"Basil\" (<https://www.missouribotanicalgarden.org/PlantFinder/PlantFinderDetails.aspx?kempercode=a970>)\n- Nutrition facts: USDA FoodData Central, \"Basil, fresh\" (<https://fdc.nal.usda.gov/fdc-app.html#/food-details/171327/nutrients>)\n\nCelery, Apium graveolens Pascal:\n- General information, taste, pruning, days to maturity: The Old Farmer's Almanac, \"Celery\" (<https://www.almanac.com/plant/celery>)\n- Soil, water, temperature, light, fertilizer, pests: Missouri Botanical Garden, \"Celery\" (<https://www.missouribotanicalgarden.org/PlantFinder/PlantFinderDetails.aspx?kempercode=b065>)\n- Nutrition facts: USDA FoodData Central, \"Celery, raw\" (<https://fdc.nal.usda.gov/fdc-app.html#/food-details/1101939/nutrients>)",
+        "changed": {
+            "Plant": {
+                "0": "Basil, Sweet",
+                "1": "Celery, Apium graveolens"
+            },
+            "Variety": {
+                "0": "Genovese",
+                "1": "Pascal"
+            },
+            "Color": {
+                "0": "Green",
+                "1": "Green"
+            },
+            "Fruit": {
+                "0": "Herb",
+                "1": "Vegetable"
+            },
+            "Soil": {
+                "0": "Well-drained",
+                "1": "Moist, rich"
+            },
+            "Water": {
+                "0": "Moist",
+                "1": "Plentiful"
+            },
+            "Temperature": {
+                "0": "15-23\u00b0C",
+                "1": "7-24\u00b0C"
+            },
+            "Light": {
+                "0": "Full Sun",
+                "1": "Partial shade"
+            },
+            "Pruning": {
+                "0": "Pinch back",
+                "1": "Blanch"
+            },
+            "Fertilizer": {
+                "0": "Balanced",
+                "1": "Balanced"
+            },
+            "Pest": {
+                "0": "Fusarium wilt, Gray mold",
+                "1": "Bacterial leaf spot, Black heart"
+            },
+            "Taste": {
+                "0": "Slightly sweet, pungent",
+                "1": "Mildly salty, crisp"
+            },
+            "Days to Maturity": {
+                "0": "30-50 days",
+                "1": "100-140 days"
+            },
+            "Nutrition Facts (per 100g)": {
+                "0": "43 kcal, 2.04 g protein, 3.1 g fat, 3.1 g carbs, 1.7 g fiber, 105 mg vit K, 5.6 mg iron, 67 mg calcium, 36 mg magnesium",
+                "1": "18 kcal, 1.1 g protein, 0.2 g fat, 3.5 g carbs, 1.6 g fiber, 134 mcg vit K, 260 mg sodium, 40 mg calcium, 32 mg magnesium"
+            }
+        }
+    }
+}

@@ -1,0 +1,58 @@
+{
+    "description": "information about plants that are food",
+    "lineage": [
+        0
+    ],
+    "semantic_key": [
+        "Plant",
+        "Variety"
+    ],
+    "file_ext": ".csv",
+    "field_delim": ";",
+    "file_ext_name": "semi-colon",
+    "command": {
+        "type": "del_rows",
+        "params": {
+            "num_entries": 1,
+            "location": "random"
+        },
+        "changed": {
+            "Plant": {
+                "5": "Blueberry"
+            },
+            "Variety": {
+                "5": "Jubilee"
+            },
+            "Season": {
+                "5": "Summer"
+            },
+            "Color": {
+                "5": "Royal Blue"
+            },
+            "Fruit": {
+                "5": "Yes"
+            },
+            "Soil": {
+                "5": "Rich"
+            },
+            "Water": {
+                "5": "Slight"
+            },
+            "Temperature": {
+                "5": "Hot"
+            },
+            "Light": {
+                "5": "Moderate"
+            },
+            "Pruning": {
+                "5": "Moderate"
+            },
+            "Fertilizer": {
+                "5": "Bone Meal"
+            },
+            "Pest": {
+                "5": "Slugs"
+            }
+        }
+    }
+}
