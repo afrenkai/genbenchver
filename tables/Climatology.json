@@ -1,0 +1,11 @@
+{
+    "description": "information about climate in a city or region",
+    "lineage": [],
+    "semantic_key": [
+        "Name",
+        "Country"
+    ],
+    "file_ext": ".csv",
+    "field_delim": ";",
+    "file_ext_name": "semi-colon"
+}
