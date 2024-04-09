@@ -199,6 +199,7 @@ class VerTable:
             self.description = ""
             if os.path.exists(self.filespec + ".json"):
                 with open(self.filespec + ".json", "r") as fp:
+                    self.print_debug(self.filespec, None)
                     json_dict = json.load(fp)
                     self.print_debug(json_dict, None)
                     self.description = json_dict['description']
