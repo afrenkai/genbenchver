@@ -110,20 +110,46 @@ class GenAITablePrompts:
         # header.
         
         description = self.table.get_description()
-        # header = self.table.get_table_header_only().to_csv(
-        #     sep=self.table.format_type[1], index=False)
-        header = self.table.table.head(3).to_csv(
+        
+        # the following for no row examples
+        header = self.table.get_table_header_only().to_csv(
             sep=self.table.format_type[1], index=False)
+        
+        # the following for 3 example rows
+        # header = self.table.table.head(3).to_csv(
+        #     sep=self.table.format_type[1], index=False)
         
         table_ineligible_only = \
             self.table.get_ineligible_rows_key_only(self.cache).to_csv(
                 sep=self.table.format_type[1], index=False)
         
         delimiter = self.table.format_type[2]
+        # if nrows == 1:
+        #     prompt = f"Generate one row for a table of {description}. "\
+        #         + f"The {delimiter}-separated header of attributes, along "\
+        #         + f"with three sample rows for the table is:\n{header}\n"\
+        #         + "Do not generate fictional rows. "\
+        #         + "Generate the rows from real known data. "\
+        #         + f"Here is a list of {delimiter}-separated rows not to "\
+        #         + f"generate by semantic key only:\n{table_ineligible_only}\n"\
+        #         + "Output the row in the format of a "\
+        #         + f"{delimiter}-separated .csv file with a column header. "\
+        #         + "Then explain the source of the new data."
+        # else:
+        #     prompt = f"Generate {nrows} rows for a table of {description}. "\
+        #         + f"The {delimiter}-separated header of attributes, along "\
+        #         + f"with three sample rows for the table is:\n{header}\n"\
+        #         + "Do not generate fictional rows. "\
+        #         + "Generate the rows from real known data. "\
+        #         + f"Here is a list of {delimiter}-separated rows not to "\
+        #         + f"generate by semantic key only:\n{table_ineligible_only}\n"\
+        #         + "Output the rows in the format of a "\
+        #         + f"{delimiter}-separated .csv file with a column header. "\
+        #         + "Then explain the source of the new data."
         if nrows == 1:
             prompt = f"Generate one row for a table of {description}. "\
-                + f"The {delimiter}-separated header of attributes, along "\
-                + f"with three sample rows for the table is:\n{header}\n"\
+                + f"The {delimiter}-separated header of attributes "\
+                + f"for the table is:\n{header}\n"\
                 + "Do not generate fictional rows. "\
                 + "Generate the rows from real known data. "\
                 + f"Here is a list of {delimiter}-separated rows not to "\
@@ -133,8 +159,8 @@ class GenAITablePrompts:
                 + "Then explain the source of the new data."
         else:
             prompt = f"Generate {nrows} rows for a table of {description}. "\
-                + f"The {delimiter}-separated header of attributes, along "\
-                + f"with three sample rows for the table is:\n{header}\n"\
+                + f"The {delimiter}-separated header of attributes "\
+                + f"for the table is:\n{header}\n"\
                 + "Do not generate fictional rows. "\
                 + "Generate the rows from real known data. "\
                 + f"Here is a list of {delimiter}-separated rows not to "\
