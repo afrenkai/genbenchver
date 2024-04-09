@@ -1,0 +1,55 @@
+{
+    "description": "information about climate in a city or region (Name), in a country, either in Australia or anywhere on Earth",
+    "lineage": [
+        0
+    ],
+    "semantic_key": [
+        "Name",
+        "Country"
+    ],
+    "file_ext": ".csv",
+    "field_delim": ";",
+    "file_ext_name": "semi-colon",
+    "command": {
+        "type": "del_rows",
+        "params": {
+            "num_entries": 1,
+            "location": "random"
+        },
+        "changed": {
+            "Name": {
+                "2": "Adelaide"
+            },
+            "Country": {
+                "2": "Australia"
+            },
+            "Continent": {
+                "2": "Australasia"
+            },
+            "Region": {
+                "2": "Australia"
+            },
+            "Altitude": {
+                "2": "50 m"
+            },
+            "Latitude": {
+                "2": 34.9
+            },
+            "Longitude": {
+                "2": 138.9
+            },
+            "Temperatures": {
+                "2": "Average Monthly mean 17.4\u00b0C"
+            },
+            "Annual Precip": {
+                "2": "613mm"
+            },
+            "Humidity": {
+                "2": "Humid"
+            },
+            "Sun": {
+                "2": "5.3 hrs"
+            }
+        }
+    }
+}

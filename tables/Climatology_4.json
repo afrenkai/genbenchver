@@ -1,0 +1,58 @@
+{
+    "description": "information about climate in a city or region (Name), in a country, either in Australia or anywhere on Earth",
+    "lineage": [
+        0,
+        1,
+        2,
+        3
+    ],
+    "semantic_key": [
+        "Name",
+        "Country"
+    ],
+    "file_ext": ".csv",
+    "field_delim": ";",
+    "file_ext_name": "semi-colon",
+    "command": {
+        "type": "del_rows",
+        "params": {
+            "num_entries": 1,
+            "location": "random"
+        },
+        "changed": {
+            "Name": {
+                "3": "Canberra"
+            },
+            "Country": {
+                "3": "Australia"
+            },
+            "Continent": {
+                "3": "Australasia"
+            },
+            "Region": {
+                "3": "Australia"
+            },
+            "Altitude": {
+                "3": "588 m"
+            },
+            "Latitude": {
+                "3": 35.3
+            },
+            "Longitude": {
+                "3": 149.1
+            },
+            "Temperatures": {
+                "3": "Average Monthly mean 14.3\u00b0C"
+            },
+            "Annual Precip": {
+                "3": "623mm"
+            },
+            "Humidity": {
+                "3": "Humid"
+            },
+            "Sun": {
+                "3": "7.3 hrs"
+            }
+        }
+    }
+}

@@ -1,0 +1,57 @@
+{
+    "description": "information about climate in a city or region (Name), in a country, either in Australia or anywhere on Earth",
+    "lineage": [
+        0,
+        1,
+        2
+    ],
+    "semantic_key": [
+        "Name",
+        "Country"
+    ],
+    "file_ext": ".csv",
+    "field_delim": ";",
+    "file_ext_name": "semi-colon",
+    "command": {
+        "type": "del_rows",
+        "params": {
+            "num_entries": 1,
+            "location": "random"
+        },
+        "changed": {
+            "Name": {
+                "1": "Goulburn, NSW"
+            },
+            "Country": {
+                "1": "Australia"
+            },
+            "Continent": {
+                "1": "Australasia"
+            },
+            "Region": {
+                "1": "Australia"
+            },
+            "Altitude": {
+                "1": "439 m"
+            },
+            "Latitude": {
+                "1": 34.7
+            },
+            "Longitude": {
+                "1": 150.3
+            },
+            "Temperatures": {
+                "1": "Average Monthly mean 10.5\u00b0C"
+            },
+            "Annual Precip": {
+                "1": "538mm"
+            },
+            "Humidity": {
+                "1": "Humid"
+            },
+            "Sun": {
+                "1": "4.7 hrs"
+            }
+        }
+    }
+}

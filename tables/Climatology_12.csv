@@ -1,0 +1,5 @@
+Wind Speed (m/s);Precipitation Days;Name;Country;Continent;Region;Altitude;Latitude;Longitude;Temperatures;Annual Precip;Humidity;Sun
+4.5;365;Albany;Australia;Australasia;Australia;15 m;34.9;117.8;Average Monthly mean 21.6°C;847mm;Humid;5.7 hrs
+2.1;63;Barcelona;Spain;Europe;Catalonia;12 m;41.4;2.2;Average Monthly mean 17.3°C;641mm;Moderate;5.2 hrs
+2.6;145;Brisbane;Australia;Australasia;Australia;19 m;27.5;153.0;Average Monthly mean 27.2°C;990mm;Humid;5.7 hrs
+3.1;234;Tuggeranong, ACT;Australia;Australasia;Australia;600 m;35.4;149.1;Average Monthly mean 12.6°C;620mm;Humid;4 hrs

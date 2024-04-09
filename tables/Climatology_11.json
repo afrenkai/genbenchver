@@ -1,0 +1,64 @@
+{
+    "description": "information about climate in a city or region (Name), in a country, either in Australia or anywhere on Earth",
+    "lineage": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+    ],
+    "semantic_key": [
+        "Name",
+        "Country"
+    ],
+    "file_ext": ".csv",
+    "field_delim": ";",
+    "file_ext_name": "semi-colon",
+    "command": {
+        "type": "del_rows",
+        "params": {
+            "num_entries": 1,
+            "location": "random"
+        },
+        "changed": {
+            "Name": {
+                "3": "Brisbane"
+            },
+            "Country": {
+                "3": "Australia"
+            },
+            "Continent": {
+                "3": "Australasia"
+            },
+            "Region": {
+                "3": "Queensland"
+            },
+            "Altitude": {
+                "3": "21 m"
+            },
+            "Latitude": {
+                "3": 27.5
+            },
+            "Longitude": {
+                "3": 153.0
+            },
+            "Temperatures": {
+                "3": "Average Monthly mean 21.2\u00b0C"
+            },
+            "Annual Precip": {
+                "3": "1149mm"
+            },
+            "Humidity": {
+                "3": "High"
+            },
+            "Sun": {
+                "3": "5.9 hrs"
+            }
+        }
+    }
+}

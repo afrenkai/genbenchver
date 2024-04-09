@@ -1,0 +1,56 @@
+{
+    "description": "information about climate in a city or region (Name), in a country, either in Australia or anywhere on Earth",
+    "lineage": [
+        0,
+        1
+    ],
+    "semantic_key": [
+        "Name",
+        "Country"
+    ],
+    "file_ext": ".csv",
+    "field_delim": ";",
+    "file_ext_name": "semi-colon",
+    "command": {
+        "type": "del_rows",
+        "params": {
+            "num_entries": 1,
+            "location": "random"
+        },
+        "changed": {
+            "Name": {
+                "3": "Darwin"
+            },
+            "Country": {
+                "3": "Australia"
+            },
+            "Continent": {
+                "3": "Australasia"
+            },
+            "Region": {
+                "3": "Australia"
+            },
+            "Altitude": {
+                "3": "19 m"
+            },
+            "Latitude": {
+                "3": 12.5
+            },
+            "Longitude": {
+                "3": 130.9
+            },
+            "Temperatures": {
+                "3": "Average Monthly mean 28.5\u00b0C"
+            },
+            "Annual Precip": {
+                "3": "1726mm"
+            },
+            "Humidity": {
+                "3": "Humid"
+            },
+            "Sun": {
+                "3": "5.9 hrs"
+            }
+        }
+    }
+}
