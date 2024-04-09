@@ -19,10 +19,16 @@ versioning benchmarks
 # sep = "|"
 # newsep = ";"
 
-input_filename = '../../tables/sources/Climatology_QWQ27CT2.csv'
-cleaned_filename = '../../tables/Climatology.csv'
+# input_filename = '../../tables/sources/Climatology_QWQ27CT2.csv'
+# cleaned_filename = '../../tables/Climatology.csv'
+# sep = "|"
+# newsep = ";"
+
+input_filename = '../../tables/sources/Biology_6RCZXNPM.csv'
+cleaned_filename = '../../tables/Biology.csv'
 sep = "|"
 newsep = ";"
+
 
 # Remove leading and trailing whitespaces around the pipe separator
 with open(input_filename, 'r') as infile, open(cleaned_filename, 'w') as outfile:
