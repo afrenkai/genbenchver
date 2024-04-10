@@ -364,6 +364,14 @@ class GenAITableExec:
                 resp_table = pd.concat([resp_table, resp_table], axis=0)
             head_nrows = resp_table.head(num_entries).to_csv(sep=table_orig.format_type[1],
                                                        index=False)
+            responses.append(f""""{head_nrows}"\n\nThe data is gathered from 
+various sources, including but not limited to Encyclopedia Britannica,
+National Geographic, and FishBase. The diet, habitat, family, latin name, size,
+and common name are directly obtained from these sources. The classification
+system (phylum, class, order, suborder, genus, species) is also obtained from
+these sources, but sometimes simplified to fit the requested format. The size
+is presented as an approximate range for animals that can vary significantly in
+size, while for fish, it is a general size indication.""")
             responses.append(
                 f"""
 {head_nrows}
@@ -392,6 +400,7 @@ The first row is generated from my knowledge of classical literature. Euripides 
                     )
                 responses.append(f"{trunc_rows_rsp_end}")
             idx = random.randrange(len(responses)-1)
+            # idx = 1 # for testing
             if idx == (len(responses) - 2):
                 responses = responses[idx:idx+2]
             else:
@@ -1082,6 +1091,14 @@ Here is the updated table in semi-colon-delimited .csv format:
             return None, False
         
         sep = table_orig.format_type[1]
+
+        # Sometimes the Gen AI encapsulates the entire table within 
+        # double-quotes        
+        for i in range(len(lines)):
+            lsplit = lines[i].split('"')
+            if len(lsplit) == 2:
+                lines[i] = ''.join(lsplit)
+                
         
         hdr_line, hdr_line_no_idx, row_line = \
             self.parse_header_or_row(table_orig, lines[0])
@@ -1099,29 +1116,35 @@ Here is the updated table in semi-colon-delimited .csv format:
         
         our_df = None
         if len(lines) == 1 or len(lines[1]) == 0:
-            if hdr_line is not None:
-                return pd.read_csv(io.StringIO(hdr_line), sep=sep), True
-            elif hdr_line_no_idx is not None:
-                return pd.read_csv(io.StringIO(hdr_line_no_idx), sep=sep), True
-            else: # row_line is not None
-                return pd.read_csv(io.StringIO(row_line), sep=sep,
-                                   header=None, names=header_list), False
+            try:
+                if hdr_line is not None:
+                    return pd.read_csv(io.StringIO(hdr_line), sep=sep), True
+                elif hdr_line_no_idx is not None:
+                    return pd.read_csv(io.StringIO(hdr_line_no_idx), sep=sep), True
+                else: # row_line is not None
+                    return pd.read_csv(io.StringIO(row_line), sep=sep,
+                                       header=None, names=header_list), False
+            except:
+                return None, False
 
-        if hdr_line is not None:
-            dfi = pd.read_csv(io.StringIO(hdr_line), sep=sep)
-            our_df = dfi
-            self.print_debug(dfi, None)
-            self.print_debug(dfi.shape, None)
-        if hdr_line_no_idx is not None:
-            dfh = pd.read_csv(io.StringIO(hdr_line_no_idx), sep=sep)
-            our_df = dfh
-            self.print_debug(dfh, None)
-            self.print_debug(dfh.shape, None)
-        if row_line is not None:
-            dfr = pd.read_csv(io.StringIO(row_line), sep=sep, header=None,
-                              names=header_list)
-            our_df = dfr
-        df1 = pd.read_csv(io.StringIO(lines[1]), sep=sep)
+        try:
+            if hdr_line is not None:
+                dfi = pd.read_csv(io.StringIO(hdr_line), sep=sep)
+                our_df = dfi
+                self.print_debug(dfi, None)
+                self.print_debug(dfi.shape, None)
+            if hdr_line_no_idx is not None:
+                dfh = pd.read_csv(io.StringIO(hdr_line_no_idx), sep=sep)
+                our_df = dfh
+                self.print_debug(dfh, None)
+                self.print_debug(dfh.shape, None)
+            if row_line is not None:
+                dfr = pd.read_csv(io.StringIO(row_line), sep=sep, header=None,
+                                  names=header_list)
+                our_df = dfr
+            df1 = pd.read_csv(io.StringIO(lines[1]), sep=sep)
+        except:
+            return None, False
         self.print_debug(df1, None)
         self.print_debug(df1.shape, None)
         
@@ -1225,6 +1248,7 @@ Here is the updated table in semi-colon-delimited .csv format:
         valid_tables = []
         lines = text.split("\n")
         line_num = 0
+        
         while line_num < len(lines):
             df, has_header = self.parse_table(table_orig, lines[line_num:])
             if df is not None:
