@@ -1424,7 +1424,7 @@ Here is the updated table in semi-colon-delimited .csv format:
                 if num_attempts >= self.args.max_attempts:
                     cmd_plan_pos += 1
                     command_idx = None
-                else:
+                elif idx < (self.args.max_iter - 1):
                     print_time(None, "attempting again")
                     time.sleep(3)
             if numver >= self.args.num_ver:
