@@ -1,0 +1,83 @@
+{
+    "description": "a structured classification for a diverse group of living organisms, spanning across several kingdoms and phyla",
+    "lineage": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+    ],
+    "semantic_key": [
+        "Common Name"
+    ],
+    "file_ext": ".csv",
+    "field_delim": ";",
+    "file_ext_name": "semi-colon",
+    "command": {
+        "type": "add_cols",
+        "prompt": "Generate 3 new attributes for a table of a structured classification for a diverse group of living organisms, spanning across several kingdoms and phyla. The semi-colon-separated header of attributes to not generate is:\nDiet;Habitat;Family;Latin Name;Phylum;Class;Order;Genus;Species;Common Name;Size\n\nGenerate real attributes. Do not generate fictional ones. Here are the semi-colon-separated rows of the table by semantic key only:\nCommon Name\nAmerican Alligator\nBlack Widow\nCooper's Hawk\nDogfish Shark\nEarthworm\nEuropean Eel\nHorseshoe Crab\nSharks, Rays, Skates\nSmall\nVirginia Opossum\nConvict Cichlid\nGreat White Shark\nDomestic Dog\nAfrican Cichlid\n\nGenerate values of real data for all existing rows of the table. Generate and output a new table, include the table header, with only the attributes Common Name, and the new attributes in the format of a semi-colon-separated .csv file. Then explain the source of the new data.",
+        "start time": "2024-04-10 11:15:05",
+        "complete time": "2024-04-10 12:49:19",
+        "duration (seconds)": 5654,
+        "params": {
+            "num_entries": 3,
+            "location": "random"
+        },
+        "output_table": "Common Name;Average Lifespan;Endangered Status;Native Continent\nAmerican Alligator;50-60 years;Least Concern;North America\nBlack Widow;3 years;Least Concern;North America\nCooper's Hawk;12 years;Least Concern;North America\nDogfish Shark;10-15 years;Near Threatened;North America, Europe\nEarthworm;4-8 years;Least Concern;Worldwide\nEuropean Eel;15-20 years;Critically Endangered;Europe\nHorseshoe Crab;9-12 years;Vulnerable;North America\nSharks, Rays, Skates;Varies;Varies;Varies\nSmall;-;-;-\nVirginia Opossum;2 years;Least Concern;North America\nConvict Cichlid;8-10 years;Least Concern;Central America\nGreat White Shark;25-30 years;Vulnerable;Worldwide\nDomestic Dog;10-13 years;Least Concern;Worldwide\nAfrican Cichlid;5-8 years;Least Concern;Africa\n",
+        "prologue": "",
+        "epilogue": "The new attributes are Average Lifespan, Endangered Status, and Native Continent. These values are based on information from various scientific and wildlife databases, such as the International Union for Conservation of Nature (IUCN) Red List, the National Wildlife Federation, and the Smithsonian National Museum of Natural History. The Average Lifespan values are typical for each species in captivity or in the wild. The Endangered Status indicates the level of threat each species faces, with options being Least Concern, Near Threatened, Vulnerable, Endangered, Critically Endangered, or Not Evaluated. The Native Continent indicates the continent(s) where each species is naturally found or originated from, with some species being found worldwide.",
+        "changed": {
+            "Average Lifespan": {
+                "0": "50-60 years",
+                "1": "3 years",
+                "2": "12 years",
+                "3": "10-15 years",
+                "4": "4-8 years",
+                "5": "15-20 years",
+                "6": "9-12 years",
+                "7": "Varies",
+                "8": "-",
+                "9": "2 years",
+                "10": "8-10 years",
+                "11": "25-30 years",
+                "12": "10-13 years",
+                "13": "5-8 years"
+            },
+            "Endangered Status": {
+                "0": "Least Concern",
+                "1": "Least Concern",
+                "2": "Least Concern",
+                "3": "Near Threatened",
+                "4": "Least Concern",
+                "5": "Critically Endangered",
+                "6": "Vulnerable",
+                "7": "Varies",
+                "8": "-",
+                "9": "Least Concern",
+                "10": "Least Concern",
+                "11": "Vulnerable",
+                "12": "Least Concern",
+                "13": "Least Concern"
+            },
+            "Native Continent": {
+                "0": "North America",
+                "1": "North America",
+                "2": "North America",
+                "3": "North America, Europe",
+                "4": "Worldwide",
+                "5": "Europe",
+                "6": "North America",
+                "7": "Varies",
+                "8": "-",
+                "9": "North America",
+                "10": "Central America",
+                "11": "Worldwide",
+                "12": "Worldwide",
+                "13": "Africa"
+            }
+        }
+    }
+}

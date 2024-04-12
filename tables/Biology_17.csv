@@ -1,0 +1,16 @@
+Diet;Habitat;Family;Latin Name;Phylum;Class;Order;Genus;Species;Common Name;Size;Average Lifespan;Endangered Status;Average Weight;Average Length;Conservation Status;Native Continent
+Herbivore;Freshwater;Cichlidae;Pseudotropheus saulosi;Chordata;Actinopterygii;Perciformes;Pseudotropheus;saulosi;African Cichlid;6 cm;5-8 years;Least Concern;100 grams;15 centimeters;Least Concern;Africa
+Carnivore;Freshwater Swamps, Marshes, Rivers;Reptilia;Alligator mississippiensis;Chordata;Reptilia;Alligatoridae;Alligator;mississippiensis;American Alligator;Large;50-60 years;Least Concern;363 kilograms;4 meters;Vulnerable;North America
+Carnivore;Varied, including human structures;Arachnida;Latrodectus mactans;Arthropoda;Arachnida;Araneae;Latrodectus;mactans;Black Widow;Small;3 years;Least Concern;0.00012 grams;0.041 centimeters;Not Evaluated;North America
+Herbivore;Freshwater;Cichlidae;Mayaheros urophthalmus;Actinopterygii;Teleostei;Cichliformes;Cichlasoma;urophthalmus;Convict Cichlid;6 inches;8-10 years;Least Concern;100 grams;15 centimeters;Least Concern;Central America
+Carnivore;Woodlands, Forests;Aves;Accipiter cooperii;Chordata;Aves;Accipitriformes;Accipiter;cooperii;Cooper's Hawk;16.15 in;12 years;Least Concern;0.45 kilograms;0.46 meters;Least Concern;North America
+Carnivore;Ocean;Chondrichthyes;Squalus spp.;Chordata;Chondrichthyes;Squaliformes;Squalus;spp.;Dogfish Shark;Medium;10-15 years;Near Threatened;0.5-1.5 kilograms;0.6-1.2 meters;Least Concern;North America, Europe
+Omnivore;Terrestrial;Canidae;Canis lupus familiaris;Chordata;Mammalia;Carnivora;Canis;lupus;Domestic Dog;60 cm;10-13 years;Least Concern;36 kilograms;0.6-1 meters;Domestic;Worldwide
+Detritivore;Soil;Annelida;Lumbricus terrestris;Ecdysozoa;Nematoda;Enoplea;Lumbricus;terrestris;Earthworm;Small;4-8 years;Least Concern;0.00028-0.0023 kilograms;0.05-1.3 meters;Least Concern;Worldwide
+Carnivore;Freshwater and Marine Water;Actinopterygii;Anguilla anguilla;Chordata;Actinopterygii;Anguilliformes;Anguilla;anguilla;European Eel;Medium;15-20 years;Critically Endangered;1-3 kilograms;0.6-1.3 meters;Endangered;Europe
+Giant Panda;Mountains, Forests;Ursidae;Ailuropoda melanoleuca;Chordata;Mammalia;Ursidae.1;Ailuropoda;melanoleuca;Giant Panda.1;6 feet;20 years;Vulnerable;113-163 kilograms;1.2-1.9 meters;Vulnerable;Asia
+Carnivore;Marine;Carcharodon carcharias;Chondrichthyes;Chondrichthyes;Selachii;Lamniformes;Carcharodon;carcharias;Great White Shark;600 cm;25-30 years;Vulnerable;680-2268 kilograms;4.6-6.4 meters;Vulnerable;Worldwide
+Omnivore;Estuaries, Shallow Ocean Water;Arthropoda;Limulus polyphemus;Arthropoda;Merostomata;Xiphosura;Limulus;polyphemus;Horseshoe Crab;Medium;9-12 years;Vulnerable;0.4-0.9 kilograms;25-61 centimeters;Least Concern;North America
+Carnivore;Ocean;Vertebrata;Elasmobranchii;Chordata;Vertebrata;Elasmobranchii;;;Sharks, Rays, Skates;Medium;Varies;Varies;0.0002-2000 kilograms;0.02-20 meters;Various;Varies
+Insectivore;Urban Areas, Forests;Mollusca;Mytilus edulis;Mollusca;Bivalvia;Mytilidae;edulis;Blue Mussel;Small;;-;-;0.00001-0.00012 kilograms;0.02-0.041 centimeters;Not Evaluated;-
+Omnivore;Deciduous and Pine Forests, Urban Areas;Animalia;Didelphis virginiana;Chordata;Mammalia;Didelphimorphia;Didelphis;virginiana;Virginia Opossum;Medium;2 years;Least Concern;2.7 kilograms;0.4-0.7 meters;Least Concern;North America

@@ -1,0 +1,35 @@
+{
+    "description": "a structured classification for a diverse group of living organisms, spanning across several kingdoms and phyla",
+    "lineage": [
+        0
+    ],
+    "semantic_key": [
+        "Common Name"
+    ],
+    "file_ext": ".csv",
+    "field_delim": ";",
+    "file_ext_name": "semi-colon",
+    "command": {
+        "type": "del_cols",
+        "params": {
+            "num_entries": 1,
+            "location": [
+                2
+            ]
+        },
+        "changed": {
+            "Kingdom": {
+                "0": "Eukarya",
+                "1": "Eukarya",
+                "2": "Eukarya",
+                "3": "Eukarya",
+                "4": "Eukarya",
+                "5": "Eukarya",
+                "6": "Eukarya",
+                "7": "Eukarya",
+                "8": "Eukarya",
+                "9": "Eukarya"
+            }
+        }
+    }
+}

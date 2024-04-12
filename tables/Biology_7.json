@@ -1,0 +1,45 @@
+{
+    "description": "a structured classification for a diverse group of living organisms, spanning across several kingdoms and phyla",
+    "lineage": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+    ],
+    "semantic_key": [
+        "Common Name"
+    ],
+    "file_ext": ".csv",
+    "field_delim": ";",
+    "file_ext_name": "semi-colon",
+    "command": {
+        "type": "del_cols",
+        "params": {
+            "num_entries": 1,
+            "location": [
+                7
+            ]
+        },
+        "changed": {
+            "Suborder": {
+                "0": "Alligatorinae",
+                "1": "Theridiidae",
+                "2": "Accipitridae",
+                "3": "Squalidae",
+                "4": "Lumbricidae",
+                "5": "Anguillidae",
+                "6": "Limulidae",
+                "7": NaN,
+                "8": "Mytilus",
+                "9": "Didelphinae",
+                "10": "Cichlinae",
+                "11": "Lamnidae",
+                "12": "Canidae",
+                "13": "Cichlinae"
+            }
+        }
+    }
+}

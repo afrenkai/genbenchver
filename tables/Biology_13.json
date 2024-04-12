@@ -1,0 +1,78 @@
+{
+    "description": "a structured classification for a diverse group of living organisms, spanning across several kingdoms and phyla",
+    "lineage": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+    ],
+    "semantic_key": [
+        "Common Name"
+    ],
+    "file_ext": ".csv",
+    "field_delim": ";",
+    "file_ext_name": "semi-colon",
+    "command": {
+        "type": "add_rows",
+        "prompt": "Generate 2 rows for a table of a structured classification for a diverse group of living organisms, spanning across several kingdoms and phyla. The semi-colon-separated header of attributes for the table is:\nDiet;Habitat;Family;Latin Name;Phylum;Class;Order;Genus;Species;Common Name;Size;Average Lifespan;Endangered Status;Native Continent\n\nDo not generate fictional rows. Generate the rows from real known data. Here is a list of semi-colon-separated rows not to generate by semantic key only:\nCommon Name\nAfrican Cichlid\nAmerican Alligator\nBlack Widow\nConvict Cichlid\nCooper's Hawk\nDogfish Shark\nDomestic Dog\nEarthworm\nEuropean Eel\nGreat White Shark\nHorseshoe Crab\nSharks, Rays, Skates\nSmall\nVirginia Opossum\n\nOutput the rows in the format of a semi-colon-separated .csv file with a column header. Then explain the source of the new data.",
+        "start time": "2024-04-10 17:45:30",
+        "complete time": "2024-04-10 18:36:04",
+        "duration (seconds)": 3034,
+        "params": {
+            "num_entries": 2,
+            "location": 13
+        },
+        "output_table": "Diet;Habitat;Family;Latin Name;Phylum;Class;Order;Genus;Species;Common Name;Size;Average Lifespan;Endangered Status;Native Continent\nGiant Pacific Octopus;Deep Ocean;Octopodidae;Enteroctopus dofleini;Mollusca;Cephalopoda;Octopoda;Enteroctopus;dofleini;Giant Pacific Octopus.1;15-20 feet;3-6 years;No special status;North Pacific\n",
+        "prologue": " \"African Elephant\";Savannas, Forests;Elephantidae;Loxodonta africana;Chordata;Mammalia;Proboscidea;Loxodonta;africana;African Elephant;10-13 feet;60-70 years;Vulnerable;Africa",
+        "epilogue": "",
+        "changed": {
+            "Diet": {
+                "0": "Giant Pacific Octopus"
+            },
+            "Habitat": {
+                "0": "Deep Ocean"
+            },
+            "Family": {
+                "0": "Octopodidae"
+            },
+            "Latin Name": {
+                "0": "Enteroctopus dofleini"
+            },
+            "Phylum": {
+                "0": "Mollusca"
+            },
+            "Class": {
+                "0": "Cephalopoda"
+            },
+            "Order": {
+                "0": "Octopoda"
+            },
+            "Genus": {
+                "0": "Enteroctopus"
+            },
+            "Species": {
+                "0": "dofleini"
+            },
+            "Common Name": {
+                "0": "Giant Pacific Octopus.1"
+            },
+            "Size": {
+                "0": "15-20 feet"
+            },
+            "Average Lifespan": {
+                "0": "3-6 years"
+            },
+            "Endangered Status": {
+                "0": "No special status"
+            },
+            "Native Continent": {
+                "0": "North Pacific"
+            }
+        }
+    }
+}

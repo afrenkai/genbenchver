@@ -1,0 +1,36 @@
+{
+    "description": "a structured classification for a diverse group of living organisms, spanning across several kingdoms and phyla",
+    "lineage": [
+        0,
+        1,
+        2
+    ],
+    "semantic_key": [
+        "Common Name"
+    ],
+    "file_ext": ".csv",
+    "field_delim": ";",
+    "file_ext_name": "semi-colon",
+    "command": {
+        "type": "update_val",
+        "prompt": "For a structured classification for a diverse group of living organisms, spanning across several kingdoms and phyla, retrieve a missing value of real data (not fictional) from externally available resources, corresponding to the first row and attribute named Size, with a dtype of object, within the following table:\n\nDiet;Habitat;Family;Latin Name;Phylum;Class;Order;Suborder;Genus;Species;Common Name;Size\nCarnivore;Woodlands, Forests;Aves;Accipiter cooperii;Chordata;Aves;Accipitriformes;Accipitridae;Accipiter;cooperii;Cooper's Hawk;\nCarnivore;Freshwater Swamps, Marshes, Rivers;Reptilia;Alligator mississippiensis;Chordata;Reptilia;Alligatoridae;Alligatorinae;Alligator;mississippiensis;American Alligator;Large\nCarnivore;Varied, including human structures;Arachnida;Latrodectus mactans;Arthropoda;Arachnida;Araneae;Theridiidae;Latrodectus;mactans;Black Widow;Small\n\n\nRetrieve the attribute value according to the values of the semantic key:\n\nCommon Name=Cooper's Hawk\n\nFill in the missing data, and output the resulting table in semi-colon-delimited .csv format. Then output from where the data was retrieved.",
+        "start time": "2024-04-09 18:46:25",
+        "complete time": "2024-04-09 20:17:31",
+        "duration (seconds)": 5466,
+        "params": {
+            "na_loc": [
+                2,
+                2,
+                "Size"
+            ]
+        },
+        "output_table": "Diet;Habitat;Family;Latin Name;Phylum;Class;Order;Suborder;Genus;Species;Common Name;Size\nCarnivore;Woodlands, Forests;Aves;Accipiter cooperii;Chordata;Aves;Accipitriformes;Accipitridae;Accipiter;cooperii;Cooper's Hawk;16.15 in\nCarnivore;Freshwater Swamps, Marshes, Rivers;Reptilia;Alligator mississippiensis;Chordata;Reptilia;Alligatoridae;Alligatorinae;Alligator;mississippiensis;American Alligator;Large\nCarnivore;Varied, including human structures;Arachnida;Latrodectus mactans;Arthropoda;Arachnida;Araneae;Theridiidae;Latrodectus;mactans;Black Widow;Small\n",
+        "prologue": " I found the size of a Cooper's Hawk from the website for the Cornell Lab of Ornithology, specifically the All About Birds species account. The Size section lists the following:\n\nLength: 14.6-17.7 in (37-45 cm)\nWingspan: 24.4-35.4 in (62-90 cm)\nWeight: 7.8-24.0 oz (220-680 g)\n\nFor this answer, I will use the total length of a Cooper's Hawk, which is 14.6-17.7 in (37-45 cm). I will use the average of the range, which is approximately 16.15 in (39.52 cm).\n\nHere's the resulting table:",
+        "epilogue": "Here's the reference:\nhttps://www.allaboutbirds.org/guide/Coopers_Hawk/id\n\nConfidence: 95%",
+        "changed": {
+            "Size": {
+                "2": "16.15 in"
+            }
+        }
+    }
+}

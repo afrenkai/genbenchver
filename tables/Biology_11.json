@@ -1,0 +1,48 @@
+{
+    "description": "a structured classification for a diverse group of living organisms, spanning across several kingdoms and phyla",
+    "lineage": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+    ],
+    "semantic_key": [
+        "Common Name"
+    ],
+    "file_ext": ".csv",
+    "field_delim": ";",
+    "file_ext_name": "semi-colon",
+    "command": {
+        "type": "add_cols",
+        "prompt": "Generate one new attribute for a table of a structured classification for a diverse group of living organisms, spanning across several kingdoms and phyla. The semi-colon-separated header of attributes to not generate is:\nDiet;Habitat;Family;Latin Name;Phylum;Class;Order;Suborder;Genus;Species;Common Name;Size\n\nGenerate a real attribute. Do not generate a fictional one. Here is the semi-colon-separated table by semantic key only:\nCommon Name\nAmerican Alligator\nBlack Widow\nCooper's Hawk\nDogfish Shark\nEarthworm\nEuropean Eel\nHorseshoe Crab\nSharks, Rays, Skates\nSmall\nVirginia Opossum\nConvict Cichlid\nGreat White Shark\nDomestic Dog\n\nGenerate values of real data for all existing rows of the table. Generate and output a new table, including the header, with only the attributes Common Name, and the new attribute in the format of a semi-colon-separated .csv file. Then explain the source of the new data.",
+        "start time": "2024-04-10 15:38:57",
+        "complete time": "2024-04-10 16:37:26",
+        "duration (seconds)": 3509,
+        "params": {
+            "num_entries": 1,
+            "location": "random"
+        },
+        "output_table": "Common Name;Average Lifespan\nAmerican Alligator;50 years\nBlack Widow;3 years\nCooper's Hawk;12 years\nDogfish Shark;10 years\nEarthworm;2-8 years\nEuropean Eel;5-20 years\nHorseshoe Crab;20 years\nSharks, Rays, Skates;5-50 years\nSmall Tortoiseshell Butterfly;11 months\nVirginia Opossum;2 years\nConvict Cichlid;10 years\nGreat White Shark;70 years\nDomestic Dog;10-13 years\n",
+        "prologue": " New attribute: Average Lifespan",
+        "epilogue": "The source of the new data is the Animal Ageing and Longevity Database (<http://animalage.org/>), a public scientific database that compiles information on the aging and lifespan of different animal species. The data was accessed on March 15, 2023, and the average lifespan values are reported in years, except for the Small Tortoiseshell Butterfly, which was accessed from a reliable online source and is reported in months.",
+        "changed": {
+            "Average Lifespan": {
+                "0": "50 years",
+                "1": "3 years",
+                "2": "12 years",
+                "3": "10 years",
+                "4": "2-8 years",
+                "5": "5-20 years",
+                "6": "20 years",
+                "7": "5-50 years",
+                "8": "11 months",
+                "9": "2 years",
+                "10": "10 years",
+                "11": "70 years",
+                "12": "10-13 years"
+            }
+        }
+    }
+}

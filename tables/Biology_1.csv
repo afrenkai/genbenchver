@@ -1,0 +1,11 @@
+Family;Latin Name;Phylum;Class;Order;Suborder;Genus;Species;Common Name;Size
+Animalia;Didelphis virginiana;Chordata;Mammalia;Didelphimorphia;Didelphinae;Didelphis;virginiana;Virginia Opossum;Medium
+Arachnida;Latrodectus mactans;Arthropoda;Arachnida;Araneae;Theridiidae;Latrodectus;mactans;Black Widow;Small
+Reptilia;Alligator mississippiensis;Chordata;Reptilia;Alligatoridae;Alligatorinae;Alligator;mississippiensis;American Alligator;Large
+Annelida;Lumbricus terrestris;Ecdysozoa;Nematoda;Enoplea;Lumbricidae;Lumbricus;terrestris;Earthworm;Small
+Arthropoda;Limulus polyphemus;Arthropoda;Merostomata;Xiphosura;Limulidae;Limulus;polyphemus;Horseshoe Crab;Medium
+Mollusca;Mytilus edulis;Mollusca;Bivalvia;Mytilidae;Mytilus;edulis;Blue Mussel;Small;
+Chondrichthyes;Squalus spp.;Chordata;Chondrichthyes;Squaliformes;Squalidae;Squalus;spp.;Dogfish Shark;Medium
+Actinopterygii;Anguilla anguilla;Chordata;Actinopterygii;Anguilliformes;Anguillidae;Anguilla;anguilla;European Eel;Medium
+Aves;Accipiter cooperii;Chordata;Aves;Accipitriformes;Accipitridae;Accipiter;cooperii;Cooper's Hawk;Small
+Vertebrata;Elasmobranchii;Chordata;Vertebrata;Elasmobranchii;;;;Sharks, Rays, Skates;Medium

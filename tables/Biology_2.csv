@@ -1,0 +1,11 @@
+Diet;Habitat;Family;Latin Name;Phylum;Class;Order;Suborder;Genus;Species;Common Name;Size
+Carnivore;Freshwater Swamps, Marshes, Rivers;Reptilia;Alligator mississippiensis;Chordata;Reptilia;Alligatoridae;Alligatorinae;Alligator;mississippiensis;American Alligator;Large
+Carnivore;Varied, including human structures;Arachnida;Latrodectus mactans;Arthropoda;Arachnida;Araneae;Theridiidae;Latrodectus;mactans;Black Widow;Small
+Carnivore;Woodlands, Forests;Aves;Accipiter cooperii;Chordata;Aves;Accipitriformes;Accipitridae;Accipiter;cooperii;Cooper's Hawk;Small
+Carnivore;Ocean;Chondrichthyes;Squalus spp.;Chordata;Chondrichthyes;Squaliformes;Squalidae;Squalus;spp.;Dogfish Shark;Medium
+Detritivore;Soil;Annelida;Lumbricus terrestris;Ecdysozoa;Nematoda;Enoplea;Lumbricidae;Lumbricus;terrestris;Earthworm;Small
+Carnivore;Freshwater and Marine Water;Actinopterygii;Anguilla anguilla;Chordata;Actinopterygii;Anguilliformes;Anguillidae;Anguilla;anguilla;European Eel;Medium
+Omnivore;Estuaries, Shallow Ocean Water;Arthropoda;Limulus polyphemus;Arthropoda;Merostomata;Xiphosura;Limulidae;Limulus;polyphemus;Horseshoe Crab;Medium
+Carnivore;Ocean;Vertebrata;Elasmobranchii;Chordata;Vertebrata;Elasmobranchii;;;;Sharks, Rays, Skates;Medium
+Insectivore;Urban Areas, Forests;Mollusca;Mytilus edulis;Mollusca;Bivalvia;Mytilidae;Mytilus;edulis;Blue Mussel;Small;
+Omnivore;Deciduous and Pine Forests, Urban Areas;Animalia;Didelphis virginiana;Chordata;Mammalia;Didelphimorphia;Didelphinae;Didelphis;virginiana;Virginia Opossum;Medium

@@ -1,0 +1,17 @@
+Diet;Habitat;Family;Latin Name;Phylum;Class;Order;Genus;Species;Common Name;Size;Average Lifespan;Endangered Status;Native Continent
+Herbivore;Freshwater;Cichlidae;Pseudotropheus saulosi;Chordata;Actinopterygii;Perciformes;Pseudotropheus;saulosi;African Cichlid;15 cm;5 years;Least Concern;Africa
+Ectothermic;Freshwater, Brackish;Alligatoridae;Alligator mississippiensis;Chordata;Reptilia;Alligatoridae;Alligator;mississippiensis;American Alligator;4.6 m;30-50 years;Vulnerable;North America
+Carnivore;Land;Theridiidae;Latrodectus mactans;Animalia;Arthropoda;Araneae;Latrodectus;mactans;Black Widow;3.8 cm;1-3 years;Least Concern;North America
+Herbivore;Freshwater;Cichlidae;Archocentrus nigrofasciatus;Chordata;Actinopterygii;Cichliformes;Archocentrus;nigrofasciatus;Convict Cichlid;15 cm;5 years;Least Concern;Central America
+Carnivore;Land;Accipitridae;Accipiter cooperii;Chordata;Aves;Accipitriformes;Accipiter;cooperii;Cooper's Hawk;45 cm;12 years;Least Concern;North America
+Carnivore;Marine;Squalidae;Squalus acanthias;Chordata;Chondrichthyes;Squaliformes;Squalus;acanthias;Dogfish Shark;1 m;40 years;Least Concern;Worldwide
+Carnivore;Land;Canidae;Canis lupus familiaris;Chordata;Mammalia;Carnivora;Canis;lupus familiaris;Domestic Dog;60 cm;10-13 years;Domesticated;Worldwide
+Detritivore;Land;Lumbricidae;Lumbricus terrestris;Animalia;Annelida;Lumbricina;Lumbricus;terrestris;Earthworm;30 cm;4-8 years;Least Concern;Worldwide
+Carnivore;Brackish, Marine;Anguillidae;Anguilla anguilla;Chordata;Actinopterygii;Anguilliformes;Anguilla;anguilla;European Eel;1.2 m;50 years;Critically Endangered;Europe
+Carnivore;Marine;Lamnidae;Carcharodon carcharias;Chordata;Chondrichthyes;Lamniformes;Carcharodon;carcharias;Great White Shark;6 m;70 years;Vulnerable;Worldwide
+Reptile;Marine;Limulidae;Limulus polyphemus;Animalia;Arthropoda;Xiphosura;Limulus;polyphemus;Horseshoe Crab;60 cm;9 years;Vulnerable;North America
+Carnivore;Marine;Batoidea;Batoidea;Chordata;Chondrichthyes;Myliobatiformes;;;Sharks, Rays, Skates;Varies;Varies;Varies;Worldwide
+Carnivore;Land;Marsupialia;Didelphis virginiana;Mammalia;Marsupialia;Didelphimorphia;Didelphis;virginiana;Virginia Opossum;45 cm;2 years;Least Concern;North America
+Herbivore;Land;Ursidae;Ailuropoda melanoleuca;Mammalia;Eutheria;Ursidae;Ailuropoda;melanoleuca;Giant Panda;1.5 m;20 years;Vulnerable;Asia
+Insectivore;Urban Areas, Forests;Mollusca;Mytilus edulis;Mollusca;Bivalvia;Mytilidae;edulis;Blue Mussel;Small;;-;-;-
+Giant Panda;Mountains, Forests;Ursidae;Ailuropoda melanoleuca;Chordata;Mammalia;Ursidae.1;Ailuropoda;melanoleuca;Giant Panda.1;6 feet;20 years;Vulnerable;Asia

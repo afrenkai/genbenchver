@@ -1,0 +1,107 @@
+{
+    "description": "a structured classification for a diverse group of living organisms, spanning across several kingdoms and phyla",
+    "lineage": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+    ],
+    "semantic_key": [
+        "Common Name"
+    ],
+    "file_ext": ".csv",
+    "field_delim": ";",
+    "file_ext_name": "semi-colon",
+    "command": {
+        "type": "add_rows",
+        "prompt": "Generate 3 rows for a table of a structured classification for a diverse group of living organisms, spanning across several kingdoms and phyla. The semi-colon-separated header of attributes for the table is:\nDiet;Habitat;Family;Latin Name;Phylum;Class;Order;Genus;Species;Common Name;Size;Average Lifespan;Endangered Status;Native Continent\n\nDo not generate fictional rows. Generate the rows from real known data. Here is a list of semi-colon-separated rows not to generate by semantic key only:\nCommon Name\nAfrican Cichlid\nAmerican Alligator\nBlack Widow\nConvict Cichlid\nCooper's Hawk\nDogfish Shark\nDomestic Dog\nEarthworm\nEuropean Eel\nGreat White Shark\nHorseshoe Crab\nSharks, Rays, Skates\nSmall\nVirginia Opossum\n\nOutput the rows in the format of a semi-colon-separated .csv file with a column header. Then explain the source of the new data.",
+        "start time": "2024-04-10 14:33:21",
+        "complete time": "2024-04-10 15:38:30",
+        "duration (seconds)": 3909,
+        "params": {
+            "num_entries": 3,
+            "location": 13
+        },
+        "output_table": "Diet;Habitat;Family;Latin Name;Phylum;Class;Order;Genus;Species;Common Name;Size;Average Lifespan;Endangered Status;Native Continent\nAfrican Elephant;Savannas, Forests;Elephantidae;Loxodonta africana;Chordata;Mammalia;Proboscidea;Loxodonta;africana;African Elephant;10-13 ft;60-70 years;Vulnerable;Africa\nGiant Panda;Bamboo Forests;Ursidae;Ailuropoda melanoleuca;Chordata;Mammalia;Ursidae;Ailuropoda;melanoleuca;Giant Panda;4-6 ft;20-30 years;Vulnerable;Asia\nBengal Tiger;Grasslands, Tropical Rainforests;Felidae;Panthera tigris tigris;Chordata;Mammalia;Felidae;Panthera;tigris;Bengal Tiger;8-10 ft;10-15 years;Endangered;Asia\n",
+        "prologue": "",
+        "epilogue": "",
+        "changed": {
+            "Diet": {
+                "0": "African Elephant",
+                "1": "Giant Panda",
+                "2": "Bengal Tiger"
+            },
+            "Habitat": {
+                "0": "Savannas, Forests",
+                "1": "Bamboo Forests",
+                "2": "Grasslands, Tropical Rainforests"
+            },
+            "Family": {
+                "0": "Elephantidae",
+                "1": "Ursidae",
+                "2": "Felidae"
+            },
+            "Latin Name": {
+                "0": "Loxodonta africana",
+                "1": "Ailuropoda melanoleuca",
+                "2": "Panthera tigris tigris"
+            },
+            "Phylum": {
+                "0": "Chordata",
+                "1": "Chordata",
+                "2": "Chordata"
+            },
+            "Class": {
+                "0": "Mammalia",
+                "1": "Mammalia",
+                "2": "Mammalia"
+            },
+            "Order": {
+                "0": "Proboscidea",
+                "1": "Ursidae",
+                "2": "Felidae"
+            },
+            "Genus": {
+                "0": "Loxodonta",
+                "1": "Ailuropoda",
+                "2": "Panthera"
+            },
+            "Species": {
+                "0": "africana",
+                "1": "melanoleuca",
+                "2": "tigris"
+            },
+            "Common Name": {
+                "0": "African Elephant",
+                "1": "Giant Panda",
+                "2": "Bengal Tiger"
+            },
+            "Size": {
+                "0": "10-13 ft",
+                "1": "4-6 ft",
+                "2": "8-10 ft"
+            },
+            "Average Lifespan": {
+                "0": "60-70 years",
+                "1": "20-30 years",
+                "2": "10-15 years"
+            },
+            "Endangered Status": {
+                "0": "Vulnerable",
+                "1": "Vulnerable",
+                "2": "Endangered"
+            },
+            "Native Continent": {
+                "0": "Africa",
+                "1": "Asia",
+                "2": "Asia"
+            }
+        }
+    }
+}
