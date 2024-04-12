@@ -1,8 +1,8 @@
 {
-    "description": "information about mythical creatures",
+    "description": "information about mythical creatures, where Name is the type of creature, Definition is a brief description, Synonyms are alternate descriptions, and Origin is the original type of mythology"
     "lineage": [],
     "semantic_key": [
-        "Word"
+        "Common Name"
     ],
     "file_ext": ".csv",
     "field_delim": ";",

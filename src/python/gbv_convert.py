@@ -45,7 +45,7 @@ with open(input_filename, 'r') as infile, open(cleaned_filename, 'w') as outfile
     for line in infile:
         cleaned = newsep.join(
             segment.strip().lstrip(ignore_prefix) \
-                for segment in line.split(sep)).lstrip(newsep)
+                for segment in line.split(sep)).strip(newsep)
         if len(cleaned) > 0:
             cleaned_line = cleaned + '\n'
             outfile.write(cleaned_line)
