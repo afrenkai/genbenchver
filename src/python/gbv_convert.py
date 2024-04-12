@@ -13,25 +13,39 @@ versioning benchmarks
 # cleaned_filename = '../../tables/Literature.csv'
 # sep = "|"
 # newsep = ";"
+# ignore_prefix = None
 
 # input_filename = '../../tables/sources/Horticulture_XDG29OB3.csv'
 # cleaned_filename = '../../tables/Horticulture.csv'
 # sep = "|"
 # newsep = ";"
+# ignore_prefix = None
 
 # input_filename = '../../tables/sources/Climatology_QWQ27CT2.csv'
 # cleaned_filename = '../../tables/Climatology.csv'
 # sep = "|"
 # newsep = ";"
+# ignore_prefix = None
 
-input_filename = '../../tables/sources/Biology_6RCZXNPM.csv'
-cleaned_filename = '../../tables/Biology.csv'
+# input_filename = '../../tables/sources/Biology_6RCZXNPM.csv'
+# cleaned_filename = '../../tables/Biology.csv'
+# sep = "|"
+# newsep = ";"
+# ignore_prefix = None
+
+input_filename = '../../tables/sources/Mythology_5IDTY430.csv'
+cleaned_filename = '../../tables/Mythology.csv'
 sep = "|"
 newsep = ";"
+ignore_prefix = "-"
 
 
-# Remove leading and trailing whitespaces around the pipe separator
+# Remove leading and trailing whitespaces around the separator
 with open(input_filename, 'r') as infile, open(cleaned_filename, 'w') as outfile:
     for line in infile:
-        cleaned_line = newsep.join(segment.strip() for segment in line.split(sep)) + '\n'
-        outfile.write(cleaned_line)
+        cleaned = newsep.join(
+            segment.strip().lstrip(ignore_prefix) \
+                for segment in line.split(sep)).lstrip(newsep)
+        if len(cleaned) > 0:
+            cleaned_line = cleaned + '\n'
+            outfile.write(cleaned_line)
