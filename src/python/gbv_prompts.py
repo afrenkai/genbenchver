@@ -147,7 +147,7 @@ class GenAITablePrompts:
         #         + f"{delimiter}-separated .csv file with a column header. "\
         #         + "Then explain the source of the new data."
         if nrows == 1:
-            prompt = f"Generate one row for a table of {description}. "\
+            prompt = f"Generate one new row for a table of {description}. "\
                 + f"The {delimiter}-separated header of attributes "\
                 + f"for the table is:\n{header}\n"\
                 + "Do not generate fictional rows. "\
@@ -158,7 +158,7 @@ class GenAITablePrompts:
                 + f"{delimiter}-separated .csv file with a column header. "\
                 + "Then explain the source of the new data."
         else:
-            prompt = f"Generate {nrows} rows for a table of {description}. "\
+            prompt = f"Generate {nrows} new rows for a table of {description}. "\
                 + f"The {delimiter}-separated header of attributes "\
                 + f"for the table is:\n{header}\n"\
                 + "Do not generate fictional rows. "\
