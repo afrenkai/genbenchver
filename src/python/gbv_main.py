@@ -1529,7 +1529,7 @@ def main():
     
     args = parser.parse_args()
     
-    print_time(args.name, "table of operations")
+    print_time(args, None)
     
     model, tokenizer = build_model(args.framework, MODEL_SPEC, 
                                    args.device_map, args.dtype)
