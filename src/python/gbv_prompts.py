@@ -150,7 +150,6 @@ class GenAITablePrompts:
             prompt = f"Generate one new row for a table of {description}. "\
                 + f"The {delimiter}-separated header of attributes "\
                 + f"for the table is:\n{header}\n"\
-                + "Do not generate fictional rows. "\
                 + "Generate the rows from real known data. "\
                 + f"Here is a list of {delimiter}-separated rows not to "\
                 + f"generate by semantic key only:\n{table_ineligible_only}\n"\
@@ -161,13 +160,13 @@ class GenAITablePrompts:
             prompt = f"Generate {nrows} new rows for a table of {description}. "\
                 + f"The {delimiter}-separated header of attributes "\
                 + f"for the table is:\n{header}\n"\
-                + "Do not generate fictional rows. "\
                 + "Generate the rows from real known data. "\
                 + f"Here is a list of {delimiter}-separated rows not to "\
                 + f"generate by semantic key only:\n{table_ineligible_only}\n"\
                 + "Output the rows in the format of a "\
                 + f"{delimiter}-separated .csv file with a column header. "\
                 + "Then explain the source of the new data."
+                # + "Do not generate fictional rows. "
         return prompt
         
     def get_add_cols_prompt(self, ncols):
