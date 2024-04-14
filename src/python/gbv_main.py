@@ -163,7 +163,7 @@ class GenAITableExec:
         None.
     
         """
-        random.seed(42)
+        # random.seed(42)
         start_time = time.time()
         start = dt.datetime.now()
         print_time(f"--- starting at {start}", None)
@@ -184,6 +184,8 @@ class GenAITableExec:
             model_response = self.tokenizer.batch_decode(generator.output)
             
             for i in range(len(genai_prompts.prompts)):
+                print("Raw output from Generative AI:")
+                print(model_response[i])
                 prompts_output.append(model_response[i].split("</s")[0]\
                                       .split("/[INST]")[-1])
                 
@@ -400,7 +402,7 @@ The first row is generated from my knowledge of classical literature. Euripides 
                     )
                 responses.append(f"{trunc_rows_rsp_end}")
             idx = random.randrange(len(responses)-1)
-            # idx = 1 # for testing
+            # idx = 0 # for testing
             if idx == (len(responses) - 2):
                 responses = responses[idx:idx+2]
             else:
@@ -411,7 +413,7 @@ The first row is generated from my knowledge of classical literature. Euripides 
 
         print_time(None, None)
         print("Received response from Generative AI:")
-        print(responses[0], None)
+        print(responses[0])
         time.sleep(3)
 
 
@@ -531,7 +533,7 @@ The first row is generated from my knowledge of classical literature. Euripides 
 
         print_time(None, None)
         print("Send prompt to Generative AI:")
-        print(genai_prompts.prompts)
+        print(genai_prompts.prompts[0])
         time.sleep(3)
         
         if self.args.framework == 'fake':
@@ -611,7 +613,7 @@ The first row is generated from my knowledge of classical literature. Euripides 
 
         print_time(None, None)
         print("Received response from Generative AI:")
-        print(responses, None)
+        print(responses[0])
         time.sleep(3)
 
         rsp =  self.parse_table_responses(
@@ -866,7 +868,7 @@ Here is the updated table in semi-colon-delimited .csv format:
             
         print_time(None, None)
         print("Received response from Generative AI:")
-        print(responses[0], None)
+        print(responses[0])
         time.sleep(3)
 
         nrows_max = min(table_orig.table.shape[0], 3)
@@ -1406,11 +1408,14 @@ Here is the updated table in semi-colon-delimited .csv format:
                     if self.args.cmd == cmd['type']:
                         command_idx = i
                         break
+            print_time(command_idx, "before check")
             if command_idx is None:
                 if cmd_plan_pos < len(CMD_PLAN):
                     command_idx = CMD_PLAN[cmd_plan_pos]
+                    print_time(command_idx, "plan")
                 else:
                     command_idx = random.randrange(len(COMMANDS))
+                    print_time(command_idx, "random")
                     
             command = COMMANDS[command_idx]
             if self.command_exec(command):
