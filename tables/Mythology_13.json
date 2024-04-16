@@ -1,0 +1,48 @@
+{
+    "description": "information about mythical creatures",
+    "lineage": [
+        0,
+        1,
+        3,
+        9,
+        10,
+        12
+    ],
+    "semantic_key": [
+        "Word"
+    ],
+    "file_ext": ".csv",
+    "field_delim": ";",
+    "file_ext_name": "semi-colon",
+    "command": {
+        "type": "del_cols",
+        "params": {
+            "num_entries": 1,
+            "location": [
+                2
+            ]
+        },
+        "changed": {
+            "Synonyms": {
+                "0": "Fabulous creature",
+                "1": "mermaid",
+                "2": "Cockatrice",
+                "3": "Man bull, Asterius",
+                "4": "Polyphemus",
+                "5": "Monoceros, Narwhal",
+                "6": "Kelpie",
+                "7": "Hippocentaurs",
+                "8": "Euryale",
+                "9": "Benu, Huma",
+                "10": "Antaeus",
+                "11": "Dog of Hades",
+                "12": "Dryad, Oread",
+                "13": "Ariel, The Little Mermaid",
+                "14": "Serpent, Worm",
+                "15": "Faun, Pan",
+                "16": "Water Bull, Shape-shifter",
+                "17": "Siren, Bird Woman"
+            }
+        }
+    }
+}

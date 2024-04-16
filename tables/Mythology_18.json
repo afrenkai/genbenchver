@@ -1,0 +1,35 @@
+{
+    "description": "information about mythical creatures",
+    "lineage": [
+        0,
+        8,
+        17
+    ],
+    "semantic_key": [
+        "Word"
+    ],
+    "file_ext": ".csv",
+    "field_delim": ";",
+    "file_ext_name": "semi-colon",
+    "command": {
+        "type": "del_rows",
+        "params": {
+            "num_entries": 1,
+            "location": "random"
+        },
+        "changed": {
+            "Word": {
+                "11": "Gorgon"
+            },
+            "Definition": {
+                "11": "Women-monster"
+            },
+            "Synonyms": {
+                "11": "Euryale"
+            },
+            "Origin": {
+                "11": "Greek"
+            }
+        }
+    }
+}

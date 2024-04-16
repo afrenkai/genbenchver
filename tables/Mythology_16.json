@@ -1,0 +1,47 @@
+{
+    "description": "information about mythical creatures",
+    "lineage": [
+        0,
+        1,
+        3
+    ],
+    "semantic_key": [
+        "Word"
+    ],
+    "file_ext": ".csv",
+    "field_delim": ";",
+    "file_ext_name": "semi-colon",
+    "command": {
+        "type": "add_cols",
+        "prompt": "Generate one new attribute for a table of information about mythical creatures. The semi-colon-separated header of attributes to not generate is:\nWord;Definition;Synonyms;Origin\n\nGenerate a real attribute. Do not generate a fictional one. Here is the semi-colon-separated table by semantic key only:\nWord\nChimera\nSiren\nBasilisk\nMinotaur\nCyclops\nUnicorns\nPegasus\nCentaur\nGorgon\nPhoenix\nHydra\nCerberus\nNymph\nMermaid, half-human, half-fish creature\nDragon, large, serpent-like creature\n\nGenerate values of real data for all existing rows of the table. Generate and output a new table, including the header, with only the attributes Word, and the new attribute in the format of a semi-colon-separated .csv file. Then explain the source of the new data.",
+        "start time": "2024-04-15 12:28:55",
+        "complete time": "2024-04-15 12:46:54",
+        "duration (seconds)": 1079,
+        "params": {
+            "num_entries": 1,
+            "location": "right"
+        },
+        "output_table": "Word;Lifespan\nChimera;Unknown\nSiren;Immortal\nBasilisk;Hours to a few days\nMinotaur;Unknown\nCyclops;Unknown\nUnicorns;Hundreds of years\nPegasus;Immortal\nCentaur;Decades\nGorgon;Immortal\nPhoenix;Hundreds to thousands of years\nHydra;Immortal\nCerberus;Immortal\nNymph;Immortal\nMermaid, half-human, half-fish creature;Unknown\nDragon, large, serpent-like creature;Variable\n",
+        "prologue": " Attribute: Lifespan\n\nChimera;Unknown, as it is a fire-breathing creature with a lion's head, goat's body, and serpent's tail in Greek mythology\nSiren;Immortal, in Greek mythology, Sirens were depicted as enchanting creatures who sang songs to lure sailors to their death\nBasilisk;Hours to a few days, according to legend, a basilisk can cause death with its gaze or a single touch\nMinotaur;Minotaur is a creature with the head of a bull and the body of a man, and its lifespan is unknown in Greek mythology\nCyclops;Unknown, in Greek mythology, Cyclopes were giants with a single eye in the middle of their forehead\nUnicorns;Hundreds of years, depending on the specific mythology or story, a unicorn's lifespan can vary greatly\nPegasus;Immortal, Pegasus is a winged horse in Greek mythology and is often associated with the gods\nCentaur;Decades, depending on the specific centaur in Greek mythology, a centaur's lifespan can vary\nGorgon;Immortal, in Greek mythology, Gorgons were snake-haired creatures, and Medusa was the only mortal Gorgon\nPhoenix;Hundreds to thousands of years, according to legend, a phoenix can live for hundreds to thousands of years before dying in a burst of flames and being reborn from the ashes\nHydra;Immortal, in Greek mythology, the Hydra was a serpent-like creature with many heads, and when one head was cut off, two more would grow in its place\nCerberus;Immortal, in Greek mythology, Cerberus was a three-headed dog that guarded the entrance to the underworld\nNymph;Immortal, in Greek mythology, Nymphs were associated with various natural features and were often depicted as young, beautiful maidens\nMermaid, half-human, half-fish creature;Unknown, in various mythologies and stories, mermaids can have different lifespans\nDragon, large, serpent-like creature;Variable, depending on the specific dragon in mythology or folklore, a dragon's lifespan can vary greatly",
+        "epilogue": "The lifespan of mythical creatures is not always explicitly stated in mythology and folklore, so in many cases, the values for this attribute are based on educated guesses or assumptions. For example, immortal creatures such as Pegasus, Cerberus, and Nymphs are assumed to be immortal because they are often depicted as such in mythology. Similarly, creatures such as the Hydra and Gorgon are also considered immortal because they have the ability to regenerate or be reborn. For creatures such as the Chimera, Minotaur, and Cyclops, their lifespans are unknown because they are not explicitly stated in Greek mythology. Unicorns and Centaurs are assumed to have longer lifespans because they are often depicted as wise and powerful creatures in various mythologies and stories. The lifespan of the Basilisk is based on its deadly abilities and the fact that it can cause death with its gaze or a single touch. The lifespan of the Mermaid is unknown because it can vary greatly depending on the specific mythology or story. The lifespan of the Dragon is also variable because it can vary greatly depending on the specific dragon in mythology or folklore.",
+        "changed": {
+            "Lifespan": {
+                "0": "Unknown",
+                "1": "Immortal",
+                "2": "Hours to a few days",
+                "3": "Unknown",
+                "4": "Unknown",
+                "5": "Hundreds of years",
+                "6": "Immortal",
+                "7": "Decades",
+                "8": "Immortal",
+                "9": "Hundreds to thousands of years",
+                "10": "Immortal",
+                "11": "Immortal",
+                "12": "Immortal",
+                "13": "Unknown",
+                "14": "Variable"
+            }
+        }
+    }
+}

@@ -1,0 +1,41 @@
+{
+    "description": "information about mythical creatures",
+    "lineage": [
+        0,
+        1
+    ],
+    "semantic_key": [
+        "Word"
+    ],
+    "file_ext": ".csv",
+    "field_delim": ";",
+    "file_ext_name": "semi-colon",
+    "command": {
+        "type": "add_rows",
+        "prompt": "Generate 3 new rows for a table of information about mythical creatures. The semi-colon-separated header of attributes for the table is:\nWord;Definition;Synonyms;Origin\n\nDo not generate fictional rows. Generate the rows from real known data. Here is a list of semi-colon-separated rows not to generate by semantic key only:\nWord\nChimera\nSiren\nBasilisk\nMinotaur\nCyclops\nUnicorns\nPegasus\nCentaur\nGorgon\nPhoenix\nHydra\nCerberus\nNymph\n\nOutput the rows in the format of a semi-colon-separated .csv file with a column header. Then explain the source of the new data.",
+        "start time": "2024-04-12 17:37:50",
+        "complete time": "2024-04-12 18:35:31",
+        "duration (seconds)": 3461,
+        "params": {
+            "num_entries": 3,
+            "location": 12
+        },
+        "output_table": "Word;Definition;Synonyms;Origin\nMermaid, half-human, half-fish creature;Siren;sea-woman;various global legends\n",
+        "prologue": " Word;Definition;Synonyms;Origin\nSatyr, mythical creature with goat-like features;Faun, Pan;Greek, Roman mythology",
+        "epilogue": "",
+        "changed": {
+            "Word": {
+                "0": "Mermaid, half-human, half-fish creature"
+            },
+            "Definition": {
+                "0": "Siren"
+            },
+            "Synonyms": {
+                "0": "sea-woman"
+            },
+            "Origin": {
+                "0": "various global legends"
+            }
+        }
+    }
+}

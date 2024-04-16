@@ -1,0 +1,36 @@
+{
+    "description": "information about mythical creatures",
+    "lineage": [
+        0,
+        1,
+        3,
+        4
+    ],
+    "semantic_key": [
+        "Word"
+    ],
+    "file_ext": ".csv",
+    "field_delim": ";",
+    "file_ext_name": "semi-colon",
+    "command": {
+        "type": "del_rows",
+        "params": {
+            "num_entries": 1,
+            "location": "random"
+        },
+        "changed": {
+            "Word": {
+                "1": "Siren"
+            },
+            "Definition": {
+                "1": "Half-human"
+            },
+            "Synonyms": {
+                "1": "Harpy, Lorelei"
+            },
+            "Origin": {
+                "1": "Greek"
+            }
+        }
+    }
+}

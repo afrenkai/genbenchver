@@ -1,0 +1,50 @@
+{
+    "description": "information about mythical creatures",
+    "lineage": [
+        0,
+        1,
+        2
+    ],
+    "semantic_key": [
+        "Word"
+    ],
+    "file_ext": ".csv",
+    "field_delim": ";",
+    "file_ext_name": "semi-colon",
+    "command": {
+        "type": "add_rows",
+        "prompt": "Generate 3 new rows for a table of information about mythical creatures. The semi-colon-separated header of attributes for the table is:\nWord;Definition;Synonyms;Origin\n\nGenerate the rows from real known data. Here is a list of semi-colon-separated rows not to generate by semantic key only:\nWord\nChimera\nSiren\nBasilisk\nMinotaur\nCyclops\nUnicorns\nPegasus\nCentaur\nGorgon\nPhoenix\nHydra\nCerberus\nNymph\nMermaid, half-human, half-fish creature\n\nOutput the rows in the format of a semi-colon-separated .csv file with a column header. Then explain the source of the new data.",
+        "start time": "2024-04-15 12:50:53",
+        "complete time": "2024-04-15 12:53:24",
+        "duration (seconds)": 151,
+        "params": {
+            "num_entries": 3,
+            "location": 13
+        },
+        "output_table": "Word;Definition;Synonyms;Origin\nHarpy, bird-woman creature;Roc, Griffin;Raptor, Scavenger;Greco-Roman Mythology\nSphinx, lion-woman creature;Androsphinx, Criosphinx;Enigma, Guardian;Egyptian and Greek Mythology\nDragon, serpentine, fire-breathing creature;Wyrm, Drake, Amphiptere;Wyvern, Lindworm, Drakon;Multiple (European)\n",
+        "prologue": "",
+        "epilogue": "The new data is generated from existing mythological creatures, combining and modifying their attributes to create new ones. Harpies, for example, are bird-women creatures in Greco-Roman mythology, similar to the Roc and Griffin from other mythological traditions. Sphinxes are lion-woman creatures from Egyptian and Greek mythology, often associated with enigmas and guardianship. Dragons are serpentine, fire-breathing creatures with variations found in various European mythologies, including the Wyrm, Drake, Amphiptere, Wyvern, Lindworm, and Drakon.",
+        "changed": {
+            "Word": {
+                "0": "Harpy, bird-woman creature",
+                "1": "Sphinx, lion-woman creature",
+                "2": "Dragon, serpentine, fire-breathing creature"
+            },
+            "Definition": {
+                "0": "Roc, Griffin",
+                "1": "Androsphinx, Criosphinx",
+                "2": "Wyrm, Drake, Amphiptere"
+            },
+            "Synonyms": {
+                "0": "Raptor, Scavenger",
+                "1": "Enigma, Guardian",
+                "2": "Wyvern, Lindworm, Drakon"
+            },
+            "Origin": {
+                "0": "Greco-Roman Mythology",
+                "1": "Egyptian and Greek Mythology",
+                "2": "Multiple (European)"
+            }
+        }
+    }
+}

@@ -1,0 +1,57 @@
+{
+    "description": "information about mythical creatures",
+    "lineage": [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6,
+        7
+    ],
+    "semantic_key": [
+        "Word"
+    ],
+    "file_ext": ".csv",
+    "field_delim": ";",
+    "file_ext_name": "semi-colon",
+    "command": {
+        "type": "add_cols",
+        "prompt": "Generate one new attribute for a table of information about mythical creatures. The semi-colon-separated header of attributes to not generate is:\nWord;Definition;Synonyms;Origin\n\nGenerate a real attribute. Do not generate a fictional one. Here is the semi-colon-separated table by semantic key only:\nWord\nSatyr\nChimera\nBasilisk\nMinotaur\nCyclops\nUnicorns\nPegasus\nCentaur\nGorgon\nPhoenix\nHydra\nCerberus\nNymph\nMermaid, half-human, half-fish creature\nDragon, large, serpent-like creature\nGriffin\nSphinx\nHarpy\nSiren\nDjinn\nWendigo\n\nGenerate values of real data for all existing rows of the table. Generate and output a new table, including the header, with only the attributes Word, and the new attribute in the format of a semi-colon-separated .csv file. Then explain the source of the new data.",
+        "start time": "2024-04-15 04:39:25",
+        "complete time": "2024-04-15 06:21:44",
+        "duration (seconds)": 6139,
+        "params": {
+            "num_entries": 1,
+            "location": "left"
+        },
+        "output_table": "Word;Lifespan\nSatyr;Immortal\nChimera;Unknown\nBasilisk;Minutes to hours\nMinotaur;Decades\nCyclops;Centuries\nUnicorns;Thousands of years\nPegasus;Centuries\nCentaur;Centuries\nGorgon;Immortal\nPhoenix;Immortal, reborn through self-immolation\nHydra;Immortal\nCerberus;Immortal\nNymph;Immortal\nMermaid, half-human, half-fish creature;Decades\nDragon, large, serpent-like creature;Thousands of years\nGriffin;Centuries\nSphinx;Immortal\nHarpy;Decades\nSiren;Decades\nDjinn;Immortal\nWendigo;Indefinite, tied to cannibalism\n",
+        "prologue": " Attribute: Lifespan",
+        "epilogue": "The lifespan of mythical creatures is based on various mythological sources and interpretations. Immortal creatures, such as Satyrs, Gorgons, and Djinn, live forever unless killed. Some creatures, like the Basilisk, have short lifespans, lasting only minutes to hours. Others, like Mermaids and Harpies, live for decades. Unicorns and Dragons are said to live for thousands of years. Centaurs, Cyclops, and Griffins have lifespans similar to humans, living for centuries. The Phoenix is unique, as it is reborn through self-immolation, making its lifespan effectively immortal. The Wendigo's lifespan is tied to its existence, which is sustained by cannibalism, making it indefinite. The Hydra is also considered immortal due to its ability to regenerate lost heads. The Lifespan of the Chimera is unknown, as it is not specified in most mythological accounts.",
+        "changed": {
+            "Lifespan": {
+                "0": "Immortal",
+                "1": "Unknown",
+                "2": "Minutes to hours",
+                "3": "Decades",
+                "4": "Centuries",
+                "5": "Thousands of years",
+                "6": "Centuries",
+                "7": "Centuries",
+                "8": "Immortal",
+                "9": "Immortal, reborn through self-immolation",
+                "10": "Immortal",
+                "11": "Immortal",
+                "12": "Immortal",
+                "13": "Decades",
+                "14": "Thousands of years",
+                "15": "Centuries",
+                "16": "Immortal",
+                "17": "Decades",
+                "18": "Decades",
+                "19": "Immortal",
+                "20": "Indefinite, tied to cannibalism"
+            }
+        }
+    }
+}

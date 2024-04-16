@@ -1,0 +1,40 @@
+{
+    "description": "information about mythical creatures",
+    "lineage": [
+        0
+    ],
+    "semantic_key": [
+        "Word"
+    ],
+    "file_ext": ".csv",
+    "field_delim": ";",
+    "file_ext_name": "semi-colon",
+    "command": {
+        "type": "add_rows",
+        "prompt": "Generate one new row for a table of information about mythical creatures. The semi-colon-separated header of attributes for the table is:\nWord;Definition;Synonyms;Origin\n\nDo not generate fictional rows. Generate the rows from real known data. Here is a list of semi-colon-separated rows not to generate by semantic key only:\nWord\nChimera\nSiren\nBasilisk\nMinotaur\nCyclops\nUnicorns\nPegasus\nCentaur\nGorgon\nPhoenix\nHydra\nCerberus\nNymph\n\nOutput the row in the format of a semi-colon-separated .csv file with a column header. Then explain the source of the new data.",
+        "start time": "2024-04-13 05:34:55",
+        "complete time": "2024-04-13 06:03:37",
+        "duration (seconds)": 1722,
+        "params": {
+            "num_entries": 1,
+            "location": 0
+        },
+        "output_table": "Word;Definition;Synonyms;Origin\nSatyr;A creature with the upper body of a man and the lower body and legs of a goat;Faun, Pan;Greek mythology\n",
+        "prologue": "",
+        "epilogue": "In Greek mythology, a Satyr (also known as a Faun or Pan for Romans) is a male nature spirit with the upper body of a human and the lower body and legs of a goat. They are often depicted as being lustful and rowdy, accompanying Dionysus, the god of wine, in his revelries. Satyrs are also associated with music and dance, often seen playing pipes or other instruments.\n\nSource: Encyclopedia Britannica (<https://www.britannica.com/topic/satyr-Greek-mythology>) /",
+        "changed": {
+            "Word": {
+                "0": "Satyr"
+            },
+            "Definition": {
+                "0": "A creature with the upper body of a man and the lower body and legs of a goat"
+            },
+            "Synonyms": {
+                "0": "Faun, Pan"
+            },
+            "Origin": {
+                "0": "Greek mythology"
+            }
+        }
+    }
+}

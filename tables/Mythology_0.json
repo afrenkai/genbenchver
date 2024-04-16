@@ -1,0 +1,10 @@
+{
+    "description": "information about mythical creatures",
+    "lineage": [],
+    "semantic_key": [
+        "Word"
+    ],
+    "file_ext": ".csv",
+    "field_delim": ";",
+    "file_ext_name": "semi-colon"
+}

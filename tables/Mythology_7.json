@@ -1,0 +1,53 @@
+{
+    "description": "information about mythical creatures",
+    "lineage": [
+        0,
+        1,
+        3,
+        4,
+        5,
+        6
+    ],
+    "semantic_key": [
+        "Word"
+    ],
+    "file_ext": ".csv",
+    "field_delim": ";",
+    "file_ext_name": "semi-colon",
+    "command": {
+        "type": "add_rows",
+        "prompt": "Generate 3 new rows for a table of information about mythical creatures. The semi-colon-separated header of attributes for the table is:\nWord;Definition;Synonyms;Origin\n\nDo not generate fictional rows. Generate the rows from real known data. Here is a list of semi-colon-separated rows not to generate by semantic key only:\nWord\nSatyr\nChimera\nBasilisk\nMinotaur\nCyclops\nUnicorns\nPegasus\nCentaur\nGorgon\nPhoenix\nHydra\nCerberus\nNymph\nMermaid, half-human, half-fish creature\nDragon, large, serpent-like creature\nGriffin\nSphinx\nHarpy\n\nOutput the rows in the format of a semi-colon-separated .csv file with a column header. Then explain the source of the new data.",
+        "start time": "2024-04-13 04:32:14",
+        "complete time": "2024-04-13 05:16:34",
+        "duration (seconds)": 2660,
+        "params": {
+            "num_entries": 3,
+            "location": 17
+        },
+        "output_table": "Word;Definition;Synonyms;Origin\nSiren;Sea nymphs who lured sailors to their death with their enchanting music and voices;Mermaid, Naiad, Oceanid;Greek mythology\nDjinn;Supernatural genies capable of granting wishes;Jinni, Genie;Middle Eastern folklore\nWendigo;Evil, cannibalistic spirits from North American indigenous folklore;Man-eater, Cannibal spirit;Algonquian peoples' folklore\n",
+        "prologue": "",
+        "epilogue": "The new rows were generated from the following sources:\n1. \"Siren\" information was sourced from the Encyclopedia Britannica entry for \"Siren\" (<https://www.britannica.com/topic/siren-Greek-mythology>).\n2. \"Djinn\" information was sourced from the Encyclopedia Britannica entry for \"Djinn\" (<https://www.britannica.com/topic/djinn>).\n3. \"Wendigo\" information was sourced from the Canadian Encyclopedia entry for \"Wendigo\" (<https://thecanadianencyclopedia.ca/en/article/windigo>).",
+        "changed": {
+            "Word": {
+                "0": "Siren",
+                "1": "Djinn",
+                "2": "Wendigo"
+            },
+            "Definition": {
+                "0": "Sea nymphs who lured sailors to their death with their enchanting music and voices",
+                "1": "Supernatural genies capable of granting wishes",
+                "2": "Evil, cannibalistic spirits from North American indigenous folklore"
+            },
+            "Synonyms": {
+                "0": "Mermaid, Naiad, Oceanid",
+                "1": "Jinni, Genie",
+                "2": "Man-eater, Cannibal spirit"
+            },
+            "Origin": {
+                "0": "Greek mythology",
+                "1": "Middle Eastern folklore",
+                "2": "Algonquian peoples' folklore"
+            }
+        }
+    }
+}

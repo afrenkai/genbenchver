@@ -1,0 +1,45 @@
+{
+    "description": "information about mythical creatures",
+    "lineage": [
+        0,
+        1
+    ],
+    "semantic_key": [
+        "Word"
+    ],
+    "file_ext": ".csv",
+    "field_delim": ";",
+    "file_ext_name": "semi-colon",
+    "command": {
+        "type": "add_rows",
+        "prompt": "Generate 3 new rows for a table of information about mythical creatures. The semi-colon-separated header of attributes for the table is:\nWord;Definition;Synonyms;Origin\n\nDo not generate fictional rows. Generate the rows from real known data. Here is a list of semi-colon-separated rows not to generate by semantic key only:\nWord\nChimera\nSiren\nBasilisk\nMinotaur\nCyclops\nUnicorns\nPegasus\nCentaur\nGorgon\nPhoenix\nHydra\nCerberus\nNymph\n\nOutput the rows in the format of a semi-colon-separated .csv file with a column header. Then explain the source of the new data.",
+        "start time": "2024-04-12 21:11:37",
+        "complete time": "2024-04-12 21:59:39",
+        "duration (seconds)": 2882,
+        "params": {
+            "num_entries": 3,
+            "location": 12
+        },
+        "output_table": "Word;Definition;Synonyms;Origin\nMermaid, half-human, half-fish creature;Siren;Ariel, The Little Mermaid;Maritime folklore\nDragon, large, serpent-like creature;Drake, Wyrm;Serpent, Worm;Multiple origins\n",
+        "prologue": " Word;Definition;Synonyms;Origin",
+        "epilogue": "1. Satyr: Britannica, last updated August 26, 2021, <https://www.britannica.com/topic/satyr>\n2. Mermaid: Britannica, last updated December 9, 2021, <https://www.britannica.com/topic/mermaid>\n3. Dragon: Encyclopedia Britannica, last updated January 2, 2022, <https://www.britannica.com/topic/dragon>",
+        "changed": {
+            "Word": {
+                "0": "Mermaid, half-human, half-fish creature",
+                "1": "Dragon, large, serpent-like creature"
+            },
+            "Definition": {
+                "0": "Siren",
+                "1": "Drake, Wyrm"
+            },
+            "Synonyms": {
+                "0": "Ariel, The Little Mermaid",
+                "1": "Serpent, Worm"
+            },
+            "Origin": {
+                "0": "Maritime folklore",
+                "1": "Multiple origins"
+            }
+        }
+    }
+}
