@@ -94,76 +94,77 @@ DATETIME_START = dt.datetime.now()
 random.seed(TIME_START)
 
 def get_params_list(params_dict):
-    """
-    
-
-    Parameters
-    ----------
-    params_dict : TYPE
-        DESCRIPTION.
-
-    Returns
-    -------
-    list
-        DESCRIPTION.
-
-    """
     keys = params_dict.keys()
     vals = params_dict.values()
     combinations = list(itertools.product(*vals))
     return [dict(zip(keys, combination)) for combination in combinations]
 
 class GenAITableExec:
-    # Singleton
+    """
+    Singleton class for executing the creation of versions of tables
+    """
  
     def __init__(self, cache, model, tokenizer):
+        """
+        Instantiates the GenATTableExec singleton.
+
+        Parameters
+        ----------
+        cache : dict
+            Cache of tables and their versions.
+            { <str: table name>: { <int: version>: {'table': <VerTable: table>
+                                                    }
+                                  }
+             }
+            See classes VerTable, VerTableCache
+            Note that a VerTable object does not have to have its actual table
+            populated, so the cache is not populated with the full table of
+            every version of every table.
+        model : deep learning model
+            The deep learning model that is built. Can be thought of as an 
+            opaque handle.
+        tokenizer : LLM model tokenizer
+            The tokenizer for an LLM. Can be thought of as an opaque handle.
+
+        Returns
+        -------
+        None.
+
+        """
         self.args = None
         self.tables_version_delimiter = TABLES_VERSION_DELIMITER
-        # model_type = 'nnsight'
         self.model = model
         self.tokenizer = tokenizer
         self.cache = cache
-        # self.model_spec = MODEL_SPEC
     
     def print_debug(self, var, text):
         if not self.args.debug:
             return
         print_time(var, text)
 
-    def convert(self):
-        fn = os.path.join(self.args.tablesdir, self.args.name + FORMAT_TYPE[0])
-        df = pd.read_csv(fn, sep=self.args.orig_delim)
-        fn = os.path.join(self.args.tablesdir, (self.args.name + "_0" 
-                                                + FORMAT_TYPE[0]))
-        df.to_csv(fn, sep=FORMAT_CSV_DELIMITER, index=False)
-        
-        sfn = os.path.join(self.args.tablesdir, self.args.name + ".json")
-        dfn = os.path.join(self.args.tablesdir, self.args.name + "_0.json")
-        shutil.copy(sfn, dfn)
-    
     def execute_prompts(self, genai_prompts):
         """
-        
-    
+        Sends a prompt to a LLM and returns the response. Note that special
+        tokens are added to the input prompts such that only the text of the
+        prompt should be specified. Also special tokens are filtered out in 
+        the response as well.
+
         Parameters
         ----------
-        model_type : TYPE
-            DESCRIPTION.
-        tokenizer : TYPE
-            DESCRIPTION.
-        model : TYPE
-            DESCRIPTION.
-        max_new_tokens : TYPE
-            DESCRIPTION.
-        prompts : TYPE
-            DESCRIPTION.
-    
+        genai_prompts : GenAITablePrompts
+            Prompts built by one of the methods in GenAITablePrompts.
+            Which method used depends on the command being executed.
+            (Note that although multiple prompts can be supplied, only
+             one prompt is supported at this time.)
+
         Returns
         -------
-        None.
-    
+        prompts_output : List of str
+            The output from the LLM in response to the prompts given.
+            (Again, only one response to the first prompt is supported at this
+             time.)
+
         """
-        # random.seed(42)
         start_time = time.time()
         start = dt.datetime.now()
         print_time(f"--- starting at {start}", None)
@@ -210,6 +211,31 @@ class GenAITableExec:
         return(prompts_output)
     
     def get_text_from_output(self, prompt_output, sep):
+        """
+        Deconstructs the prompt_output dictionary into its components
+
+        Parameters
+        ----------
+        prompt_output : dict
+            {'prologue' : <str: <output text before the tabular data>>,
+             'output_table': <dataframe: <output tabular data>>,
+             'epilogue' : <str: <output text after the tabular data>>
+             }
+        sep : str
+            The separator used for the dataframe in output_data.
+
+        Returns
+        -------
+        table_df : dataframe
+            The output dataframe containing the tabular data.
+        prologue : str
+            The output text before the tabular data.
+        output_table : str
+            The string in the formate of a .csv file for table_df.
+        epilogue : str
+            The output text after the tabular data.
+
+        """
         prologue = prompt_output['prologue']
         table_df = prompt_output['output_table']
         output_table = table_df.to_csv(sep=sep, index=False)
@@ -218,6 +244,31 @@ class GenAITableExec:
         return table_df, prologue, output_table, epilogue
 
     def add_table(self, table_orig, table_df, location, axis):
+        """
+        Adds the new version's data (table_df) to the base version's table
+        (table_orig). This routine is called for adding either row data
+        (axis=0) or columnar data (axis=1).
+
+        Parameters
+        ----------
+        table_orig : VerTable
+            The base version's table to be augmented.
+        table_df : dataframe
+            The new tabular data to be added to the base version to create
+            a new table version.
+        location : int
+            The location in the table (column or row) at which the new 
+            version's data should be added to the base version's data.
+        axis : 0 (row-based) or 1 (column-based)
+            The axis over which the data should be added. Row data will be '0',
+            and columnar data will be '1'.
+
+        Returns
+        -------
+        new_df : dataframe
+            The dataframe for the new table version.
+
+        """
         self.print_debug(table_df, None)
         if table_df is None:
             print_time(None, "add_row or add_col: Table not found!")
@@ -313,6 +364,33 @@ class GenAITableExec:
         return new_df
             
     def add_rows_exec(self, table_orig, params):
+        """
+        Executes the prompts to add rows to the previous version to generate 
+        the new version. Note that a large portion of the code is devoted to 
+        the 'fake' framework, which is simply a mechanism for testing the code 
+        without using the LLM resources.
+
+        Parameters
+        ----------
+        table_orig : VerTable
+            The base table version to which rows will be added.
+        params : dict of parameters
+            {'num_entries': <int: <number of rows to be added>>,
+             'location': <(int: <numeric index of row where the rows will
+                                 be added> | 'top' | 'bottom')>}
+
+        Returns
+        -------
+        genai_prompts.prompts: The list of prompts sent to the LLM (note only
+            one prompt is supported at this time)
+        rsp: dict
+            Dictionary containing the response compnents        
+            {'prologue': <str: <text output before the tabular data>>,
+             'output_table': <str: <text output of the tabular data>>,
+             'epilogue': <str: <text output after the tabular data>>
+             }
+
+        """
         num_entries = params['num_entries']
         location = params['location']
         # axis = 0
@@ -424,6 +502,46 @@ The first row is generated from my knowledge of classical literature. Euripides 
         return genai_prompts.prompts, rsp
 
     def add_rows(self, table_orig, params):
+        """
+        Executes adding rows to the previous version to generate the new 
+        version.
+
+        Parameters
+        ----------
+        table_orig : VerTable
+            The base table version to which rows will be added.
+        params : dict of parameters
+            {'num_entries': <int: <number of rows to be added>>,
+             'location': <(int: <numeric index of row where the rows will
+                                 be added> | 'top' | 'bottom')>}
+
+        Returns
+        -------
+        new_df: dataframe
+            Dataframe of the new table version after adding the rows.
+        command_dict: dict
+            Dictionary containing the add rows response to be put into the
+            version's JSON file.
+            {'type': <str: <command type (in this case'add_rows')>>,
+             'prompt': <str: <text of the prompt given to the LLM>>,
+             'start time' : <str: <timestamp of the start of the command
+                                   (used for performance monitoring)>>,
+             'complete time': <str: <timestamp of the start of the command
+                                     (used for performance monitoring)>>,
+             'duration (seconds)': <str: <duration required to execute the LLM
+                                          command (used for performance 
+                                                   monitoring)>>,
+             'params': <dict: <parameters for the command (same as input to
+                                                           this method)>>,
+             'output_table': <str: <textual output of the new tabular data>>,
+             'prologue': <str: <textual output of the LLM before the tabular
+                                data>>,
+             'epilogue': <str: <textual output of the LLM after the tabular
+                                data>>,
+             'changed': <dict: <a dictionary representation of the rows added>>
+             }
+
+        """
         start_time = round(time.time(), 0)
         axis = 0
         prompts_input, prompts_output = \
@@ -478,6 +596,34 @@ The first row is generated from my knowledge of classical literature. Euripides 
         return new_df, command_dict
             
     def delete_rows(self, table_orig, params):
+        """
+        Creates a new table version from deleting rows of a base version 
+
+        Parameters
+        ----------
+        table_orig : VerTable
+            The base table version for which rows will be deleted.
+        params : dict of parameters
+            {'num_entries': <int: <number of rows to be deleted>>,
+             'location': <(int: <index of row where the rows will be deleted>>
+                           | 'top' | 'bottom')}
+
+        Returns
+        -------
+        new_df: dataframe
+            Dataframe of the new table version after deleting the rows.
+        command_dict: dict
+            Dictionary containing the delete rows response to be put into the
+            version's JSON file. Contains no LLM output as LLM is not 
+            necessary.
+            {'type': <str: <command type (in this case'del_rows')>>,
+             'params': <dict: <parameters for the command (same as input to
+                                                           this method)>>,
+             'changed': <dict: <a dictionary representation of the rows 
+                                deleted>>
+             }
+
+        """
         num_entries = params['num_entries']
         location = params['location']
         nrows = table_orig.table.shape[0]
@@ -504,28 +650,31 @@ The first row is generated from my knowledge of classical literature. Euripides 
     
     def add_cols_exec(self, table_orig, params):
         """
-        
-    
+        Executes the prompts to add columns to the previous version to generate 
+        the new version. Note that a large portion of the code is devoted to 
+        the 'fake' framework, which is simply a mechanism for testing the code 
+        without using the LLM resources.
+
         Parameters
         ----------
-        v_cache : TYPE
-            DESCRIPTION.
-        table_orig : TYPE
-            DESCRIPTION.
-        ncols : TYPE
-            DESCRIPTION.
-        model_type : TYPE
-            DESCRIPTION.
-        model : TYPE
-            DESCRIPTION.
-        tokenizer : TYPE
-            DESCRIPTION.
-    
+        table_orig : VerTable
+            The base table version to which columns will be added.
+        params : dict of parameters
+            {'num_entries': <int: <number of columns to be added>>,
+             'location': <(int: <numeric index of column where the columns will
+                                 be added> | 'top' | 'bottom')>}
+
         Returns
         -------
-        TYPE
-            DESCRIPTION.
-    
+        genai_prompts.prompts: The list of prompts sent to the LLM (note only
+            one prompt is supported at this time)
+        rsp: dict
+            Dictionary containing the response compnents        
+            {'prologue': <str: <text output before the tabular data>>,
+             'output_table': <str: <text output of the tabular data>>,
+             'epilogue': <str: <text output after the tabular data>>
+             }
+
         """
         ncols = params['num_entries']
         genai_prompts = GenAITablePrompts(self.cache, table_orig, 100000)
@@ -623,6 +772,47 @@ The first row is generated from my knowledge of classical literature. Euripides 
         return genai_prompts.prompts, rsp
     
     def add_cols(self, table_orig, params):
+        """
+        Executes adding columns to the previous version to generate the new 
+        version.
+
+        Parameters
+        ----------
+        table_orig : VerTable
+            The base table version to which columns will be added.
+        params : dict of parameters
+            {'num_entries': <int: <number of columns to be added>>,
+             'location': <(int: <numeric index of column where the columns will
+                                 be added> | 'top' | 'bottom')>}
+
+        Returns
+        -------
+        new_df: dataframe
+            Dataframe of the new table version after adding the columns.
+        command_dict: dict
+            Dictionary containing the add columns response to be put into the
+            version's JSON file.
+            {'type': <str: <command type (in this case'add_cols')>>,
+             'prompt': <str: <text of the prompt given to the LLM>>,
+             'start time' : <str: <timestamp of the start of the command
+                                   (used for performance monitoring)>>,
+             'complete time': <str: <timestamp of the start of the command
+                                     (used for performance monitoring)>>,
+             'duration (seconds)': <str: <duration required to execute the LLM
+                                          command (used for performance 
+                                                   monitoring)>>,
+             'params': <dict: <parameters for the command (same as input to
+                                                           this method)>>,
+             'output_table': <str: <textual output of the new tabular data>>,
+             'prologue': <str: <textual output of the LLM before the tabular
+                                data>>,
+             'epilogue': <str: <textual output of the LLM after the tabular
+                                data>>,
+             'changed': <dict: <a dictionary representation of the columns 
+                                added>>
+             }
+
+        """
         start_time = round(time.time(), 0)
         ncols = params['num_entries']
         location = params['location']
@@ -680,6 +870,34 @@ The first row is generated from my knowledge of classical literature. Euripides 
         return new_df, command_dict
 
     def del_cols(self, table_orig, params):
+        """
+        Creates a new table version from deleting columns of a base version 
+
+        Parameters
+        ----------
+        table_orig : VerTable
+            The base table version for which columns will be deleted.
+        params : dict of parameters
+            {'num_entries': <int: <number of columns to be deleted>>,
+             'location': <(int: <index of column where the columns will be 
+                                 deleted>> | 'top' | 'bottom')}
+
+        Returns
+        -------
+        new_df: dataframe
+            Dataframe of the new table version after deleting the columns.
+        command_dict: dict
+            Dictionary containing the delete columns response to be put into
+            the version's JSON file. Contains no LLM output as LLM is not 
+            necessary.
+            {'type': <str: <command type (in this case'del_cols')>>,
+             'params': <dict: <parameters for the command (same as input to
+                                                           this method)>>,
+             'changed': <dict: <a dictionary representation of the columns 
+                                deleted>>
+             }
+
+        """
         num_entries = params['num_entries']
         location = params['location']
         indices_elig = []
@@ -745,6 +963,45 @@ The first row is generated from my knowledge of classical literature. Euripides 
         return new_df, command_dict
 
     def fill_na_exec(self, table_orig, params):
+        """
+        Executes the prompts to fill an N/A value of the previous version to
+        generate the new version.
+        
+        If 'na_loc' is not specified or is None, then it will fill the first
+        N/A value in the table. Otherwise, it fills the value at the na_loc
+        location and doesn't require that the value replaced actually is N/A.
+        (It assumes the caller knows what it is doing.)
+        
+        Note that a large portion of the code is devoted to the 'fake' 
+        framework, which is simply a mechanism for testing the code without 
+        using the LLM resources.
+
+        Parameters
+        ----------
+        table_orig : VerTable
+            The base table version to which the specified N/A value will be 
+            filled.
+        params : dictionary of parameters
+            {'na_loc': (<3-tuple: [<int: <numeric index of the row containing
+                                          containing the N/A value>>,
+                                   <int: <numeric index of the column
+                                          containing the N/A value>>,
+                                   <str: <column name of the N/A location>>
+                                   ] | None)
+             }
+
+        Returns
+        -------
+        genai_prompts.prompts: The list of prompts sent to the LLM (note only
+            one prompt is supported at this time)
+        rsp: dict
+            Dictionary containing the response components        
+            {'prologue': <str: <text output before the tabular data>>,
+             'output_table': <str: <text output of the tabular data>>,
+             'epilogue': <str: <text output after the tabular data>>
+             }
+
+        """
     
         na_loc = params['na_loc']
                 
@@ -880,6 +1137,26 @@ Here is the updated table in semi-colon-delimited .csv format:
         return genai_prompts.prompts, rsp
     
     def find_all_na(self, df):
+        """
+        Retrieves the 3-tuple location of all of the N/A values in a dataframe.
+
+        Parameters
+        ----------
+        df : dataframe
+            Dataframe to search for N/A values.
+
+        Returns
+        -------
+        na_indices : list of 3-tuple of: 
+            [<int: <numeric index of the row containing
+                    containing the N/A value>>,
+             <int: <numeric index of the column
+                    containing the N/A value>>,
+             <str: <column name of the N/A location>>
+             ]
+            The list of the N/A locations found.
+
+        """
         na_df = df.isna().copy()
         self.print_debug(na_df, None)
         na_indices = []
@@ -892,6 +1169,53 @@ Here is the updated table in semi-colon-delimited .csv format:
         return na_indices
     
     def fill_na(self, table_orig, params):
+        """
+        Creates a new table version from filling in an N/A value of a base 
+        version. Note that if the N/A had replaced a previous value (update
+        value case), then the new value may or may not be the same (it is at
+        the 'whim' of the LLM). If 'na_loc' is None or not present, then the
+        first N/A value found in the table will be replaced.
+
+        Parameters
+        ----------
+        table_orig : VerTable
+            The base table version for which columns will be deleted.
+        params : dict of parameters
+        {'na_loc': (<3-tuple: [<int: <numeric index of the row containing
+                                      containing the N/A value>>,
+                               <int: <numeric index of the column
+                                      containing the N/A value>>,
+                               <str: <column name of the N/A location>>
+                               ] | None)
+         }
+        Returns
+        -------
+        new_df: dataframe
+            Dataframe of the new table version after filling in the N/A value.
+        command_dict: dict
+            Dictionary containing the fill N/A response to be put into the
+            version's JSON file.
+            {'type': <str: <command type (in this case'fill_na')>>,
+             'prompt': <str: <text of the prompt given to the LLM>>,
+             'start time' : <str: <timestamp of the start of the command
+                                   (used for performance monitoring)>>,
+             'complete time': <str: <timestamp of the start of the command
+                                     (used for performance monitoring)>>,
+             'duration (seconds)': <str: <duration required to execute the LLM
+                                          command (used for performance 
+                                                   monitoring)>>,
+             'params': <dict: <parameters for the command (same as input to
+                                                           this method)>>,
+             'output_table': <str: <textual output of the new tabular data>>,
+             'prologue': <str: <textual output of the LLM before the tabular
+                                data>>,
+             'epilogue': <str: <textual output of the LLM after the tabular
+                                data>>,
+             'changed': <dict: <a dictionary representation of the N/A value 
+                                filled>>
+             }
+
+        """
         start_time = round(time.time(), 0)
         # location = params['location']
         if 'na_loc' not in params or params['na_loc'] is None:
@@ -962,6 +1286,49 @@ Here is the updated table in semi-colon-delimited .csv format:
         return new_df, command_dict
     
     def update_val(self, table_orig, params):
+        """
+        Creates a new table version from updating a random location of a base 
+        version. Note that the new value may or may not be the same (it is at
+        the 'whim' of the LLM).
+
+        Parameters
+        ----------
+        table_orig : VerTable
+            The base table version for which columns will be deleted.
+        params : dict of parameters: Empty dictionary for now.
+            Provided to maintain the same interface as the other commands,
+            and in case someone wanted to add some in the future.
+        {}
+
+        Returns
+        -------
+        new_df: dataframe
+            Dataframe of the new table version after replacing the location's
+            value.
+        command_dict: dict
+            Dictionary containing the update value response to be put into the
+            version's JSON file.
+            {'type': <str: <command type (in this case'update_val')>>,
+             'prompt': <str: <text of the prompt given to the LLM>>,
+             'start time' : <str: <timestamp of the start of the command
+                                   (used for performance monitoring)>>,
+             'complete time': <str: <timestamp of the start of the command
+                                     (used for performance monitoring)>>,
+             'duration (seconds)': <str: <duration required to execute the LLM
+                                          command (used for performance 
+                                                   monitoring)>>,
+             'params': <dict: <parameters for the command (same as input to
+                                                           this method)>>,
+             'output_table': <str: <textual output of the new tabular data>>,
+             'prologue': <str: <textual output of the LLM before the tabular
+                                data>>,
+             'epilogue': <str: <textual output of the LLM after the tabular
+                                data>>,
+             'changed': <dict: <a dictionary representation of the new 
+                                location's value filled>>
+             }
+
+        """
         rand_row = random.randrange(table_orig.table.shape[0])
         num_cols_eligible = (table_orig.table.shape[1] 
                              - len(table_orig.semantic_key))
@@ -999,32 +1366,25 @@ Here is the updated table in semi-colon-delimited .csv format:
         return new_df, command_dict
     
     def new_table(self, table_orig, new_df, command_dict, new_version):
-
         """
-        
-    
+        Generates a new VerTable object (with file) from a base VerTable
+        object.
+
         Parameters
         ----------
-        cache : TYPE
-            DESCRIPTION.
-        table_orig : TYPE
-            DESCRIPTION.
-        prologue : TYPE
-            DESCRIPTION.
-        new_df : TYPE
-            DESCRIPTION.
-        epilogue : TYPE
-            DESCRIPTION.
-        command_dict : TYPE
-            DESCRIPTION.
-        new_version : TYPE
-            DESCRIPTION.
-    
+        table_orig : VerTable
+            Base version VerTable object.
+        new_df : dataframe
+            Dataframe of new table version.
+        command_dict : dict
+            Dictionary of metadata for the new table version.
+        new_version : int
+            New version number.
+
         Returns
         -------
-        new_table : TYPE
-            DESCRIPTION.
-    
+        None.
+
         """
         lineage = copy.deepcopy(table_orig.lineage)
         self.print_debug(lineage, "E")
@@ -1395,6 +1755,65 @@ Here is the updated table in semi-colon-delimited .csv format:
         return True
         
     def main(self, args):
+        """
+        Main program to create a series of table versions.
+
+        Parameters
+        ----------
+        args : args
+            Command-line arguments.
+
+        $ python gbv_main.py -h
+        2024-05-03 18:34:57.651339
+        Starting globally...
+        
+        usage: gbv_main.py [-h] [--debug] [-s ORIG_DELIM] [-l LINEAGE] [-g DEVICE_MAP]
+                           [-n NUM_VER] [-i MAX_ITER] [-f FRAMEWORK] [-d DTYPE]
+                           [-c CMD] [-a MAX_ATTEMPTS]
+                           name tablesdir
+        
+        Auto-generates versions of base file using generative AI
+        
+        positional arguments:
+          name                  Filename of the table without extension (only .csv
+                                extension is supported)
+          tablesdir             Directory locaton of the tables. Default is the
+                                current working directory.
+        
+        options:
+          -h, --help            show this help message and exit
+          --debug               Turns on debug logging to stdout. Default is off.
+          -s ORIG_DELIM, --sep ORIG_DELIM
+                                Column separator of the original file. Only used
+                                before versions have been generated. Default is comma
+          -l LINEAGE, --lineage LINEAGE
+                                Type of lineage for versions created: "sequence"
+                                (default) | "random"
+          -g DEVICE_MAP, --gpu DEVICE_MAP
+                                Specify type of GPU: "cuda" (default) | "mps". Default
+                                is "auto"
+          -n NUM_VER, --numver NUM_VER
+                                Number of versions to create. Default is 10.
+                                Unsuccessful attempts do not count
+          -i MAX_ITER, --maxiter MAX_ITER
+                                Maximum number of table modification attempts. Default
+                                is 20.
+          -f FRAMEWORK, --framework FRAMEWORK
+                                Model framework type: nnsight | transformers | fake.
+                                Default is nnsight
+          -d DTYPE, --datatype DTYPE
+                                Data type for model. Use "float16" to reduce
+                                footprint. Default is None
+          -c CMD, --command CMD
+                                Specific command to run exlusively. Default is None,
+                                which means to use a hard-coded script.
+          -a MAX_ATTEMPTS, --maxattempts MAX_ATTEMPTS
+                                Maximum number of attempts for each command. Default
+                                is 3.        Returns
+        -------
+        None.
+
+        """
         
         self.args = args
         
