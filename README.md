@@ -1,8 +1,10 @@
 # genbenchver
 Generative Table Versioning Benchmarks
 
-This repository is the code and created benchmarks corresponding to the working paper, "A Generative Benchmark Creation
-Framework for Detecting Common Data Table Versions."
+This repository is the code and created benchmarks corresponding to the following publication:
+
+Daniel C. Fox, Aamod Khatiwada, Roee Shraga, "A Generative AI Benchmark Creation Framework for Detecting Common Data Table Versions."
+Proceedings of the 33rd ACM International Conference on Information and Knowledge Management (CIKM), October 2024.
 
 Files:
     
