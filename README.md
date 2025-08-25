@@ -44,13 +44,6 @@ Seed tables are required to be in semi-colon separated format without leading or
 gbv_convert.py can be used to do the conversion, but you need to identify filenames, original separator, etc.
 Note that if you have a different format than one that is included in this file, then you may need to augment the code.
 
-Note: This code is a bit buggy (sorry), and if you make changes you may need to fix a bug or two. 
-Parsing of the various types of LMM table vomit that gets produced is complex, and complex always leads to buggy.
-
-So if you touch the table parsing code in gbv_main.py, in the GenAITableExec class: 
-parse_table_responses(), find_valid_csv_tables(), and parse_table(), be aware that it is more likely than not that
-you will discover a bug in one of those methods.
-
 The --debug mode is a little difficult to follow (sorry for that, too).
 
 # Command-line Interface:
